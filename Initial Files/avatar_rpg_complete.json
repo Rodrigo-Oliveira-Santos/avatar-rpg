@@ -1,0 +1,463 @@
+{
+  "meta": {
+    "version": "1.0",
+    "name": "Avatar RPG — Sistema Completo",
+    "description": "JSON completo com patch de habilidades, sistema de personagem, itens e ficha."
+  },
+
+  "character_system": {
+    "stats_formulas": {
+      "vida":    { "formula": "10 + (nivel * 8) + (FOR * 3)",  "desc": "Pontos de vida fisicos. Chega a 0 = inconsciente." },
+      "espirito":{ "formula": "8 + (nivel * 6) + (ESP * 3)",   "desc": "Pontos de vida espirituais. Afetados por ataques psiquicos, dobra de sangue, medo e silencio." },
+      "chi":     { "formula": "6 + (nivel * 5) + (CHI * 4)",   "desc": "Pontos de energia para usar habilidades e ataques." },
+      "defesa":  { "formula": "(RES * 2) + (nivel * 1)",        "desc": "Reduz dano fisico recebido. Subtraido do dano bruto." },
+      "esquiva": { "formula": "(AGI * 2) + (PER * 1)",          "desc": "Valor alvo para o inimigo acertar. Ataque inimigo (1d20 + bonus) deve superar este valor." }
+    },
+    "combat_sequence": [
+      "1. Inimigo rola 1d20 + bonus de ataque vs Esquiva do jogador",
+      "2. Se falha: 0 dano",
+      "3. Se acerta: calcula dano bruto (dado da arma/habilidade)",
+      "4. Escudos de habilidade ativa absorvem primeiro",
+      "5. Defesa base absorve o resto",
+      "6. Dano restante vai para PV (fisico) ou PE (espiritual/psiquico)"
+    ],
+    "chi_recovery": {
+      "em_repouso": "1d4 + (CHI / 3 arredondado) por turno fora de combate",
+      "meditacao":  "Dobra o valor de recuperacao. Requer turno completo sem agir.",
+      "habilidades_de_restauro": "Algumas habilidades de Espiritualidade restauram chi — ver cada habilidade."
+    },
+    "sub_skill_slots": {
+      "desc": "Slots globais que permitem ativar sub-habilidades dentro de habilidades desbloqueadas.",
+      "slots_base_nivel_1": 2,
+      "slots_por_nivel": 0.333,
+      "nota_calculo": "Ganhas +1 slot a cada 3 niveis. Total base ao nivel 40 = 15 slots.",
+      "cap_por_habilidade": 3,
+      "cap_desc": "Cada habilidade desbloqueada pode ter no maximo 3 sub-habilidades ativas em simultaneo.",
+      "pergaminhos": {
+        "efeito": "Cada Pergaminho de Dobra encontrado adiciona +1 slot bonus permanente.",
+        "ultrapassa_cap": true,
+        "ultrapassa_cap_desc": "Pergaminhos sao a UNICA forma de ter mais de 3 sub-habilidades ativas numa mesma habilidade.",
+        "exemplo": "Com 2 pergaminhos investidos na habilidade Jato Focado, podes ter 5 sub-habilidades ativas nessa habilidade."
+      },
+      "tabela_slots_por_nivel": [
+        { "nivel": 1,  "slots_base": 2  },
+        { "nivel": 3,  "slots_base": 3  },
+        { "nivel": 6,  "slots_base": 4  },
+        { "nivel": 9,  "slots_base": 5  },
+        { "nivel": 12, "slots_base": 6  },
+        { "nivel": 15, "slots_base": 7  },
+        { "nivel": 18, "slots_base": 8  },
+        { "nivel": 21, "slots_base": 9  },
+        { "nivel": 24, "slots_base": 10 },
+        { "nivel": 27, "slots_base": 11 },
+        { "nivel": 30, "slots_base": 12 },
+        { "nivel": 33, "slots_base": 13 },
+        { "nivel": 36, "slots_base": 14 },
+        { "nivel": 40, "slots_base": 15 }
+      ]
+    },
+    "xp_system": {
+      "nivel_maximo": 40,
+      "pontos_por_nivel": 3,
+      "formula_xp": "Math.round(200 * Math.pow(nivel - 1, 1.55))",
+      "marcos": {
+        "5":  "Aprendiz",
+        "10": "Discipulo",
+        "15": "Praticante",
+        "20": "Veterano",
+        "25": "Especialista",
+        "30": "Mestre",
+        "35": "Grande Mestre",
+        "40": "Lendario"
+      }
+    },
+    "status_effects": {
+      "burn":    { "label": "Queimadura", "desc": "Causa 1d4 dano no inicio de cada turno. Dura 2 turnos. Removido por agua ou gelo." },
+      "freeze":  { "label": "Congelamento", "desc": "Reduz velocidade de iniciativa a metade. Dura 2 turnos. Removido por fogo ou calor." },
+      "shock":   { "label": "Choque", "desc": "Causa 1d4 dano e tem 25% de chance de saltar para aliados com armadura metalica. Dura 1 turno." },
+      "blind":   { "label": "Cegueira", "desc": "Todos os ataques tem 50% de chance de falhar automaticamente. Dura 2 turnos." },
+      "slow":    { "label": "Lentidao", "desc": "Reduz Esquiva em 4 e velocidade de movimento a metade. Dura 2 turnos." },
+      "stun":    { "label": "Atordoado", "desc": "Perde a proxima acao. Defesa reduzida em 5 enquanto atordoado." },
+      "poison":  { "label": "Veneno", "desc": "Causa 1d6 dano no inicio de cada turno durante 3 turnos. Nao e removido por fogo ou agua." },
+      "root":    { "label": "Enraizado", "desc": "Impossivel mover-se. Esquiva reduzida para 0. Dura 2 turnos ou ate ser libertado." },
+      "silence": { "label": "Silencio", "desc": "Nao pode usar habilidades de dobra. Pode continuar a atacar fisicamente. Dura 2 turnos." },
+      "fear":    { "label": "Medo", "desc": "Reduz todos os ataques em 1d4 de dano. Chance de 20% de fugir em vez de atacar. Dura 2 turnos." },
+      "bleed":   { "label": "Sangramento", "desc": "Causa 1d4 dano no inicio de cada turno. Dura 3 turnos. Nao e removido por fogo." },
+      "regen":   { "label": "Regeneracao", "desc": "Restaura 1d4 PV ou Chi no inicio de cada turno durante a duracao indicada." },
+      "shield":  { "label": "Escudo", "desc": "Absorve a proxima fonte de dano antes dos PV serem afetados. Valor indicado na habilidade." }
+    }
+  },
+
+  "character_sheet_schema": {
+    "identidade": {
+      "nome": "",
+      "elemento": "",
+      "subclasse": "",
+      "nivel": 1,
+      "xp_atual": 0,
+      "xp_proximo_nivel": 300,
+      "marco": "Aprendiz",
+      "idade": "",
+      "origem": "",
+      "afiliacao": "",
+      "aparencia": "",
+      "background": "",
+      "motivacao": "",
+      "fraquezas": "",
+      "objetivos": ""
+    },
+    "atributos": {
+      "FOR": 0, "AGI": 0, "CHI": 0,
+      "PER": 0, "RES": 0, "ESP": 0,
+      "pontos_disponiveis": 3
+    },
+    "stats_derivados": {
+      "vida_maxima": 0,
+      "vida_atual": 0,
+      "espirito_maximo": 0,
+      "espirito_atual": 0,
+      "chi_maximo": 0,
+      "chi_atual": 0,
+      "defesa": 0,
+      "esquiva": 0
+    },
+    "slots": {
+      "slots_base": 2,
+      "slots_pergaminhos": 0,
+      "slots_totais": 2,
+      "slots_usados": 0
+    },
+    "habilidades_ativas": [],
+    "sub_habilidades_ativas": [],
+    "inventario": {
+      "armas": [],
+      "armaduras": [],
+      "consumiveis": [],
+      "especiais": [],
+      "pergaminhos": [],
+      "ouro": 0,
+      "carga_atual": 0,
+      "carga_maxima": 0
+    },
+    "status_ativos": [],
+    "notas_sessao": "",
+    "historico_batalhas": [],
+    "aliados": [],
+    "inimigos_conhecidos": []
+  },
+
+  "items_database": {
+    "armas": {
+      "genericas": [
+        { "id": "arma_001", "nome": "Espada Curta", "tipo": "arma", "dano": "1d6+2", "peso": 2, "preco": 50, "desc": "Lamina de aco padrao. Rapida e fiavel.", "bonus_ataque": 1, "requisito": { "FOR": 2 } },
+        { "id": "arma_002", "nome": "Lanca", "tipo": "arma", "dano": "1d8+1", "peso": 3, "preco": 40, "desc": "Alcance superior. Permite atacar a 2m de distancia.", "bonus_ataque": 0, "alcance": 2, "requisito": { "FOR": 2 } },
+        { "id": "arma_003", "nome": "Arco Composto", "tipo": "arma", "dano": "1d8", "peso": 2, "preco": 80, "desc": "Alcance de 30m. Exige municao.", "bonus_ataque": 2, "alcance": 30, "requisito": { "AGI": 3, "PER": 2 } },
+        { "id": "arma_004", "nome": "Maca de Guerra", "tipo": "arma", "dano": "2d6", "peso": 5, "preco": 70, "desc": "Lenta mas devastadora. +2 dano contra armaduras pesadas.", "bonus_ataque": 0, "requisito": { "FOR": 4 } },
+        { "id": "arma_005", "nome": "Adagas Duplas", "tipo": "arma", "dano": "1d4+1", "peso": 1, "preco": 60, "desc": "Dois ataques por turno. Ideal para combatentes ageis.", "bonus_ataque": 2, "ataques_por_turno": 2, "requisito": { "AGI": 3 } },
+        { "id": "arma_006", "nome": "Katana", "tipo": "arma", "dano": "1d10+1", "peso": 2, "preco": 150, "desc": "Lamina refinada de alta qualidade. Critico em 19-20.", "bonus_ataque": 1, "critico": "19-20", "requisito": { "AGI": 3, "PER": 2 } },
+        { "id": "arma_007", "nome": "Martelo de Guerra", "tipo": "arma", "dano": "2d8", "peso": 7, "preco": 120, "desc": "Esmagador. Causa stun em 18-20 no d20.", "bonus_ataque": 0, "efeito_especial": "stun em 18-20", "requisito": { "FOR": 6 } },
+        { "id": "arma_008", "nome": "Besta Pesada", "tipo": "arma", "dano": "2d6+2", "peso": 4, "preco": 200, "desc": "Alcance de 40m. Perfura armaduras leves.", "bonus_ataque": 2, "alcance": 40, "requisito": { "FOR": 3, "PER": 3 } }
+      ],
+      "fogo": [
+        { "id": "arma_f001", "nome": "Lanca de Cobre Vulcanico", "tipo": "arma", "dano": "1d10+3", "peso": 3, "preco": 300, "desc": "Forjada em magma. Ataques causam burn automaticamente.", "bonus_ataque": 1, "efeito_especial": "burn automatico", "elemento": "fogo", "requisito": { "FOR": 4, "CHI": 2 } },
+        { "id": "arma_f002", "nome": "Katana do Dragao", "tipo": "arma", "dano": "1d12+2", "peso": 2, "preco": 500, "desc": "Lamina que aquece ao ser empunhada. +2 dados de dano em posicao ofensiva.", "bonus_ataque": 2, "efeito_especial": "+2 dados em posicao ofensiva", "elemento": "fogo", "requisito": { "FOR": 3, "AGI": 4, "CHI": 3 } },
+        { "id": "arma_f003", "nome": "Chicote de Chamas", "tipo": "arma", "dano": "1d8+2", "peso": 1, "preco": 250, "desc": "Alcance de 5m. Causa burn e tem chance de desarmar.", "bonus_ataque": 1, "alcance": 5, "efeito_especial": "burn + chance de desarmar", "elemento": "fogo", "requisito": { "AGI": 3, "CHI": 2 } }
+      ],
+      "agua": [
+        { "id": "arma_w001", "nome": "Espada de Gelo Eterno", "tipo": "arma", "dano": "1d10+2", "peso": 2, "preco": 400, "desc": "Nunca derrete. Ataques causam freeze em 17-20.", "bonus_ataque": 1, "efeito_especial": "freeze em 17-20", "elemento": "agua", "requisito": { "AGI": 3, "CHI": 3 } },
+        { "id": "arma_w002", "nome": "Chicote de Agua Viva", "tipo": "arma", "dano": "1d8+1", "peso": 1, "preco": 280, "desc": "Alcance de 6m. Pode imobilizar e tem bonus a lua cheia.", "bonus_ataque": 2, "alcance": 6, "efeito_especial": "slow + bonus na lua cheia", "elemento": "agua", "requisito": { "AGI": 4, "CHI": 2 } },
+        { "id": "arma_w003", "nome": "Tridente do Oceano", "tipo": "arma", "dano": "2d6+2", "peso": 4, "preco": 350, "desc": "Amplifica ondas de agua. +1 dado de dano em combate aquatico.", "bonus_ataque": 1, "efeito_especial": "+1 dado em combate aquatico", "elemento": "agua", "requisito": { "FOR": 4, "CHI": 3 } }
+      ],
+      "terra": [
+        { "id": "arma_e001", "nome": "Maca de Granito Vivo", "tipo": "arma", "dano": "2d8+3", "peso": 8, "preco": 350, "desc": "A pedra obedece. Pode dobrar a propria arma em combate.", "bonus_ataque": 1, "efeito_especial": "pode ser dobrada pelo utilizador", "elemento": "terra", "requisito": { "FOR": 6, "CHI": 2 } },
+        { "id": "arma_e002", "nome": "Luvas de Metal Vivo", "tipo": "arma", "dano": "1d8+2", "peso": 2, "preco": 400, "desc": "Amplificam dobra de metal. +2 dados a ataques de metal.", "bonus_ataque": 2, "efeito_especial": "+2 dados em ataques de metal", "elemento": "terra", "requisito": { "FOR": 3, "PER": 4, "CHI": 3 } },
+        { "id": "arma_e003", "nome": "Lanca de Obsidiana", "tipo": "arma", "dano": "1d12+2", "peso": 3, "preco": 320, "desc": "Perfura qualquer armadura. Ignora 5 pontos de Defesa.", "bonus_ataque": 1, "efeito_especial": "ignora 5 pontos de Defesa", "elemento": "terra", "requisito": { "FOR": 5, "PER": 3 } }
+      ],
+      "ar": [
+        { "id": "arma_a001", "nome": "Bastao Planador Reforçado", "tipo": "arma", "dano": "1d8+2", "peso": 1, "preco": 300, "desc": "Permite voo com planador e serve de arma versatil.", "bonus_ataque": 2, "efeito_especial": "permite voo com planador", "elemento": "ar", "requisito": { "AGI": 3, "CHI": 2 } },
+        { "id": "arma_a002", "nome": "Leque de Vento Cortante", "tipo": "arma", "dano": "1d6+3", "peso": 1, "preco": 280, "desc": "Amplifica laminas de vento. +1 dado a ataques de ar preciso.", "bonus_ataque": 2, "efeito_especial": "+1 dado em laminas de vento", "elemento": "ar", "requisito": { "AGI": 4, "PER": 3 } },
+        { "id": "arma_a003", "nome": "Cetro dos Ventos", "tipo": "arma", "dano": "1d10+1", "peso": 2, "preco": 450, "desc": "Amplifica todos os ataques de ar. +2 Chi por turno durante combate.", "bonus_ataque": 1, "efeito_especial": "+2 Chi por turno em combate", "elemento": "ar", "requisito": { "CHI": 4, "ESP": 3 } }
+      ],
+      "sem_dobra": [
+        { "id": "arma_n001", "nome": "Shuriken Mecanico", "tipo": "arma", "dano": "1d6+2", "peso": 0.5, "preco": 200, "desc": "Regressa automaticamente ao utilizador. Pode bloquear dobra ao acertar.", "bonus_ataque": 3, "efeito_especial": "regressa automaticamente + chance de silence", "requisito": { "AGI": 4, "PER": 3 } },
+        { "id": "arma_n002", "nome": "Braço Mecanico de Combate", "tipo": "arma", "dano": "2d8+3", "peso": 5, "preco": 600, "desc": "Amplifica forca bruta. +1d6 a todos os ataques corpo a corpo.", "bonus_ataque": 2, "efeito_especial": "+1d6 corpo a corpo", "requisito": { "FOR": 5, "PER": 2 } },
+        { "id": "arma_n003", "nome": "Canhao de Ombro Portatil", "tipo": "arma", "dano": "3d8", "peso": 6, "preco": 800, "desc": "Alcance de 50m. 3 cargas por combate. Causa stun no alvo.", "bonus_ataque": 1, "alcance": 50, "cargas": 3, "efeito_especial": "stun", "requisito": { "FOR": 4, "PER": 4 } }
+      ]
+    },
+    "armaduras": {
+      "genericas": [
+        { "id": "arm_001", "nome": "Armadura de Couro", "tipo": "armadura", "bonus_defesa": 4, "penalidade_esquiva": 0, "peso": 4, "preco": 80, "desc": "Leve e flexivel. Sem penalidade a esquiva.", "requisito": {} },
+        { "id": "arm_002", "nome": "Cota de Malha", "tipo": "armadura", "bonus_defesa": 8, "penalidade_esquiva": 2, "peso": 8, "preco": 200, "desc": "Boa protecao. Penalidade de -2 a Esquiva.", "requisito": { "FOR": 3 } },
+        { "id": "arm_003", "nome": "Armadura de Placas", "tipo": "armadura", "bonus_defesa": 14, "penalidade_esquiva": 5, "peso": 15, "preco": 500, "desc": "Maxima protecao. Penalidade de -5 a Esquiva.", "requisito": { "FOR": 5 } },
+        { "id": "arm_004", "nome": "Vestes de Combate", "tipo": "armadura", "bonus_defesa": 2, "penalidade_esquiva": 0, "peso": 1, "preco": 50, "desc": "Quase sem peso. Bonus de +1 a Esquiva.", "bonus_esquiva": 1, "requisito": {} },
+        { "id": "arm_005", "nome": "Escudo de Madeira", "tipo": "armadura", "subtipo": "escudo", "bonus_defesa": 3, "penalidade_esquiva": 0, "peso": 3, "preco": 40, "desc": "Bloqueia um ataque por turno gratuitamente.", "efeito_especial": "bloqueia 1 ataque por turno sem custo", "requisito": { "FOR": 2 } },
+        { "id": "arm_006", "nome": "Escudo de Aco", "tipo": "armadura", "subtipo": "escudo", "bonus_defesa": 6, "penalidade_esquiva": 1, "peso": 5, "preco": 150, "desc": "Bloqueia um ataque por turno. Pode ser usado para bater.", "efeito_especial": "bloqueia 1 ataque + 1d6 dano de pancada", "requisito": { "FOR": 3 } }
+      ],
+      "fogo": [
+        { "id": "arm_f001", "nome": "Armadura de Escamas do Dragao", "tipo": "armadura", "bonus_defesa": 12, "penalidade_esquiva": 1, "peso": 6, "preco": 800, "desc": "Resistente ao fogo. Ataques de fogo contra o utilizador causam metade do dano.", "efeito_especial": "resistencia ao fogo (50%)", "elemento": "fogo", "requisito": { "FOR": 4, "CHI": 2 } },
+        { "id": "arm_f002", "nome": "Manto do Inferno", "tipo": "armadura", "bonus_defesa": 6, "penalidade_esquiva": 0, "peso": 2, "preco": 600, "desc": "Inimigos que atacam corpo a corpo sofrem 1d4 burn automaticamente.", "efeito_especial": "burn 1d4 em ataques corpo a corpo", "elemento": "fogo", "requisito": { "CHI": 3 } }
+      ],
+      "agua": [
+        { "id": "arm_w001", "nome": "Armadura de Gelo Polar", "tipo": "armadura", "bonus_defesa": 10, "penalidade_esquiva": 2, "peso": 5, "preco": 700, "desc": "Ataques de gelo contra o utilizador causam metade do dano. Inimigos proximos sofrem freeze.", "efeito_especial": "resistencia ao gelo (50%) + freeze passivo", "elemento": "agua", "requisito": { "RES": 3, "CHI": 3 } },
+        { "id": "arm_w002", "nome": "Vestes da Lua", "tipo": "armadura", "bonus_defesa": 5, "penalidade_esquiva": 0, "peso": 1, "preco": 550, "desc": "Amplifica cura. +1d4 a todas as habilidades de cura por agua.", "efeito_especial": "+1d4 a cura por agua", "elemento": "agua", "requisito": { "ESP": 3, "CHI": 3 } }
+      ],
+      "terra": [
+        { "id": "arm_e001", "nome": "Armadura de Granito Vivo", "tipo": "armadura", "bonus_defesa": 16, "penalidade_esquiva": 4, "peso": 20, "preco": 900, "desc": "A mais resistente de todas. O utilizador pode dobrar a propria armadura.", "efeito_especial": "pode ser dobrada pelo utilizador + imune a knockback", "elemento": "terra", "requisito": { "FOR": 6, "RES": 5, "CHI": 2 } },
+        { "id": "arm_e002", "nome": "Vestes do Mineiro", "tipo": "armadura", "bonus_defesa": 7, "penalidade_esquiva": 0, "peso": 3, "preco": 400, "desc": "Amplifica visao sismica. Raio de detecao aumentado em 5m.", "efeito_especial": "+5m a visao sismica", "elemento": "terra", "requisito": { "PER": 3, "ESP": 2 } }
+      ],
+      "ar": [
+        { "id": "arm_a001", "nome": "Vestes do Monge do Vento", "tipo": "armadura", "bonus_defesa": 3, "bonus_esquiva": 4, "penalidade_esquiva": 0, "peso": 1, "preco": 500, "desc": "Maxima mobilidade. +4 a Esquiva. Perfeita para estilos evasivos.", "efeito_especial": "+4 Esquiva", "elemento": "ar", "requisito": { "AGI": 4, "ESP": 2 } },
+        { "id": "arm_a002", "nome": "Manto das Correntes", "tipo": "armadura", "bonus_defesa": 4, "bonus_esquiva": 2, "penalidade_esquiva": 0, "peso": 1, "preco": 650, "desc": "Amplifica voo. Duração de todas as habilidades de voo aumenta em 2 turnos.", "efeito_especial": "+2 turnos a habilidades de voo", "elemento": "ar", "requisito": { "AGI": 5, "CHI": 3 } }
+      ],
+      "sem_dobra": [
+        { "id": "arm_n001", "nome": "Armadura Mecanica Completa", "tipo": "armadura", "bonus_defesa": 14, "penalidade_esquiva": 3, "peso": 12, "preco": 1000, "desc": "Tecnologia avancada. Inclui jetpack integrado e amplificadores de forca.", "efeito_especial": "jetpack integrado + forca amplificada (+2 dano)", "requisito": { "FOR": 4, "PER": 3 } },
+        { "id": "arm_n002", "nome": "Colete de Chi Blocking", "tipo": "armadura", "bonus_defesa": 5, "penalidade_esquiva": 0, "peso": 2, "preco": 700, "desc": "Protege os pontos de pressao do utilizador. Resistencia a Chi Blocking e dobra de sangue.", "efeito_especial": "resistencia a Chi Blocking e dobra de sangue", "requisito": { "PER": 4, "ESP": 3 } }
+      ]
+    },
+    "consumiveis": {
+      "genericos": [
+        { "id": "con_001", "nome": "Pocao de Vida", "tipo": "consumivel", "efeito": "Restaura 3d8+5 PV", "peso": 0.5, "preco": 50, "usos": 1, "desc": "Ervas medicinais concentradas. Efeito imediato." },
+        { "id": "con_002", "nome": "Pocao de Vida Superior", "tipo": "consumivel", "efeito": "Restaura 6d8+10 PV", "peso": 0.5, "preco": 150, "usos": 1, "desc": "Formula refinada de grande potencia." },
+        { "id": "con_003", "nome": "Antidoto Universal", "tipo": "consumivel", "efeito": "Remove veneno, burn, freeze e sangramento", "peso": 0.5, "preco": 80, "usos": 1, "desc": "Remove todos os efeitos de status fisicos." },
+        { "id": "con_004", "nome": "Erva de Espirito", "tipo": "consumivel", "efeito": "Restaura 3d6+4 PE", "peso": 0.5, "preco": 70, "usos": 1, "desc": "Remove medo e silencio. Restaura a ligacao espiritual." },
+        { "id": "con_005", "nome": "Racao de Combate", "tipo": "consumivel", "efeito": "+3 a todos os atributos por 3 turnos", "peso": 0.5, "preco": 100, "usos": 1, "desc": "Estimulante natural que amplifica temporariamente o corpo." },
+        { "id": "con_006", "nome": "Oleo de Arma", "tipo": "consumivel", "efeito": "+1d4 de dano a proximos 5 ataques", "peso": 0.3, "preco": 40, "usos": 1, "desc": "Aplicado na arma. Amplifica o corte ou impacto." },
+        { "id": "con_007", "nome": "Fumaca de Cobertura", "tipo": "consumivel", "efeito": "Cria zona de fumaca por 3 turnos — blind a todos na area", "peso": 0.3, "preco": 60, "usos": 1, "desc": "Granada de fumaca. Util para escapar ou emboscar." },
+        { "id": "con_008", "nome": "Pedra de Afiar", "tipo": "consumivel", "efeito": "+2 bonus de ataque por 1 combate", "peso": 0.2, "preco": 30, "usos": 1, "desc": "Afia a arma antes de combate." }
+      ],
+      "fogo": [
+        { "id": "con_f001", "nome": "Oleo Vulcanico", "tipo": "consumivel", "efeito": "Ataques de fogo causam +1d6 burn por 5 turnos", "peso": 0.5, "preco": 120, "usos": 1, "elemento": "fogo", "desc": "Extrato de magma. Amplifica calor das tecnicas de fogo." },
+        { "id": "con_f002", "nome": "Cristal Solar", "tipo": "consumivel", "efeito": "Duplica o poder de todas as habilidades de fogo por 2 turnos", "peso": 0.3, "preco": 300, "usos": 1, "elemento": "fogo", "desc": "Canaliza a energia do sol diretamente. Extremamente raro." },
+        { "id": "con_f003", "nome": "Pocao de Chi Ardente", "tipo": "consumivel", "efeito": "Restaura 4d8 Chi imediatamente", "peso": 0.5, "preco": 200, "usos": 1, "elemento": "fogo", "desc": "Concentrado de chi ígneo. Muito eficaz para dobadores de fogo." }
+      ],
+      "agua": [
+        { "id": "con_w001", "nome": "Agua da Lua Cheia", "tipo": "consumivel", "efeito": "Efeito de lua cheia por 3 turnos — todos os ataques de agua ganham +2 dados", "peso": 0.5, "preco": 250, "usos": 1, "elemento": "agua", "desc": "Recolhida durante a lua cheia. Extremamente poderosa." },
+        { "id": "con_w002", "nome": "Essencia de Oceano", "tipo": "consumivel", "efeito": "Restaura 5d8 PV e remove todos os efeitos de status", "peso": 0.5, "preco": 280, "usos": 1, "elemento": "agua", "desc": "Agua pura das profundezas do oceano. Cura profunda." },
+        { "id": "con_w003", "nome": "Pocao de Chi Glacial", "tipo": "consumivel", "efeito": "Restaura 4d8 Chi imediatamente", "peso": 0.5, "preco": 200, "usos": 1, "elemento": "agua", "desc": "Concentrado de chi aquatico. Muito eficaz para dobadores de agua." }
+      ],
+      "terra": [
+        { "id": "con_e001", "nome": "Po de Pedra Viva", "tipo": "consumivel", "efeito": "+6 Defesa por 4 turnos", "peso": 0.3, "preco": 180, "usos": 1, "elemento": "terra", "desc": "Po de rocha viva. Reforça a pele como pedra." },
+        { "id": "con_e002", "nome": "Cristal Sismico", "tipo": "consumivel", "efeito": "Visao sismica ativada por 5 turnos mesmo sem a habilidade", "peso": 0.3, "preco": 220, "usos": 1, "elemento": "terra", "desc": "Vibra em sintonia com o solo. Qualquer dobador de terra pode usa-lo." },
+        { "id": "con_e003", "nome": "Pocao de Chi de Pedra", "tipo": "consumivel", "efeito": "Restaura 4d8 Chi imediatamente", "peso": 0.5, "preco": 200, "usos": 1, "elemento": "terra", "desc": "Concentrado de chi da terra. Muito eficaz para dobadores de terra." }
+      ],
+      "ar": [
+        { "id": "con_a001", "nome": "Essencia das Correntes", "tipo": "consumivel", "efeito": "+5 Esquiva e velocidade dobrada por 3 turnos", "peso": 0.2, "preco": 200, "usos": 1, "elemento": "ar", "desc": "Concentrado das correntes globais. Torna o utilizador incrivelmente rapido." },
+        { "id": "con_a002", "nome": "Incenso de Meditacao", "tipo": "consumivel", "efeito": "Restaura 3d8 Chi e PE imediatamente", "peso": 0.3, "preco": 180, "usos": 1, "elemento": "ar", "desc": "Usado pelos monges do Templo do Ar. Equilibra chi e espirito." },
+        { "id": "con_a003", "nome": "Pocao de Chi do Vento", "tipo": "consumivel", "efeito": "Restaura 4d8 Chi imediatamente", "peso": 0.5, "preco": 200, "usos": 1, "elemento": "ar", "desc": "Concentrado de chi aereo. Muito eficaz para dobadores de ar." }
+      ],
+      "sem_dobra": [
+        { "id": "con_n001", "nome": "Seringa de Chi Blocker", "tipo": "consumivel", "efeito": "Aplica silence a um alvo por 3 turnos (a distancia)", "peso": 0.2, "preco": 300, "usos": 1, "desc": "Composto que bloqueia o chi ao ser injetado. Muito eficaz contra dobadores." },
+        { "id": "con_n002", "nome": "Granada Eletromagnetica", "tipo": "consumivel", "efeito": "Causa shock a todos num raio de 3m e desativa tecnologia por 2 turnos", "peso": 0.5, "preco": 250, "usos": 1, "desc": "Tecnologia de vanguarda. Desarma e atordoa." },
+        { "id": "con_n003", "nome": "Estimulante de Combate", "tipo": "consumivel", "efeito": "+4 FOR e AGI por 3 turnos. Apos o efeito, slow por 1 turno.", "peso": 0.3, "preco": 180, "usos": 1, "desc": "Amplifica o corpo ao limite. Ha um custo." }
+      ]
+    },
+    "especiais": {
+      "pergaminhos": [
+        { "id": "per_001", "nome": "Pergaminho de Fogo", "tipo": "pergaminho", "elemento": "fogo", "efeito": "+1 slot de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 500, "desc": "Ensinamentos antigos de um Mestre do Fogo. Expande a capacidade de dominar tecnicas.", "raridade": "raro" },
+        { "id": "per_002", "nome": "Pergaminho de Agua", "tipo": "pergaminho", "elemento": "agua", "efeito": "+1 slot de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 500, "desc": "Sabedoria da Tribo da Agua do Sul. Expande o dominio das tecnicas aquaticas.", "raridade": "raro" },
+        { "id": "per_003", "nome": "Pergaminho de Terra", "tipo": "pergaminho", "elemento": "terra", "efeito": "+1 slot de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 500, "desc": "Tecnicas gravadas nas paredes de Omashu. Permite dominar mais tecnicas de terra.", "raridade": "raro" },
+        { "id": "per_004", "nome": "Pergaminho de Ar", "tipo": "pergaminho", "elemento": "ar", "efeito": "+1 slot de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 500, "desc": "Preservado pelos Nomades do Ar. Expande a ligacao com o vento.", "raridade": "raro" },
+        { "id": "per_005", "nome": "Pergaminho do Guerreiro", "tipo": "pergaminho", "elemento": "nenhum", "efeito": "+1 slot de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 500, "desc": "Tecnicas dos Guerreiros de Kyoshi. Qualquer personagem pode usar.", "raridade": "raro" },
+        { "id": "per_006", "nome": "Pergaminho Lendario", "tipo": "pergaminho", "elemento": "qualquer", "efeito": "+2 slots de sub-habilidade (pode ultrapassar cap de 3 por habilidade)", "peso": 0.1, "preco": 1500, "desc": "Escrito pelo proprio Avatar. Expansao massiva de capacidade. Extremamente raro.", "raridade": "lendario" }
+      ],
+      "artefactos": [
+        { "id": "art_001", "nome": "Amuleto do Chi", "tipo": "artefacto", "efeito": "+10 Chi maximo permanentemente", "peso": 0.1, "preco": 800, "desc": "Um cristal que ressoa com o chi do utilizador.", "requisito": { "CHI": 3 } },
+        { "id": "art_002", "nome": "Colar do Guerreiro", "tipo": "artefacto", "efeito": "+15 Vida maxima permanentemente", "peso": 0.1, "preco": 700, "desc": "Feito com dente de leao-urso. Representa a forca do guerreiro.", "requisito": {} },
+        { "id": "art_003", "nome": "Anel do Espirito", "tipo": "artefacto", "efeito": "+12 Espirito maximo permanentemente. +1 Recuperacao de Chi em meditacao.", "peso": 0.1, "preco": 900, "desc": "Forjado na fronteira entre o mundo fisico e espiritual.", "requisito": { "ESP": 3 } },
+        { "id": "art_004", "nome": "Bracelete da Agilidade", "tipo": "artefacto", "efeito": "+3 Esquiva permanentemente", "peso": 0.1, "preco": 750, "desc": "Feito com penas de aguia da montanha. Leveza incomparavel.", "requisito": { "AGI": 3 } },
+        { "id": "art_005", "nome": "Cinturao da Resistencia", "tipo": "artefacto", "efeito": "+4 Defesa permanentemente. Imune a knockback.", "peso": 0.3, "preco": 850, "desc": "Couro de rinoceronte. Absorcao de impacto extrema.", "requisito": { "FOR": 3, "RES": 3 } },
+        { "id": "art_006", "nome": "Mascara do Vidente", "tipo": "artefacto", "efeito": "+3 Percepcao permanentemente. Imune a blind.", "peso": 0.2, "preco": 1000, "desc": "Mascara usada pelos Videntes do Norte. Permite ver atraves de ilusoes.", "requisito": { "PER": 4, "ESP": 2 } },
+        { "id": "art_007", "nome": "Pedra do Avatar", "tipo": "artefacto", "efeito": "+1 a todos os atributos permanentemente", "peso": 0.2, "preco": 5000, "desc": "Um fragmento da Pedra do Avatar. Extremamente raro. Concede equilíbrio perfeito.", "raridade": "lendario", "requisito": { "nivel": 30 } },
+        { "id": "art_008", "nome": "Talisma do Equilíbrio", "tipo": "artefacto", "efeito": "Recupera 1 Chi por turno passivamente em combate", "peso": 0.1, "preco": 1200, "desc": "Equilibra o fluxo de chi do utilizador.", "requisito": { "CHI": 4, "ESP": 3 } }
+      ]
+    }
+  },
+
+  "patch_skills": {
+    "descricao": "Habilidades em falta da versao v5 com ataques, efeitos e posicoes completos.",
+    "fire": {
+      "Escudo de Calor": {
+        "tier": 1, "pos": "def", "reqs": { "FOR": 2, "RES": 1 },
+        "req": [],
+        "effect": { "type": "def", "desc": "Deflecte um ataque e causa 2d6 burn ao atacante. Inimigos corpo a corpo sofrem burn. Dura 1 turno.", "dice": "2d6", "chi": 2, "status": ["burn","shield"] },
+        "attacks": [
+          { "n": "Barreira Flamejante", "d": "Ergue uma muralha de chamas entre o dobrador e o inimigo.", "dmg": "2d6", "chi": 2, "status": ["burn"] },
+          { "n": "Escudo Pulsante", "d": "O escudo pulsa e queima quem toca.", "dmg": "2d6+2", "chi": 3, "status": ["burn","stun"] },
+          { "n": "Muro de Calor", "d": "O escudo expande em muro de 3m de largura.", "dmg": "3d6", "chi": 3, "status": ["burn","slow"] },
+          { "n": "Escudo Explosivo", "d": "Ao ser partido, explode em nova de fogo radial.", "dmg": "3d6+2", "chi": 4, "status": ["burn","stun"] },
+          { "n": "Capa de Chamas", "d": "O dobrador fica envolto em chamas — tudo que toca queima.", "dmg": "2d8+2", "chi": 4, "status": ["burn"] },
+          { "n": "Escudo do Dragao", "d": "O escudo tem a forma da cabeca de um dragao — ameacador e intimidante.", "dmg": "3d8", "chi": 5, "status": ["burn","fear"] },
+          { "n": "Espelho de Fogo", "d": "Reflete ataques de energia de volta ao atacante original.", "dmg": "4d6", "chi": 5, "status": ["burn"] },
+          { "n": "Fortaleza Ardente", "d": "O escudo expande para cobertura completa de 360 graus.", "dmg": "4d6+2", "chi": 5, "status": ["burn","shield"] },
+          { "n": "Escudo Solar", "d": "Alimentado pela energia do sol — maxima intensidade durante o dia.", "dmg": "4d8", "chi": 6, "status": ["burn","blind"] },
+          { "n": "Inferno Defensivo", "d": "Transforma-se em nova de fogo devastadora ao ser partido.", "dmg": "5d8", "chi": 6, "status": ["burn","stun","blind"] }
+        ]
+      },
+      "Esquiva Flamejante": {
+        "tier": 2, "pos": "def", "reqs": { "AGI": 4, "PER": 2 },
+        "req": ["Passo Ardente"],
+        "effect": { "type": "def", "desc": "Ao esquivar, o atacante recebe 1d4 burn. Chance de cegueira 20%.", "dice": "1d4", "chi": 1, "status": ["burn"] },
+        "attacks": [
+          { "n": "Contra-Esquiva", "d": "Redireciona o impeto do inimigo para as chamas.", "dmg": "1d6+2", "chi": 2, "status": ["burn"] },
+          { "n": "Esquiva Ardente", "d": "A evasao deixa corrente de fogo que queima quem atravessa.", "dmg": "2d4", "chi": 2, "status": ["burn"] },
+          { "n": "Desvio Explosivo", "d": "Esquiva que culmina numa explosao de calor na direcao do atacante.", "dmg": "2d6", "chi": 3, "status": ["stun","burn"] },
+          { "n": "Rastro Letal", "d": "Ao esquivar deixa rastro de fogo azul persistente por 2 turnos.", "dmg": "2d6+2", "chi": 3, "status": ["burn","slow"] },
+          { "n": "Contre-Feu", "d": "Esquiva e ataque simultaneos — fogo queima durante o desvio.", "dmg": "3d6", "chi": 4, "status": ["burn"] },
+          { "n": "Sombra de Chamas", "d": "Cria falso rastro de calor que confunde a pontaria inimiga.", "dmg": "2d8", "chi": 4, "status": ["blind","burn"] },
+          { "n": "Explosao de Retorno", "d": "Ao esquivar, lanca uma micro-nova de calor radial.", "dmg": "3d6+2", "chi": 4, "status": ["burn","stun"] },
+          { "n": "Danca de Esquivas", "d": "Tres esquivas em rapida sequencia, cada uma com contra-ataque.", "dmg": "4d6", "chi": 5, "status": ["burn"] },
+          { "n": "Fantasma Ardente", "d": "Move-se tao rapido que deixa imagem de fogo no lugar.", "dmg": "4d6+2", "chi": 5, "status": ["burn","blind"] },
+          { "n": "Esquiva do Dragao", "d": "A forma completa de Danca do Dragao usada defensivamente.", "dmg": "5d6", "chi": 6, "status": ["burn","stun","blind"] }
+        ]
+      },
+      "Foguete Humano": {
+        "tier": 4, "pos": "off", "reqs": { "AGI": 10, "CHI": 7, "FOR": 5 },
+        "req": ["Propulsao Tripla"],
+        "attacks": [
+          { "n": "Lancamento Direto", "d": "Propulsao maxima em linha reta contra um alvo especifico.", "dmg": "4d6+4", "chi": 6, "status": ["stun","burn"] },
+          { "n": "Foguete Rasante", "d": "Percorre o chao a velocidade extrema causando dano em linha.", "dmg": "5d6", "chi": 7, "status": ["burn","slow"] },
+          { "n": "Colisao Solar", "d": "Impacto de fogo puro — o corpo e um projétil flamejante.", "dmg": "6d6+4", "chi": 8, "status": ["stun","burn","blind"] },
+          { "n": "Espiral de Fogo", "d": "Rota em espiral que atinge multiplos alvos em sequencia.", "dmg": "5d6+2", "chi": 7, "status": ["burn","stun"] },
+          { "n": "Meteoro Humano", "d": "Queda em picado do ar — impacto cria cratera de fogo.", "dmg": "8d6", "chi": 9, "status": ["burn","stun","slow"] },
+          { "n": "Duplo Lancamento", "d": "Dois lancamentos em direcoes opostas em sequencia.", "dmg": "6d6+2", "chi": 8, "status": ["burn","stun"] },
+          { "n": "Foguete Triplo", "d": "Tres lancamentos em triangulo — cobre area inteira.", "dmg": "7d6", "chi": 9, "status": ["burn","stun","blind"] },
+          { "n": "Tornado de Lancamentos", "d": "Gira em espiral enquanto propulsionado — area total.", "dmg": "7d6+3", "chi": 9, "status": ["burn","stun","slow"] },
+          { "n": "Asteroide", "d": "Velocidade de asteroide — impacto catastrofico de area.", "dmg": "8d6+4", "chi": 10, "status": ["burn","stun","blind","slow"] },
+          { "n": "Colisao Final", "d": "O ultimo lancamento — destroi tudo no ponto de impacto.", "dmg": "10d8", "chi": 10, "status": ["burn","stun","blind","slow"] }
+        ]
+      }
+    },
+    "water": {
+      "Redemoinho": {
+        "tier": 2, "pos": "def", "reqs": { "AGI": 4, "CHI": 3 },
+        "req": ["Surf de Onda"],
+        "effect": { "type": "def", "desc": "Deflecte um ataque fisico ou de agua. Reposiciona imediatamente apos o desvio.", "dice": "-", "chi": 2, "status": [] },
+        "attacks": [
+          { "n": "Vortice Defensivo", "d": "O redemoinho agarra o ataque e redireciona-o.", "dmg": "1d6+2", "chi": 2, "status": ["slow"] },
+          { "n": "Giro de Agua", "d": "Giro rapido que usa a agua como escudo e contra-ataca.", "dmg": "2d4+2", "chi": 2, "status": ["slow"] },
+          { "n": "Corrente Deflectora", "d": "Uma corrente de agua bloqueia e desvia o ataque.", "dmg": "2d6", "chi": 3, "status": ["stun"] },
+          { "n": "Redemoinho Ofensivo", "d": "O redemoinho transforma-se em ataque giratorio.", "dmg": "2d6+2", "chi": 3, "status": ["slow","stun"] },
+          { "n": "Vortice Expansivo", "d": "O redemoinho expande e cobre area maior.", "dmg": "3d6", "chi": 4, "status": ["slow","freeze"] },
+          { "n": "Espiral de Agua", "d": "Espiral que abraca e imobiliza o inimigo.", "dmg": "3d6+2", "chi": 4, "status": ["root","slow"] },
+          { "n": "Redemoinho Duplo", "d": "Dois redemoinhos em rotacoes opostas que convergem.", "dmg": "4d6", "chi": 4, "status": ["stun","slow"] },
+          { "n": "Ciclone Aquatico", "d": "Um ciclone que aspira o inimigo para o centro.", "dmg": "4d6+2", "chi": 5, "status": ["stun","root"] },
+          { "n": "Vortice do Oceano", "d": "O poder do oceano num unico redemoinho.", "dmg": "5d6", "chi": 5, "status": ["stun","freeze"] },
+          { "n": "Espiral da Lua Cheia", "d": "O redemoinho alimentado pela lua — irresistivel.", "dmg": "6d6", "chi": 6, "status": ["stun","freeze","root"] }
+        ]
+      },
+      "Pontes de Gelo": {
+        "tier": 2, "pos": "off", "reqs": { "AGI": 3, "CHI": 2 },
+        "req": ["Passo Escorregadio"],
+        "effect": { "type": "utility", "desc": "Cria estrutura de gelo ate 10m. Pode ser usada em combate para flanquear inimigos.", "dice": "-", "chi": 2, "status": [] },
+        "attacks": [
+          { "n": "Rampa de Gelo", "d": "Cria uma rampa que lanca o dobrador em arco.", "dmg": "1d6+2", "chi": 2, "status": ["slow"] },
+          { "n": "Ponte Instantanea", "d": "Uma ponte de gelo que tambem serve de projétil.", "dmg": "2d4+2", "chi": 2, "status": ["freeze"] },
+          { "n": "Pilar de Gelo", "d": "Um pilar de gelo que ergue ou bloqueia o caminho.", "dmg": "2d6", "chi": 3, "status": ["root","freeze"] },
+          { "n": "Lancamento em Ponte", "d": "O dobrador usa a propria ponte para se lancar.", "dmg": "2d6+2", "chi": 3, "status": ["stun"] },
+          { "n": "Parede de Gelo", "d": "Uma parede de gelo que divide o campo de batalha.", "dmg": "3d4+2", "chi": 3, "status": ["root","freeze"] },
+          { "n": "Escorrega Letal", "d": "Uma rampa que lanca o inimigo num abismo.", "dmg": "3d6", "chi": 4, "status": ["stun","slow"] },
+          { "n": "Torre de Gelo", "d": "Uma torre emerge rapidamente e atinge inimigos acima.", "dmg": "3d6+2", "chi": 4, "status": ["freeze","stun"] },
+          { "n": "Labirinto de Gelo", "d": "Multiplas estruturas que confundem e bloqueiam.", "dmg": "4d6", "chi": 4, "status": ["root","blind"] },
+          { "n": "Prisao de Gelo", "d": "Uma prisao completa de gelo que captura o inimigo.", "dmg": "4d6+2", "chi": 5, "status": ["root","freeze"] },
+          { "n": "Fortaleza Glacial", "d": "Uma fortaleza completa de gelo em fracao de segundo.", "dmg": "5d6+2", "chi": 5, "status": ["root","freeze","slow"] }
+        ]
+      },
+      "Corrente Submarina": {
+        "tier": 3, "pos": "off", "reqs": { "AGI": 6, "CHI": 5 },
+        "req": ["Redemoinho","Surf de Onda"],
+        "effect": { "type": "move", "desc": "Movimento subaquatico invisivel. Pode atacar da agua com vantagem de surpresa.", "dice": "-", "chi": 3, "status": [] },
+        "attacks": [
+          { "n": "Ataque da Profundidade", "d": "Emerge rapidamente e ataca antes de mergulhar.", "dmg": "2d6+2", "chi": 3, "status": ["stun"] },
+          { "n": "Golpe Subaquatico", "d": "Ataca enquanto parcialmente submerso.", "dmg": "3d6", "chi": 3, "status": [] },
+          { "n": "Corrente de Ataque", "d": "Uma corrente de agua que segue e persegue o inimigo.", "dmg": "3d6+2", "chi": 4, "status": ["slow"] },
+          { "n": "Emboscada Aquatica", "d": "Emerge atras do inimigo sem ser visto.", "dmg": "3d8", "chi": 4, "status": ["stun","blind"] },
+          { "n": "Mergulho e Ataque", "d": "Mergulha e emerge num ponto diferente em ataque surpresa.", "dmg": "4d6", "chi": 4, "status": ["stun"] },
+          { "n": "Torrente Submersa", "d": "Uma torrente que emerge verticalmente sob o inimigo.", "dmg": "4d6+2", "chi": 5, "status": ["stun","slow"] },
+          { "n": "Corrente Dupla", "d": "Dois ataques de agua de direcoes opostas em simultaneo.", "dmg": "4d8", "chi": 5, "status": ["stun"] },
+          { "n": "Tsunami de Surpresa", "d": "Emerge criando uma onda colossal completamente inesperada.", "dmg": "5d6+2", "chi": 5, "status": ["stun","slow","blind"] },
+          { "n": "O Mar Ataca", "d": "O proprio mar emerge em ataque devastador.", "dmg": "6d6", "chi": 6, "status": ["stun","freeze","slow"] },
+          { "n": "Corrente do Abismo", "d": "Agua das profundezas — fria, densa e absolutamente fatal.", "dmg": "6d6+3", "chi": 6, "status": ["freeze","stun","slow","blind"] }
+        ]
+      },
+      "Esquiva Fluida": {
+        "tier": 2, "pos": "def", "reqs": { "AGI": 4, "PER": 3 },
+        "req": ["Redemoinho"],
+        "effect": { "type": "def", "desc": "Ao esquivar com sucesso, o contra-ataque de agua causa 1d8 e slow ao atacante.", "dice": "1d8", "chi": 2, "status": ["slow"] },
+        "attacks": [
+          { "n": "Contra-Agua", "d": "A esquiva lanca uma onda de agua certeira contra o atacante.", "dmg": "1d8+2", "chi": 2, "status": ["slow"] },
+          { "n": "Fluxo Inverso", "d": "Usa o impeto do inimigo para amplificar o contra-ataque.", "dmg": "2d6+2", "chi": 3, "status": ["slow","stun"] },
+          { "n": "Vaga de Retorno", "d": "Uma onda maior que varre o atacante para longe.", "dmg": "3d6", "chi": 3, "status": ["stun"] },
+          { "n": "Mar que Responde", "d": "O oceano responde ao ataque — onda colossal inesperada.", "dmg": "3d6+3", "chi": 4, "status": ["stun","slow"] },
+          { "n": "Forma da Serpente", "d": "O corpo flui — o contra-ataque e uma cobra de gelo.", "dmg": "4d6", "chi": 5, "status": ["freeze","stun"] },
+          { "n": "Contra-Corrente", "d": "Corrente de agua que segue o inimigo apos a esquiva.", "dmg": "3d8", "chi": 5, "status": ["slow","freeze"] },
+          { "n": "Espiral Evasiva", "d": "Espiral de agua que tanto esquiva como ataca.", "dmg": "4d6+2", "chi": 5, "status": ["stun","slow"] },
+          { "n": "Refluxo Glacial", "d": "O contra-ataque e de gelo — imobiliza o membro atingido.", "dmg": "4d8", "chi": 6, "status": ["freeze","root"] },
+          { "n": "Vaga Perfeita", "d": "A esquiva e o contra-ataque tornam-se uma so acao.", "dmg": "5d6+2", "chi": 6, "status": ["stun","freeze","slow"] },
+          { "n": "A Agua Nao Pode Ser Apanhada", "d": "Evasao total — o inimigo nunca acerta na agua.", "dmg": "6d6", "chi": 7, "status": ["stun","freeze","slow","blind"] }
+        ]
+      },
+      "Forma da Agua": {
+        "tier": 4, "pos": "def", "reqs": { "AGI": 9, "CHI": 7, "ESP": 4 },
+        "req": ["Corrente Submarina","Esquiva Fluida"],
+        "effect": { "type": "def", "desc": "Reduz dano fisico em 50% por 3 turnos. Restaura 1d4 chi por turno enquanto ativo.", "dice": "1d4/t", "chi": 4, "status": ["regen","shield"] },
+        "attacks": [
+          { "n": "Golpe Fluido", "d": "O corpo flui em torno do inimigo e ataca de angulo impossivel.", "dmg": "3d6+2", "chi": 4, "status": ["slow"] },
+          { "n": "Forma Liquida", "d": "O dobrador dissolve-se e recondensa diretamente no inimigo.", "dmg": "4d6", "chi": 5, "status": ["stun"] },
+          { "n": "Onda Pessoal", "d": "Uma onda de agua emerge do proprio corpo do dobrador.", "dmg": "4d6+2", "chi": 5, "status": ["slow","freeze"] },
+          { "n": "Forma do Rio", "d": "Move-se como um rio — imparavel, constante e inevitavel.", "dmg": "4d8", "chi": 5, "status": ["slow","root"] },
+          { "n": "Agua que Corta", "d": "A agua fluida comprime-se e torna-se um cortador preciso.", "dmg": "5d6", "chi": 6, "status": ["bleed","slow"] },
+          { "n": "Corpo de Oceano", "d": "O corpo e o oceano — ataque de area total ao redor.", "dmg": "5d6+3", "chi": 6, "status": ["stun","freeze"] },
+          { "n": "Forma do Tsunami", "d": "O corpo amplifica-se numa onda colossal devastadora.", "dmg": "6d6", "chi": 7, "status": ["stun","slow"] },
+          { "n": "Fusao Aquatica", "d": "O dobrador funde-se com a agua ao redor — invisivel e letal.", "dmg": "6d6+2", "chi": 7, "status": ["stun","freeze","blind"] },
+          { "n": "Forma da Lua Cheia", "d": "A lua cheia amplifica a forma — poder maximo atingido.", "dmg": "7d6", "chi": 8, "status": ["stun","freeze","slow"] },
+          { "n": "A Agua Absoluta", "d": "O dobrador e a agua — indistinguiveis e absolutamente fatais.", "dmg": "8d6", "chi": 9, "status": ["stun","freeze","slow","blind"] }
+        ]
+      },
+      "Escudo Aquatico": {
+        "tier": 1, "pos": "def", "reqs": { "FOR": 2, "CHI": 1, "RES": 1 },
+        "req": [],
+        "effect": { "type": "def", "desc": "Absorve 2d8 dano. Se o escudo for partido, explode causando 1d6 slow a proximos.", "dice": "2d8", "chi": 2, "status": ["shield"] },
+        "attacks": [
+          { "n": "Escudo em Colapso", "d": "O escudo cede propositalmente — explode em onda de agua.", "dmg": "2d6", "chi": 2, "status": ["slow"] },
+          { "n": "Barreira Pulsante", "d": "O escudo pulsa e empurra violentamente inimigos proximos.", "dmg": "2d6+2", "chi": 3, "status": ["slow","stun"] },
+          { "n": "Escudo de Gelo", "d": "O escudo congela — mais resistente e fere ao tocar.", "dmg": "3d4+2", "chi": 3, "status": ["freeze"] },
+          { "n": "Barreira Expansiva", "d": "O escudo expande para cobrir aliados proximos.", "dmg": "2d8", "chi": 3, "status": ["shield","slow"] },
+          { "n": "Escudo Explosivo", "d": "O escudo explode ao ser partido — onda radial devastadora.", "dmg": "3d6", "chi": 4, "status": ["stun","slow"] },
+          { "n": "Cortina de Agua", "d": "Uma cortina de agua que bloqueia projéteis completamente.", "dmg": "3d6+2", "chi": 4, "status": ["slow","freeze"] },
+          { "n": "Escudo do Oceano", "d": "Alimentado pelo oceano — absorve enormes quantidades de dano.", "dmg": "4d6", "chi": 4, "status": ["shield"] },
+          { "n": "Fortaleza Aquatica", "d": "O escudo expande em fortaleza completa de agua.", "dmg": "4d6+2", "chi": 5, "status": ["shield","slow"] },
+          { "n": "Escudo da Lua", "d": "Energia lunar amplifica o escudo — quase impenetravel.", "dmg": "4d8", "chi": 5, "status": ["shield","freeze"] },
+          { "n": "Mar Protetor", "d": "O oceano inteiro protege o dobrador — poder absoluto.", "dmg": "5d6+3", "chi": 6, "status": ["shield","freeze","slow"] }
+        ]
+      }
+    },
+    "earth": {
+      "nota": "Habilidades em falta: Visao Sismica, Vontade Inabalavel, Visao Profunda, Memoria da Pedra, Voz da Terra, Surf de Terra, Passo Sismico, Tunel Rapido, Plataforma Elevatoria, Deslize Sismico, Salto de Catapulta, Fantasma de Terra, Muralha de Terra — ver ficheiro separado earth_patch.json se necessario pela dimensao."
+    },
+    "air": {
+      "nota": "Habilidades em falta: Desapego Total, Ligacao ao Espirito, Projecao Espiritual, Respiracao Cosmica, Fusao Espiritual, Voo com Planador, Esfera de Ar, Correntes Globais, Esquiva Perfeita, Voo Livre, Escudo de Ar — ver ficheiro separado air_patch.json se necessario pela dimensao."
+    },
+    "none": {
+      "nota": "Habilidades em falta: Resistencia Mental, Visao de Combate, Chi Bloqueado, Serenidade do Kyoshi, Espirito Inquebravel, Corrida de Telhados, Cables e Ganchos, Evasao Extrema, Sombra, Forca Bruta, Armadura Pesada — ver ficheiro separado none_patch.json se necessario pela dimensao."
+    }
+  },
+
+  "integration_notes": {
+    "como_usar": [
+      "1. Importar este JSON na logica do widget existente.",
+      "2. Usar 'patch_skills' para substituir ou complementar habilidades sem ataques na v5.",
+      "3. Usar 'character_system.stats_formulas' para calcular os stats derivados da ficha.",
+      "4. Usar 'character_system.sub_skill_slots' para gerir os slots de sub-habilidades.",
+      "5. Usar 'items_database' para popular o inventario na ficha de personagem.",
+      "6. Usar 'character_sheet_schema' como modelo de objeto para cada personagem."
+    ],
+    "calculo_slots": "slots_totais = slots_base(nivel) + slots_pergaminhos. slots_base = 2 + Math.floor(nivel / 3).",
+    "calculo_stats": {
+      "vida": "10 + (nivel * 8) + (FOR * 3)",
+      "espirito": "8 + (nivel * 6) + (ESP * 3)",
+      "chi": "6 + (nivel * 5) + (CHI * 4)",
+      "defesa": "(RES * 2) + nivel",
+      "esquiva": "(AGI * 2) + PER"
+    }
+  }
+}
