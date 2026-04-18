@@ -14,28 +14,27 @@ Sistema de RPG customizado inspirado em **Avatar: The Last Air Bender**, estilo 
 
 ---
 
-## Arquitetura Proposta
+## Arquitetura
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Frontend      │────▶│   Backend API    │────▶│   Supabase      │
-│   (Vue.js 3 +   │     │   (Node.js +     │     │   (PostgreSQL   │
-│   Tailwind CSS) │◀────│   Express)       │◀────│   + Auth)       │
+│   Frontend      │────▶│  Netlify         │────▶│   Supabase      │
+│   (HTML + CSS + │     │  Functions       │     │   (PostgreSQL   │
+│   JavaScript)   │◀────│  (serverless)    │◀────│   + Auth)       │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
         │                       │                        │
         ▼                       ▼                        ▼
-  Netlify (free)         Railway/Render (free)    Supabase (free tier)
+  Netlify (free)          Incluído no Netlify     Supabase (free tier)
 ```
 
-### Por que estas escolhas?
+### Stack Tecnológico
 
 | Componente | Tecnologia | Justificativa |
 |------------|------------|---------------|
-| Frontend | Vue.js 3 + Tailwind | Reatividade para filtros, curva suave, responsivo nativo |
-| Backend | Node.js + Express | Leve, iterativo, ecosysteme vasto |
+| Frontend | HTML + CSS + JS (ES6+) | Conhecido pela equipa, `avatar_rpg_v6.html` já está próximo do design final |
+| Backend | Netlify Functions | Serverless, sem servidor dedicado, escala a zero (free) |
 | Database | Supabase | Auth incluso, real-time, backups, 500MB free |
-| Deploy FE | Netlify | Deploy automático do Git, custom domain free |
-| Deploy BE | Railway | 500hrs/mês free, Node.js nativo |
+| Deploy | Netlify | Deploy automático do Git, custom domain free, functions incluídas |
 
 ---
 
@@ -156,42 +155,29 @@ Status válidos: burn, freeze, shock, blind, poison, slow, stun, regen, shield, 
 
 ---
 
-## Estrutura do Projeto (Proposta)
+## Estrutura do Projeto
 
 ```
 avatar-rpg/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── CharacterSheet.vue
-│   │   │   ├── AttributePanel.vue
-│   │   │   ├── SkillTree.vue
-│   │   │   └── SkillCard.vue
-│   │   ├── views/
-│   │   │   ├── Login.vue
-│   │   │   ├── Dashboard.vue
-│   │   │   └── CharacterEditor.vue
-│   │   ├── stores/
-│   │   │   └── character.js (Pinia)
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   └── App.vue
-│   ├── public/
-│   └── package.json
-├── backend/
-│   ├── src/
-│   │   ├── routes/
-│   │   │   ├── auth.js
-│   │   │   ├── characters.js
-│   │   │   └── import.js
-│   │   ├── middleware/
-│   │   │   └── session.js
-│   │   └── index.js
-│   └── package.json
+├── public/
+│   ├── index.html          # Página principal (baseado em avatar_rpg_v6.html)
+│   ├── css/
+│   │   └── styles.css      # Estilos customizados
+│   └── js/
+│       ├── app.js          # Lógica principal
+│       ├── character.js    # Gestão de personagem
+│       ├── skill-tree.js   # Árvore de habilidades
+│       └── api.js          # Chamadas ao backend (Netlify Functions)
+├── netlify/
+│   └── functions/
+│       ├── auth.js         # Login/logout
+│       ├── characters.js   # CRUD de personagens
+│       └── import.js       # Importar/exportar JSON
 ├── database/
-│   └── schema.sql (tabelas Supabase)
+│   └── schema.sql          (tabelas Supabase)
 ├── Initial Files/
 │   └── (arquivos atuais de referência)
+├── netlify.toml            (configuração do Netlify)
 └── README.md
 ```
 
@@ -199,12 +185,12 @@ avatar-rpg/
 
 ## Próximos Passos Imediatos
 
-1. **Configurar repositório Git** com estrutura proposta
+1. **Configurar repositório Git** com nova estrutura
 2. **Criar projeto Supabase** (free tier) e configurar tabelas
-3. **Setup do frontend Vue.js** com Tailwind
-4. **Implementar login simples** (nome do personagem → session token)
-5. **Criar ficha de personagem** baseada no JSON atual
-6. **Implementar auto-save** com debounce
+3. **Adaptar `avatar_rpg_v6.html`** para a nova estrutura (HTML + CSS + JS modular)
+4. **Configurar Netlify Functions** (criar `netlify.toml` e primeira função)
+5. **Implementar login simples** (nome do personagem → session token via Supabase Auth)
+6. **Criar ficha de personagem** com auto-save (debounce 2s)
 7. **Exportar/Importar JSON**
 
 ---
