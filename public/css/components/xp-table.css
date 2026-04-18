@@ -1,0 +1,38 @@
+/* ===================================
+   XP Table
+   =================================== */
+
+.xp-page {
+  max-width: 700px;
+}
+
+.xp-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.xp-tbl th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border2);
+  color: var(--text2);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.xp-tbl td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.xp-tbl tr:nth-child(even) td {
+  background: var(--bg2);
+}
+
+.xp-tbl tr.mile td {
+  background: #1a1408;
+  color: var(--gold);
+  font-weight: 600;
+}

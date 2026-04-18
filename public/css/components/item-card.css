@@ -1,0 +1,190 @@
+/* ===================================
+   Item Cards & Inventory
+   =================================== */
+
+/* Items Page */
+.items-page {}
+
+/* Items Navigation */
+.items-nav {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.icat-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.icat-btn:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.icat-btn.on {
+  border-color: var(--green);
+  color: var(--green);
+  background: #081408;
+}
+
+/* Items Grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 8px;
+}
+
+/* Item Card */
+.item-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px;
+}
+
+.item-card:hover {
+  border-color: var(--border2);
+}
+
+.item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.item-desc {
+  font-size: 10px;
+  color: var(--text2);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+/* Item Chips */
+.item-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.item-chip {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.ic-dmg {
+  background: #1a0808;
+  color: #e08060;
+}
+
+.ic-def {
+  background: #08101a;
+  color: #5090d0;
+}
+
+.ic-price {
+  background: #1a1208;
+  color: #c0a030;
+}
+
+.ic-wt {
+  background: #101418;
+  color: #8090a0;
+}
+
+/* Element Chips */
+.ic-elem {
+  border-radius: 3px;
+  font-size: 9px;
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+.ic-fire {
+  background: #1a0808;
+  color: #e05a2a;
+}
+
+.ic-water {
+  background: #08101a;
+  color: #2a7adf;
+}
+
+.ic-earth {
+  background: #0a1408;
+  color: #4a9920;
+}
+
+.ic-air {
+  background: #1a1008;
+  color: #c07510;
+}
+
+.ic-none {
+  background: #101418;
+  color: #7a8a9a;
+}
+
+.ic-special {
+  background: #1a1208;
+  color: #c0a030;
+}
+
+/* Add to Inventory Button */
+.add-inv-btn {
+  margin-top: 6px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.add-inv-btn:hover {
+  color: var(--green);
+  border-color: var(--green);
+}
+
+/* Active Skills List */
+.active-skills-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.active-skill-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: var(--bg3);
+  margin-bottom: 3px;
+  font-size: 11px;
+}
+
+.rem-btn {
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--red);
+  color: var(--red);
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.rem-btn:hover {
+  background: #1a0808;
+}

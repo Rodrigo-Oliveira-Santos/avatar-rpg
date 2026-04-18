@@ -14,7 +14,45 @@ Sistema de RPG customizado inspirado em **Avatar: The Last Air Bender**, estilo 
 
 ---
 
-## Arquitetura
+## Arquitetura Multi-Site (Visão Futura)
+
+Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura deve acomodar:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PORTAL HUB (futuro)                      │
+│  Uma página inicial que lista e linka para todos os sites   │
+└─────────────────────────────────────────────────────────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│   Avatar RPG    │  │   Site 2        │  │   Site 3        │
+│   (atual)       │  │   (futuro)      │  │   (futuro)      │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+**Princípios de arquitetura:**
+- Cada site é um módulo independente (pode ser desenvolvido/deployado separadamente)
+- O Hub é uma camada de navegação que referencia os módulos
+- Nenhum design específico necessário agora — apenas manter a estrutura flexível
+
+**Estrutura sugerida para o futuro:**
+```
+portal/
+├── hub/                 # Landing page com links para todos os sites
+│   └── index.html
+├── sites/
+│   ├── avatar-rpg/      # Este projeto (mover para cá futuramente)
+│   ├── site-2/          # Futuro projeto
+│   └── site-3/          # Futuro projeto
+└── shared/              # Recursos compartilhados (auth, utils, styles)
+```
+
+Para agora: desenvolver o Avatar RPG como projeto standalone. Manter a consciência de que a estrutura de pastas e caminhos devem ser fáceis de integrar num hub multi-site no futuro.
+
+---
+
+## Arquitetura Técnica (Avatar RPG)
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
@@ -157,6 +195,8 @@ Status válidos: burn, freeze, shock, blind, poison, slow, stun, regen, shield, 
 
 ## Estrutura do Projeto
 
+### Estrutura Atual (Standalone)
+
 ```
 avatar-rpg/
 ├── public/
@@ -179,6 +219,26 @@ avatar-rpg/
 │   └── (arquivos atuais de referência)
 ├── netlify.toml            (configuração do Netlify)
 └── README.md
+```
+
+### Estrutura Futura (Multi-Site Portal)
+
+```
+portal/
+├── hub/
+│   ├── index.html          # Landing page com navegação para todos os sites
+│   └── css/
+├── sites/
+│   ├── avatar-rpg/         # Este projeto (reestruturar para cá)
+│   │   ├── public/
+│   │   ├── netlify/
+│   │   └── ...
+│   ├── site-2/             # Futuro projeto
+│   └── site-3/             # Futuro projeto
+└── shared/                 # Auth, utilities, styles comuns
+    ├── auth/
+    ├── utils/
+    └── styles/
 ```
 
 ---

@@ -95,3 +95,11 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /.idea/
+
+# Project specific
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+.netlify/

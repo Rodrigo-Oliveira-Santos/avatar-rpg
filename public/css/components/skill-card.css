@@ -1,0 +1,487 @@
+/* ===================================
+   Skill Cards
+   =================================== */
+
+/* Category Tabs */
+.cat-tabs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.ctab {
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all .12s;
+}
+
+.ctab:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.ctab.on {
+  border-width: 1.5px;
+}
+
+.ctab.spirit.on {
+  border-color: var(--spirit);
+  color: var(--spirit);
+  background: #1a1830;
+}
+
+.ctab.agility.on {
+  border-color: var(--agility);
+  color: var(--agility);
+  background: #0a1a14;
+}
+
+.ctab.precise.on {
+  border-color: var(--precise);
+  color: var(--precise);
+  background: #1a0810;
+}
+
+.ctab.brute.on {
+  border-color: var(--brute);
+  color: var(--brute);
+  background: #1a0a04;
+}
+
+/* Category Panel */
+.cat-panel {
+  display: none;
+}
+
+.cat-panel.on {
+  display: block;
+}
+
+.cat-desc {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 10px;
+  line-height: 1.5;
+  padding: 8px;
+  background: var(--bg2);
+  border-radius: 6px;
+  border-left: 2px solid var(--border2);
+}
+
+.tier-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin: 10px 0 5px;
+}
+
+/* Skills Grid */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* Skill Card */
+.sc {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px;
+  background: var(--bg2);
+  cursor: pointer;
+  transition: all .12s;
+  position: relative;
+}
+
+.sc:hover:not(.locked) {
+  border-color: var(--border2);
+  background: var(--bg3);
+}
+
+.sc.locked {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.sc.on {
+  border-width: 1.5px;
+}
+
+.sc.spirit.on {
+  border-color: var(--spirit);
+  background: #1a1830;
+}
+
+.sc.agility.on {
+  border-color: var(--agility);
+  background: #0a1a14;
+}
+
+.sc.precise.on {
+  border-color: var(--precise);
+  background: #1a0810;
+}
+
+.sc.brute.on {
+  border-color: var(--brute);
+  background: #1a0a04;
+}
+
+.sc.legend {
+  background: #1a1208;
+}
+
+.sc.legend.on {
+  border-color: var(--gold);
+}
+
+/* Skill Card Dot Indicator */
+.sdot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border2);
+}
+
+.sc.on .sdot {
+  background: var(--agility);
+}
+
+/* Skill Name & Description */
+.sname {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+  padding-right: 14px;
+}
+
+.sdesc {
+  font-size: 10px;
+  color: var(--text2);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+/* Skill Meta */
+.smeta {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.sbadge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.sb-t1 {
+  background: #1e2535;
+  color: #8a9ab5;
+}
+
+.sb-t2 {
+  background: #1a1008;
+  color: #c07510;
+}
+
+.sb-t3 {
+  background: #180e28;
+  color: #9070d0;
+}
+
+.sb-t4 {
+  background: #1a0a04;
+  color: #e05a2a;
+}
+
+.sb-leg {
+  background: #1a1208;
+  color: #c0a030;
+}
+
+/* Position Badge */
+.pos-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.pos-def {
+  background: #08101a;
+  color: #2a7adf;
+}
+
+.pos-off {
+  background: #1a0e08;
+  color: #e05a2a;
+}
+
+.pos-pass {
+  background: #101418;
+  color: #7a8a9a;
+}
+
+.pos-any {
+  background: #0a1408;
+  color: #4a9920;
+}
+
+/* Requirement Chips */
+.req-attr {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.chip {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.cFOR {
+  background: #1a0808;
+  color: #e07050;
+}
+
+.cAGI {
+  background: #0a1808;
+  color: #60c070;
+}
+
+.cCHI {
+  background: #10081a;
+  color: #9070d0;
+}
+
+.cPER {
+  background: #08101a;
+  color: #5090e0;
+}
+
+.cRES {
+  background: #0a1408;
+  color: #70b050;
+}
+
+.cESP {
+  background: #1a0814;
+  color: #d070a0;
+}
+
+.req-line {
+  font-size: 9px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* Effects & Attacks Section */
+.eff-section,
+.atk-section {
+  margin-top: 7px;
+  border-top: 1px solid var(--border);
+  padding-top: 7px;
+}
+
+.sec-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: 4px;
+}
+
+.atk-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 3px;
+  align-items: start;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.atk-row:last-child {
+  border-bottom: none;
+}
+
+.an {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.ad {
+  font-size: 9px;
+  color: var(--text3);
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.atk-chips {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.achip {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ac-dmg {
+  background: #1a0808;
+  color: #e08060;
+}
+
+.ac-chi {
+  background: #10081a;
+  color: #9070d0;
+}
+
+.ac-res {
+  background: #0a1808;
+  color: #50b070;
+}
+
+/* Status Badges */
+.st {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 500;
+  display: inline-block;
+  margin: 1px;
+}
+
+.s-burn {
+  background: #1a0808;
+  color: #e07050;
+}
+
+.s-freeze {
+  background: #08101a;
+  color: #5090d0;
+}
+
+.s-shock {
+  background: #10081a;
+  color: #9070d0;
+}
+
+.s-blind {
+  background: #0a0a0a;
+  color: #b0b0b0;
+}
+
+.s-slow {
+  background: #1a1008;
+  color: #c09030;
+}
+
+.s-stun {
+  background: #1a0810;
+  color: #d06090;
+}
+
+.s-poison {
+  background: #0a1408;
+  color: #60b050;
+}
+
+.s-regen {
+  background: #081408;
+  color: #50c070;
+}
+
+.s-shield {
+  background: #081018;
+  color: #4080c0;
+}
+
+.s-silence {
+  background: #141414;
+  color: #808090;
+}
+
+.s-bleed {
+  background: #1a0808;
+  color: #e05050;
+}
+
+.s-root {
+  background: #0a1408;
+  color: #70a050;
+}
+
+.s-fear {
+  background: #181018;
+  color: #a070b0;
+}
+
+/* Slot Picker */
+.slot-picker {
+  margin-top: 6px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.slot-lbl {
+  font-size: 9px;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+
+.slot-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.slot-btn {
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 9px;
+  transition: all .1s;
+}
+
+.slot-btn:hover {
+  border-color: var(--border2);
+}
+
+.slot-btn.active {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #1a1408;
+}

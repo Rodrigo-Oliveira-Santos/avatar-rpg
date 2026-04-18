@@ -1,0 +1,53 @@
+/* ===================================
+   Character Section
+   =================================== */
+
+.char-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.char-section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Field Row */
+.field-row {
+  margin-bottom: 8px;
+}
+
+.field-lbl {
+  font-size: 10px;
+  color: var(--text2);
+  margin-bottom: 3px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 5px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 12px;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: var(--border2);
+}
+
+textarea.field-input {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}

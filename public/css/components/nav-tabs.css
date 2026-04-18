@@ -1,0 +1,72 @@
+/* ===================================
+   Navigation Tabs
+   =================================== */
+
+.nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border-radius: 6px 6px 0 0;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .15s;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-btn:hover {
+  color: var(--text);
+  background: var(--bg2);
+}
+
+.nav-btn.on {
+  color: var(--text);
+  border-bottom-color: var(--fire);
+  background: var(--bg2);
+}
+
+/* Element-specific active states */
+.nav-btn.fire.on {
+  border-bottom-color: var(--fire);
+  color: var(--fire-light);
+}
+
+.nav-btn.water.on {
+  border-bottom-color: var(--water);
+  color: var(--water-light);
+}
+
+.nav-btn.earth.on {
+  border-bottom-color: var(--earth);
+  color: var(--earth-light);
+}
+
+.nav-btn.air.on {
+  border-bottom-color: var(--air);
+  color: var(--air-light);
+}
+
+.nav-btn.none.on {
+  border-bottom-color: var(--none);
+  color: var(--none-light);
+}
+
+.nav-btn.char.on {
+  border-bottom-color: var(--gold);
+  color: var(--gold);
+}
+
+.nav-btn.items-tab.on {
+  border-bottom-color: var(--green);
+  color: var(--green);
+}

@@ -1,0 +1,21 @@
+{
+  "name": "avatar-rpg",
+  "version": "1.0.0",
+  "description": "Avatar: The Last Airbender RPG — Web-based character management system",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve public -l 3000",
+    "build": "echo 'Static build - no bundler needed'"
+  },
+  "keywords": [
+    "rpg",
+    "avatar",
+    "character-sheet",
+    "tabletop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

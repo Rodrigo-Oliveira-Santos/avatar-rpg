@@ -1,0 +1,170 @@
+/* ===================================
+   AVATAR RPG — Main Styles
+   =================================== */
+
+/* CSS Variables */
+:root {
+  /* Base colors */
+  --bg: #0f1117;
+  --bg2: #161b25;
+  --bg3: #1e2535;
+
+  /* Borders */
+  --border: #2a3345;
+  --border2: #3a4a65;
+
+  /* Text */
+  --text: #e8edf5;
+  --text2: #8a9ab5;
+  --text3: #4a5a75;
+
+  /* Elements */
+  --fire: #e05a2a;
+  --fire-bg: #1a0e08;
+  --fire-light: #f09070;
+
+  --water: #2a7adf;
+  --water-bg: #08101a;
+  --water-light: #70b0f0;
+
+  --earth: #4a9920;
+  --earth-bg: #0a1408;
+  --earth-light: #80c050;
+
+  --air: #c07510;
+  --air-bg: #1a1008;
+  --air-light: #f0b050;
+
+  --none: #7a8a9a;
+  --none-bg: #10141a;
+  --none-light: #b0c0d0;
+
+  /* Categories */
+  --spirit: #7a70e0;
+  --agility: #20a070;
+  --precise: #d05080;
+  --brute: #e05a2a;
+
+  /* Special */
+  --gold: #c0a030;
+  --red: #e03030;
+  --green: #30c060;
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* App Container */
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Page Visibility */
+.page {
+  display: none;
+}
+
+.page.on {
+  display: block;
+}
+
+/* Layout - Two Columns */
+.two-col {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+/* Character Page Grid */
+.char-page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Element Selector */
+.elem-sel {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.esbtn {
+  padding: 7px 16px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all .15s;
+}
+
+.esbtn:hover {
+  color: var(--text);
+  background: var(--bg2);
+}
+
+.esbtn.fire.on {
+  border-bottom-color: var(--fire);
+  color: var(--fire-light);
+  background: var(--bg2);
+}
+
+.esbtn.water.on {
+  border-bottom-color: var(--water);
+  color: var(--water-light);
+  background: var(--bg2);
+}
+
+.esbtn.earth.on {
+  border-bottom-color: var(--earth);
+  color: var(--earth-light);
+  background: var(--bg2);
+}
+
+.esbtn.air.on {
+  border-bottom-color: var(--air);
+  color: var(--air-light);
+  background: var(--bg2);
+}
+
+.esbtn.none.on {
+  border-bottom-color: var(--none);
+  color: var(--none-light);
+  background: var(--bg2);
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .char-page {
+    grid-template-columns: 1fr;
+  }
+
+  .attr-panel {
+    position: static;
+  }
+}

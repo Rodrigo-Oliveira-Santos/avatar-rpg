@@ -3,6 +3,8 @@
 ## Project Overview
 Web-based RPG character management system inspired by Avatar: The Last Airbender. Single-player focused with simple authentication (character name), skill trees, and JSON import/export.
 
+**Contexto mais amplo:** Este é o primeiro "sub-projeto" de um portal web mais amplo. A arquitetura deve permitir que futuros sites/tools sejam adicionados como módulos independentes, com uma página inicial (landing/hub) para navegação entre eles.
+
 ## Current State
 - **Prototype files:** `index.html`, `patch.js.txt` (monolithic HTML/JS)
 - **Game data:** `Initial Files/*.json` (skill definitions for Fire, Water, Earth, Air, No-Bending)
