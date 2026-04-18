@@ -1,0 +1,888 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+body{font-family:var(--font-sans)}
+.app{padding:.75rem 0}
+.top-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1rem}
+.etab{padding:6px 13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;font-size:12px;font-weight:500;transition:all .15s}
+.etab:hover{background:var(--color-background-secondary)}
+.etab.fire.on{border-color:#D85A30;background:#FAECE7;color:#712B13;border-width:1.5px}
+.etab.water.on{border-color:#378ADD;background:#E6F1FB;color:#0C447C;border-width:1.5px}
+.etab.earth.on{border-color:#639922;background:#EAF3DE;color:#27500A;border-width:1.5px}
+.etab.air.on{border-color:#BA7517;background:#FAEEDA;color:#633806;border-width:1.5px}
+.etab.none.on{border-color:#888780;background:#F1EFE8;color:#444441;border-width:1.5px}
+.etab.xp-tab.on{border-color:#7F77DD;background:#EEEDFE;color:#3C3489;border-width:1.5px}
+.main-layout{display:grid;grid-template-columns:220px 1fr;gap:12px;align-items:start}
+.attr-panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px;position:sticky;top:8px}
+.attr-title{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.level-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px}
+.level-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.level-lbl{font-size:11px;color:var(--color-text-tertiary)}
+.pts-avail{font-size:12px;color:var(--color-text-secondary);margin-bottom:10px;padding:6px 8px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.pts-num{font-weight:500;color:var(--color-text-primary)}
+.attr-row{margin-bottom:8px}
+.attr-name{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;display:flex;justify-content:space-between}
+.attr-bar-bg{height:6px;background:var(--color-background-secondary);border-radius:3px;margin-bottom:4px;overflow:hidden}
+.attr-bar-fill{height:100%;border-radius:3px;transition:width .2s}
+.attr-controls{display:flex;align-items:center;gap:4px}
+.attr-btn{width:22px;height:22px;border-radius:4px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;font-size:14px;line-height:1;color:var(--color-text-primary);display:flex;align-items:center;justify-content:center}
+.attr-btn:hover{background:var(--color-background-secondary)}
+.attr-val{font-size:13px;font-weight:500;color:var(--color-text-primary);min-width:24px;text-align:center}
+.xp-bar-wrap{margin-top:10px;padding-top:10px;border-top:0.5px solid var(--color-border-tertiary)}
+.xp-lbl{font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px;display:flex;justify-content:space-between}
+.xp-bar-bg{height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+.xp-bar-fill{height:100%;background:#7F77DD;border-radius:3px;transition:width .3s}
+.xp-add-btn{margin-top:6px;width:100%;padding:5px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;font-size:11px}
+.xp-add-btn:hover{background:var(--color-background-secondary)}
+.right-panel{}
+.cat-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.75rem}
+.ctab{padding:5px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;font-size:11px;font-weight:500}
+.ctab:hover{background:var(--color-background-secondary)}
+.ctab.on{border-width:1px}
+.ctab.spirit.on{border-color:#7F77DD;background:#EEEDFE;color:#3C3489}
+.ctab.agility.on{border-color:#1D9E75;background:#E1F5EE;color:#085041}
+.ctab.precise.on{border-color:#D4537E;background:#FBEAF0;color:#72243E}
+.ctab.brute.on{border-color:#D85A30;background:#FAECE7;color:#712B13}
+.cat-panel{display:none}.cat-panel.on{display:block}
+.cat-desc{font-size:11px;color:var(--color-text-secondary);margin-bottom:.75rem;line-height:1.5}
+.tier-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:7px}
+.sc{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px;background:var(--color-background-primary);cursor:pointer;transition:all .12s;position:relative}
+.sc:hover:not(.locked){border-color:var(--color-border-secondary)}
+.sc.locked{opacity:.4;cursor:not-allowed}
+.sc.on{border-width:1px}
+.sc.precise.on{border-color:#D4537E;background:#FBEAF0}
+.sc.brute.on{border-color:#D85A30;background:#FAECE7}
+.sc.spirit.on{border-color:#7F77DD;background:#EEEDFE}
+.sc.agility.on{border-color:#1D9E75;background:#E1F5EE}
+.sname{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px;padding-right:12px}
+.sdesc{font-size:10px;color:var(--color-text-secondary);line-height:1.4;margin-bottom:6px}
+.sdot{position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:50%;background:var(--color-border-secondary)}
+.sc.on .sdot{background:#1D9E75}
+.sbadge{font-size:9px;padding:1px 5px;border-radius:99px;font-weight:500;display:inline-block;margin-bottom:4px}
+.sbadge.t1{background:#F1EFE8;color:#5F5E5A}
+.sbadge.t2{background:#FAEEDA;color:#633806}
+.sbadge.t3{background:#EEEDFE;color:#3C3489}
+.sbadge.t4{background:#FAECE7;color:#712B13}
+.sbadge.legend{background:#F5C4B3;color:#4A1B0C}
+.req-attr{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+.attr-chip{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:500}
+.chip-f{background:#FAECE7;color:#712B13}
+.chip-w{background:#E6F1FB;color:#0C447C}
+.chip-e{background:#EAF3DE;color:#27500A}
+.chip-a{background:#FAEEDA;color:#633806}
+.chip-s{background:#EEEDFE;color:#3C3489}
+.chip-r{background:#F1EFE8;color:#444441}
+.pos-badge{font-size:9px;padding:1px 6px;border-radius:4px;font-weight:500;display:inline-block}
+.pos-def{background:#E6F1FB;color:#0C447C}
+.pos-off{background:#FAECE7;color:#712B13}
+.pos-any{background:#EAF3DE;color:#27500A}
+.pos-pass{background:#F1EFE8;color:#444441}
+.status-badge{font-size:9px;padding:1px 5px;border-radius:4px;font-weight:500;display:inline-block}
+.sb-burn{background:#FAECE7;color:#712B13}
+.sb-freeze{background:#E6F1FB;color:#0C447C}
+.sb-shock{background:#EEEDFE;color:#3C3489}
+.sb-blind{background:#F1EFE8;color:#2C2C2A}
+.sb-poison{background:#EAF3DE;color:#27500A}
+.sb-slow{background:#FAEEDA;color:#633806}
+.sb-stun{background:#F4C0D1;color:#72243E}
+.sb-regen{background:#E1F5EE;color:#085041}
+.sb-shield{background:#B5D4F4;color:#0C447C}
+.sb-silence{background:#F1EFE8;color:#444441}
+.meta-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:5px}
+.req-line{font-size:9px;color:var(--color-text-tertiary);margin-top:3px}
+.attacks-section{margin-top:6px;border-top:0.5px solid var(--color-border-tertiary);padding-top:6px}
+.attacks-label{font-size:9px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.attack-row{display:grid;grid-template-columns:1fr auto auto;gap:3px;align-items:start;padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.attack-row:last-child{border-bottom:none}
+.attack-left{}
+.aname{font-size:10px;color:var(--color-text-primary);font-weight:500}
+.adesc{font-size:9px;color:var(--color-text-tertiary);line-height:1.3;margin-top:1px}
+.achip{font-size:9px;padding:1px 4px;border-radius:3px;font-weight:500;white-space:nowrap;align-self:start}
+.achip.dmg{background:#FAECE7;color:#712B13}
+.achip.chi-cost{background:#EEEDFE;color:#3C3489}
+.achip.chi-restore{background:#E1F5EE;color:#085041}
+.xp-table{width:100%;font-size:12px;border-collapse:collapse}
+.xp-table th{text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--color-border-secondary);font-weight:500;font-size:11px;color:var(--color-text-secondary)}
+.xp-table td{padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.xp-table tr:nth-child(even) td{background:var(--color-background-secondary)}
+.xp-table tr.milestone td{background:#EEEDFE;font-weight:500}
+</style>
+
+<div class="app">
+<h2 class="sr-only">Avatar RPG Sistema Completo</h2>
+<div class="top-bar">
+  <button class="etab fire on" onclick="showElem('fire')">Fogo</button>
+  <button class="etab water" onclick="showElem('water')">Agua</button>
+  <button class="etab earth" onclick="showElem('earth')">Terra</button>
+  <button class="etab air" onclick="showElem('air')">Ar</button>
+  <button class="etab none" onclick="showElem('none')">Sem Dobra</button>
+  <button class="etab xp-tab" onclick="showElem('xp')">Niveis e XP</button>
+</div>
+
+<div class="main-layout" id="game-layout">
+  <div class="attr-panel" id="attr-panel">
+    <div class="attr-title">Atributos</div>
+    <div class="level-row">
+      <div><div class="level-lbl">Nivel</div><div class="level-val" id="lv-disp">1</div></div>
+      <div style="text-align:right"><div class="level-lbl">XP total</div><div class="level-val" id="xp-disp">0</div></div>
+    </div>
+    <div class="pts-avail">Pontos disponiveis: <span class="pts-num" id="pts-avail">0</span></div>
+    <div id="attrs-container"></div>
+    <div class="xp-bar-wrap">
+      <div class="xp-lbl"><span id="xp-cur-lbl">0 XP</span><span id="xp-nxt-lbl">300 XP</span></div>
+      <div class="xp-bar-bg"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+      <button class="xp-add-btn" onclick="addXP()">+ 100 XP (teste)</button>
+    </div>
+  </div>
+  <div class="right-panel" id="right-panel"></div>
+</div>
+
+<div id="xp-panel" style="display:none;padding-top:8px">
+  <div style="margin-bottom:12px">
+    <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px">Sistema de Progressao</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6">
+      Nivel maximo: <strong>40</strong>. Cada nivel concede <strong>3 pontos de atributo</strong> para distribuir livremente. Os atributos desbloqueiam habilidades — nao e um gasto de ponto por habilidade, e uma combinacao de valores minimos que permite o acesso. A curva de XP e exponencial-suavizada: rapido no inicio, desafiante no fim.
+    </div>
+  </div>
+  <div style="font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tabela de Niveis</div>
+  <table class="xp-table">
+    <thead><tr><th>Nivel</th><th>XP necessario</th><th>XP acumulado</th><th>Pontos ganhos</th><th>Pontos totais</th><th>Marco</th></tr></thead>
+    <tbody id="xp-tbody"></tbody>
+  </table>
+</div>
+</div>
+
+<script>
+const ATTRS_DEF = [
+  {k:"FOR",name:"Forca",color:"#D85A30",bar:"#F0997B"},
+  {k:"AGI",name:"Agilidade",color:"#1D9E75",bar:"#5DCAA5"},
+  {k:"CHI",name:"Chi",color:"#7F77DD",bar:"#AFA9EC"},
+  {k:"PER",name:"Percepcao",color:"#378ADD",bar:"#85B7EB"},
+  {k:"RES",name:"Resistencia",color:"#BA7517",bar:"#EF9F27"},
+  {k:"ESP",name:"Espirito",color:"#D4537E",bar:"#ED93B1"},
+];
+
+const XP_TABLE = (()=>{
+  const t=[];
+  let acc=0;
+  for(let lv=1;lv<=40;lv++){
+    const needed = lv===1?0:Math.round(200*Math.pow(lv-1,1.55));
+    const pts=3;
+    const totalPts=(lv-1)*3;
+    const milestones={5:"Aprendiz",10:"Discipulo",15:"Praticante",20:"Veterano",25:"Especialista",30:"Mestre",35:"Grande Mestre",40:"Lendario"};
+    t.push({lv,needed,acc:lv===1?0:(acc+=needed),pts,totalPts,milestone:milestones[lv]||""});
+    if(lv===1) acc=0;
+  }
+  let running=0;
+  t.forEach((r,i)=>{if(i>0){running+=r.needed;r.acc=running;}});
+  return t;
+})();
+
+const STATUS = {
+  burn:{label:"Queimadura",cls:"sb-burn"},freeze:{label:"Congelamento",cls:"sb-freeze"},
+  shock:{label:"Choque",cls:"sb-shock"},blind:{label:"Cegueira",cls:"sb-blind"},
+  poison:{label:"Veneno",cls:"sb-poison"},slow:{label:"Lentidao",cls:"sb-slow"},
+  stun:{label:"Atordoado",cls:"sb-stun"},regen:{label:"Regeneracao",cls:"sb-regen"},
+  shield:{label:"Escudo",cls:"sb-shield"},silence:{label:"Silencio",cls:"sb-silence"}
+};
+
+const POS = {
+  def:{label:"Defensiva",cls:"pos-def"},off:{label:"Ofensiva",cls:"pos-off"},
+  any:{label:"Qualquer",cls:"pos-any"},pass:{label:"Passiva",cls:"pos-pass"}
+};
+
+function posHTML(p){const d=POS[p]||POS.any;return `<span class="pos-badge ${d.cls}">${d.label}</span>`;}
+function statusHTML(arr){if(!arr||!arr.length)return'';return arr.map(s=>{const d=STATUS[s];return d?`<span class="status-badge ${d.cls}">${d.label}</span>`:''}).join('');}
+function attrChipHTML(reqs){
+  return Object.entries(reqs).map(([k,v])=>{
+    const cls={FOR:'chip-f',AGI:'chip-a',CHI:'chip-s',PER:'chip-r',RES:'chip-e',ESP:'chip-w'}[k]||'chip-r';
+    return `<span class="attr-chip ${cls}">${k}${v}</span>`;
+  }).join('');
+}
+
+const CAT_LABELS={spirit:"Espiritualidade",agility:"Agilidade",precise:"Combate Preciso",brute:"Combate Bruto"};
+const CAT_DESCS={
+  fire:{spirit:"Ligacao ao chi interior e as formas espirituais de dobra.",agility:"Velocidade explosiva e mobilidade tridimensional.",precise:"Ataques cirurgicos e tecnicas que visam pontos vulneraveis.",brute:"Forca destrutiva maxima e poder de area."},
+  water:{spirit:"Ligacao ao ciclo lunar e a cura espiritual.",agility:"Fluidez de movimento e evasao constante.",precise:"Controlo cirurgico de agua, gelo e fluidos.",brute:"Ondas colossais e forca da lua cheia."},
+  earth:{spirit:"Comunhao com a terra viva e visao sismica.",agility:"Mobilidade sismica e movimentos subterraneos.",precise:"Projeteis controlados e dobra de metal.",brute:"Muralhas, colossos de pedra e terramotos."},
+  air:{spirit:"Desapego, meditacao e viagem espiritual.",agility:"Velocidade sobre-humana e evasao perfeita.",precise:"Vortices focados e cortes de vento invisiveis.",brute:"Tornados, explosoes de pressao e tempestades."},
+  none:{spirit:"Meditacao marcial e leitura de chi.",agility:"Acrobacia e velocidade que nenhum dobador espera.",precise:"Chi Blocking e golpes que neutralizam dobadores.",brute:"Forca fisica extrema e combate avassalador."}
+};
+
+const ELEMS = {
+fire:{tiers:[{t:"Iniciante",b:"t1"},{t:"Avancado",b:"t2"},{t:"Mestre",b:"t3"},{t:"Lendario",b:"t4"}],cats:{
+spirit:[
+  {n:"Meditacao do Fogo",d:"Entra em estado meditativo restaurando chi e amplificando o proximo ataque.",tier:0,req:[],pos:"pass",reqs:{CHI:2,ESP:1},
+   effect:{type:"restore",dice:"1d6",chi:0,status:["regen"],sdesc:"Restaura 1d6 chi. Aumenta dano do proximo ataque em +2."}},
+  {n:"Alento do Dragao",d:"Tecnica ancestral de respiracao que estabiliza o chi interno e purifica o espirito.",tier:0,req:[],pos:"pass",reqs:{CHI:2,ESP:2},
+   effect:{type:"restore",dice:"1d4",chi:0,status:["regen"],sdesc:"Restaura 1d4 chi por turno durante 3 turnos."}},
+  {n:"Chi Interior",d:"Sente o fluxo de chi de aliados e inimigos num raio de 10m. Revela dobadores disfarçados.",tier:1,req:["Meditacao do Fogo"],pos:"def",reqs:{CHI:4,ESP:3,PER:2},
+   effect:{type:"utility",dice:"-",chi:2,status:["blind"],sdesc:"Revela posicao de todos os seres com chi num raio de 10m por 3 turnos. Inimigos invisíveis ficam marcados."}},
+  {n:"Fogo Solar",d:"Canaliza energia do sol diretamente. Poder duplicado ao amanhecer e ao por do sol.",tier:1,req:["Alento do Dragao"],pos:"pass",reqs:{CHI:4,ESP:3},
+   effect:{type:"buff",dice:"1d4",chi:1,status:[],sdesc:"Restaura 1d4 chi. Durante amanhecer/por do sol, todo o dano de fogo duplica por 2 turnos."}},
+  {n:"Equilibrio Emocional",d:"Transforma raiva e medo em combustivel de chi puro. Imune a provocacoes.",tier:2,req:["Chi Interior"],pos:"pass",reqs:{CHI:6,ESP:5,RES:3},
+   effect:{type:"buff",dice:"1d8",chi:0,status:["regen"],sdesc:"Restaura 1d8 chi quando sofre dano emocional. Passivo permanente apos desbloquear."}},
+  {n:"Danca do Dragao",d:"Forma primordial de dobra. Movimentos fluidos que geram fogo sem agressividade.",tier:2,req:["Fogo Solar","Alento do Dragao"],pos:"off",reqs:{CHI:7,ESP:6,AGI:4},
+   effect:{type:"attack",dice:"3d6",chi:4,status:["burn"],sdesc:"Ataque de area de chamas fluidas. Inimigos no raio sofrem Queimadura 2 turnos."},
+   attacks:[
+    {n:"Passo do Dragao",d:"Um passo fluido que gera uma onda de calor lateral.",dmg:"2d6+2",chi:3,status:["burn"]},
+    {n:"Voo do Dragao",d:"Salto gracioso que liberta chamas ao aterrar.",dmg:"3d4+3",chi:4,status:["burn"]},
+    {n:"Garra do Dragao",d:"Movimento de garra que rasga com fogo concentrado.",dmg:"3d6",chi:4,status:[]},
+    {n:"Rugido do Dragao",d:"Expulsao violenta de calor que empurra todos os inimigos proximos.",dmg:"3d6+2",chi:5,status:["stun"]},
+    {n:"Cauda do Dragao",d:"Golpe giratório com rastro de chamas que persiste no chao.",dmg:"4d6",chi:5,status:["burn"]},
+    {n:"Asas do Dragao",d:"Expansao das maos que gera uma onda dupla lateral.",dmg:"4d6+2",chi:6,status:["burn"]},
+    {n:"Forma Completa",d:"Executa a forma do dragao inteira. Dano maximo e limpeza de chi.",dmg:"5d6",chi:7,status:["burn","stun"]},
+   ]},
+  {n:"Dobra de Energia",d:"Toca a essencia do chi de outro ser. Pode conceder ou retirar a capacidade de dobra.",tier:3,req:["Equilibrio Emocional","Danca do Dragao"],pos:"off",reqs:{CHI:10,ESP:10,RES:6},
+   effect:{type:"special",dice:"Especial",chi:10,status:["silence"],sdesc:"Remove permanentemente a capacidade de dobra de um alvo. Requer chi maximo e meditacao previa (1 turno de preparacao)."}},
+],
+agility:[
+  {n:"Propulsao Basica",d:"Usa jatos nos pes para saltos mais longos e aterragens suaves.",tier:0,req:[],pos:"off",reqs:{AGI:2,CHI:1},
+   effect:{type:"move",dice:"-",chi:1,status:[],sdesc:"Triplica o alcance de salto. Aterragem silenciosa. Pode usar em terreno inimigo sem custo de oportunidade."}},
+  {n:"Passo Ardente",d:"Surtos de velocidade curtos com propulsao de calor.",tier:0,req:[],pos:"off",reqs:{AGI:2,FOR:1},
+   effect:{type:"move",dice:"1d4",chi:1,status:["burn"],sdesc:"Move-se ate 3x velocidade normal num surto de 1 turno. Deixa rastro de calor que causa 1d4 dano a quem atravessar."}},
+  {n:"Corrida de Chamas",d:"Movimento continuo a alta velocidade com rastro de fogo no chao.",tier:1,req:["Propulsao Basica"],pos:"off",reqs:{AGI:4,CHI:3,FOR:2},
+   effect:{type:"move",dice:"1d6",chi:2,status:["burn"],sdesc:"Velocidade quadruplicada por 3 turnos. Rastro de fogo causa 1d6 queimadura a inimigos que pisarem."}},
+  {n:"Voo Rasante",d:"Plana a baixa altitude usando propulsao continua.",tier:1,req:["Passo Ardente","Propulsao Basica"],pos:"off",reqs:{AGI:4,CHI:3},
+   effect:{type:"move",dice:"-",chi:2,status:[],sdesc:"Voa a baixa altitude por ate 5 turnos. Imune a ataques de chao. Pode atacar de cima com +1 dado de bonus."}},
+  {n:"Propulsao Tripla",d:"Jatos em maos e pes simultaneamente para movimento 3D.",tier:2,req:["Corrida de Chamas","Voo Rasante"],pos:"off",reqs:{AGI:7,CHI:5,FOR:3},
+   effect:{type:"move",dice:"1d8",chi:3,status:["burn"],sdesc:"Movimento tridimensional completo por 4 turnos. Colisao intencional causa 1d8 dano por impacto de fogo."}},
+  {n:"Esquiva Flamejante",d:"Cada evasao bem sucedida deixa rastro de chamas na trajetoria.",tier:1,req:["Passo Ardente"],pos:"def",reqs:{AGI:4,PER:2},
+   effect:{type:"def",dice:"1d4",chi:1,status:["burn"],sdesc:"Ao esquivar com sucesso, o inimigo que errou recebe 1d4 de chamas no rosto. Chance de cegueira 20%."},
+   attacks:[
+    {n:"Contra-Esquiva",d:"Usa o proprio impeto do inimigo para o redirecionar para as chamas.",dmg:"1d6+2",chi:2,status:["burn"]},
+    {n:"Esquiva Ardente",d:"A evasao deixa uma corrente de fogo que queima quem atravessa.",dmg:"2d4",chi:2,status:["burn"]},
+    {n:"Desvio Explosivo",d:"Esquiva que culmina numa explosao de calor na direcao do atacante.",dmg:"2d6",chi:3,status:["stun"]},
+   ]},
+  {n:"Foguete Humano",d:"Propulsao maxima — velocidade extrema numa direcao.",tier:3,req:["Propulsao Tripla"],pos:"off",reqs:{AGI:10,CHI:7,FOR:5},
+   effect:{type:"attack",dice:"6d6",chi:8,status:["stun","burn"],sdesc:"Colisao catastrofica. Dano de impacto 6d6. Inimigo atordoado 2 turnos. Area ao redor sofre queimadura."},
+   attacks:[
+    {n:"Lancamento Direto",d:"Propulsao maxima em linha reta contra um alvo.",dmg:"4d6+4",chi:6,status:["stun"]},
+    {n:"Foguete Rasante",d:"Percorre o chao a velocidade extrema causando dano em linha.",dmg:"5d6",chi:7,status:["burn"]},
+    {n:"Colisao Solar",d:"Impacto de fogo puro — o corpo torna-se um projétil flamejante.",dmg:"6d6+4",chi:8,status:["stun","burn"]},
+   ]},
+],
+precise:[
+  {n:"Jato Focado",d:"Projeta um fio de fogo de alta temperatura e precisao.",tier:0,req:[],pos:"off",reqs:{PER:2,CHI:1},
+   attacks:[
+    {n:"Fio Ardente",d:"Um fio fino de calor que perfura defesas de baixo nível.",dmg:"1d4+1",chi:1,status:[]},
+    {n:"Agulha de Calor",d:"Concentrado e rapido, difícil de esquivar.",dmg:"1d6",chi:1,status:[]},
+    {n:"Corte de Chama",d:"Um arco de fogo que corta numa linha horizontal.",dmg:"1d4+2",chi:2,status:["burn"]},
+    {n:"Lancada de Plasma",d:"Plasma super-aquecido que perfura armaduras leves.",dmg:"1d8",chi:2,status:[]},
+    {n:"Raio Termico",d:"Feixe que causa dano continuo se mantido (concentracao).",dmg:"1d6+2",chi:2,status:["burn"]},
+    {n:"Feixe Concentrado",d:"Dobra todo o chi disponivel num ponto. Alta penetracao.",dmg:"2d4",chi:3,status:[]},
+    {n:"Perfurador Solar",d:"Atravessa escudos de energia e armaduras medias.",dmg:"2d6",chi:3,status:[]},
+    {n:"Lanceta de Fogo",d:"Microsegundo de calor extremo — quase invisivel e mortal.",dmg:"1d10",chi:3,status:["blind"]},
+    {n:"Chama Cirurgica",d:"Precision absoluta — atinge pontos de pressao com fogo.",dmg:"2d6+2",chi:4,status:["stun"]},
+    {n:"Incisao Solar",d:"O ataque mais preciso possivel — vaporiza um ponto especifico.",dmg:"3d4+2",chi:4,status:["burn","blind"]},
+   ]},
+  {n:"Dedo de Fogo",d:"Dispara faiscas concentradas de um dedo. Silencioso.",tier:0,req:[],pos:"off",reqs:{PER:2,AGI:1},
+   attacks:[
+    {n:"Faisca",d:"Disparo rapido e silencioso. Difícil de detetar.",dmg:"1d4",chi:1,status:[]},
+    {n:"Estalo Ardente",d:"Som surdo — confunde inimigos sobre a origem.",dmg:"1d4+1",chi:1,status:[]},
+    {n:"Pico de Calor",d:"Micro-raio que causa dano pontual a um orgao especifico.",dmg:"1d6",chi:1,status:[]},
+    {n:"Dardo Flamejante",d:"Velocidade de projétil — difficil de bloquear.",dmg:"1d6+1",chi:2,status:[]},
+    {n:"Espinho de Fogo",d:"Deixa uma faísca que deflagra em contacto com ar frio.",dmg:"1d8",chi:2,status:["burn"]},
+    {n:"Gatilho Solar",d:"Dois disparos rapidos no mesmo instante.",dmg:"2d4",chi:2,status:[]},
+    {n:"Dardo Termico",d:"Perfura armaduras leves com calor concentrado.",dmg:"2d4+1",chi:3,status:[]},
+    {n:"Toque Ardente",d:"Disparo a toque — contacto fisico com o alvo.",dmg:"1d10",chi:3,status:["burn","stun"]},
+    {n:"Pulso Igneo",d:"Tres disparos em leque num unico momento.",dmg:"2d6",chi:3,status:["burn"]},
+    {n:"Flecha de Plasma",d:"Plasma comprimido — maxima velocidade e penetracao.",dmg:"2d6+2",chi:4,status:["burn"]},
+   ]},
+  {n:"Raio de Calor",d:"Concentra energia termica num feixe que perfura armaduras.",tier:1,req:["Jato Focado"],pos:"off",reqs:{PER:4,CHI:3,FOR:2},
+   attacks:[
+    {n:"Raio Basico",d:"Feixe continuo de calor de media intensidade.",dmg:"1d6+2",chi:2,status:["burn"]},
+    {n:"Laser Termico",d:"Versao comprimida que concentra mais calor num menor diametro.",dmg:"2d4",chi:2,status:[]},
+    {n:"Feixe Fino",d:"Ultra-fino, perfura frestas de armadura.",dmg:"2d4+2",chi:3,status:[]},
+    {n:"Raio Perfurador",d:"Atravessa um escudo e continua — atinge dois alvos em linha.",dmg:"2d6",chi:3,status:[]},
+    {n:"Corte Termico",d:"Corta horizontalmente tudo o que estiver na linha de visao.",dmg:"2d6+1",chi:3,status:["burn"]},
+    {n:"Feixe Solar",d:"Canaliza luz solar num feixe — triplica no solsticio.",dmg:"3d4",chi:4,status:["blind"]},
+    {n:"Raio de Fusao",d:"Temperatura de fusao — derrete metal e pedra.",dmg:"2d8",chi:4,status:["burn","slow"]},
+    {n:"Incisao Termica",d:"Cirurgia de fogo — atinge um ponto de pressao critico.",dmg:"3d4+2",chi:4,status:["stun"]},
+    {n:"Raio Branco",d:"Temperatura extrema — visualmente branco. Cega temporariamente.",dmg:"3d6",chi:5,status:["blind","burn"]},
+    {n:"Coluna de Calor",d:"Feixe vertical que desce do ceu num raio de 1m. Impossivel bloquear lateralmente.",dmg:"4d4+2",chi:5,status:["burn"]},
+   ]},
+  {n:"Agulha Ardente",d:"Projeteis de plasma do tamanho de agulhas. Velocidade maxima.",tier:1,req:["Dedo de Fogo"],pos:"off",reqs:{PER:4,AGI:3},
+   attacks:[
+    {n:"Agulha Simples",d:"Uma agulha de plasma de alta velocidade.",dmg:"1d8",chi:2,status:[]},
+    {n:"Chuva de Agulhas",d:"Dezena de agulhas em leque largo.",dmg:"2d4",chi:2,status:[]},
+    {n:"Tiro Duplo",d:"Duas agulhas em direcoes independentes.",dmg:"2d4+2",chi:3,status:[]},
+    {n:"Tripla Agulha",d:"Tres agulhas em triangulo que convergem no alvo.",dmg:"3d4",chi:3,status:[]},
+    {n:"Rafaga Fina",d:"Rafaga continua de agulhas por 2 segundos.",dmg:"2d6",chi:3,status:["burn"]},
+    {n:"Salva de Plasma",d:"20 agulhas em cone frontal de 60 graus.",dmg:"3d4+2",chi:4,status:["burn"]},
+    {n:"Agulha Guiada",d:"Uma agulha que muda de direcao uma vez para seguir o alvo.",dmg:"2d8",chi:4,status:[]},
+    {n:"Chuva Densa",d:"50 agulhas que cobrem uma area de 3x3 metros.",dmg:"4d4",chi:4,status:["burn"]},
+    {n:"Tempestade de Agulhas",d:"Centenas de agulhas que cobrem toda a frente.",dmg:"3d6",chi:5,status:["burn","slow"]},
+    {n:"Diluvio de Plasma",d:"Agulhas de plasma que persiste na area por 1 turno.",dmg:"4d4+4",chi:5,status:["burn","blind"]},
+   ]},
+  {n:"Pontaria Flamejante",d:"Antecipa o movimento do alvo e ajusta o angulo instintivamente.",tier:1,req:["Jato Focado"],pos:"off",reqs:{PER:4,AGI:2},
+   attacks:[
+    {n:"Tiro Antecipado",d:"Dispara onde o alvo vai estar, nao onde esta.",dmg:"1d8+2",chi:2,status:[]},
+    {n:"Mira Termica",d:"Localiza alvo pelo calor corporal — funciona no escuro.",dmg:"2d4+1",chi:2,status:[]},
+    {n:"Golpe Previsto",d:"Le a postura do inimigo e ataca o ponto mais vulneravel.",dmg:"2d6",chi:3,status:["stun"]},
+    {n:"Disparo Certeiro",d:"Sem margem de erro — atinge exatamente o ponto visado.",dmg:"2d6+2",chi:3,status:[]},
+    {n:"Alvo Perfeito",d:"Mira no ponto de chi mais denso — interrompe a dobra.",dmg:"3d4+1",chi:3,status:["silence"]},
+    {n:"Tiro Preciso",d:"Atravessa coberturas parciais com angulo calculado.",dmg:"2d8",chi:4,status:[]},
+    {n:"Foco Absoluto",d:"Estado de hiper-foco — dano critico garantido.",dmg:"3d6",chi:4,status:[]},
+    {n:"Impacto Calculado",d:"Ataca o ponto de equilibrio — derruba o inimigo.",dmg:"3d6+2",chi:4,status:["stun"]},
+    {n:"Disparo Letal",d:"Atinge orgaos vitais com precisao milimetrica.",dmg:"4d4+3",chi:5,status:["slow","stun"]},
+    {n:"Tiro Definitivo",d:"O ataque de fogo mais preciso possivel. Sem possibilidade de esquiva.",dmg:"4d6",chi:6,status:["burn","stun"]},
+   ]},
+  {n:"Fulminacao",d:"Gera e dispara um raio eletrico devastador. Requer equilibrio interior total.",tier:2,req:["Raio de Calor","Pontaria Flamejante"],pos:"off",reqs:{CHI:7,ESP:5,PER:5},
+   attacks:[
+    {n:"Centelha",d:"O inicio da fulminacao — um raio curto de alta tensao.",dmg:"2d6",chi:3,status:["shock"]},
+    {n:"Raio Inicial",d:"Primeiro raio completo — alcance medio, alta velocidade.",dmg:"2d8",chi:3,status:["shock"]},
+    {n:"Descarga",d:"Raio de alta tensao que pode saltar para alvos metalicos proximos.",dmg:"3d6",chi:4,status:["shock","stun"]},
+    {n:"Faisca Eletrica",d:"Descarga rapida que paralisa temporariamente.",dmg:"3d6+2",chi:4,status:["shock","stun"]},
+    {n:"Raio Bifurcado",d:"O raio divide-se em dois no ponto de impacto.",dmg:"4d6",chi:4,status:["shock"]},
+    {n:"Trovoada",d:"Raio acompanhado de onda de pressao sonora.",dmg:"4d6+2",chi:5,status:["shock","stun","blind"]},
+    {n:"Raio Concentrado",d:"Toda a energia num unico feixe de maxima potencia.",dmg:"5d6",chi:5,status:["shock","stun"]},
+    {n:"Descarga Total",d:"Liberta toda a energia acumulada de uma vez.",dmg:"4d8+2",chi:5,status:["shock","slow"]},
+    {n:"Raio da Morte",d:"Tensao maxima — para o coracao por 1 turno.",dmg:"6d6",chi:6,status:["shock","stun","slow"]},
+    {n:"Tempestade Interna",d:"O chi converte-se totalmente em eletricidade. Devastador.",dmg:"6d6+4",chi:7,status:["shock","stun","burn"]},
+   ]},
+  {n:"Redirecao de Raio",d:"Absorve fulminacao pelo trajeto do chi e redireciona contra o atacante.",tier:2,req:["Fulminacao"],pos:"def",reqs:{CHI:8,ESP:6,RES:4},
+   attacks:[
+    {n:"Desvio Basico",d:"Redireciona um raio fraco de volta ao ponto de origem.",dmg:"2d8",chi:3,status:["shock"]},
+    {n:"Reflexo Eletrico",d:"Absorve e redireciona com velocidade aumentada.",dmg:"3d6",chi:3,status:["shock"]},
+    {n:"Redirecao Parcial",d:"Absorve 50% do dano e reflete os outros 50% amplificados.",dmg:"3d6+3",chi:4,status:["shock","stun"]},
+    {n:"Contra-Raio",d:"Redireciona exatamente de volta ao atirador.",dmg:"4d6",chi:4,status:["shock"]},
+    {n:"Espelho de Chi",d:"O chi forma um espelho perfeito que reflete qualquer raio.",dmg:"4d6+2",chi:4,status:["shock","stun"]},
+    {n:"Absorcao Total",d:"Absorve todo o raio e converte em chi proprio.",dmg:"5d6",chi:5,status:["shock"]},
+    {n:"Raio Dobrado",d:"Redireciona numa direcao diferente da origem — apanha o atirador de flanco.",dmg:"4d8",chi:5,status:["shock","blind"]},
+    {n:"Contra-Golpe Perfeito",d:"Redireciona e amplifica em 200% antes de devolver.",dmg:"5d6+3",chi:5,status:["shock","stun","slow"]},
+    {n:"Raio do Destino",d:"Absorve e cria uma nova fulminacao de maxima potencia.",dmg:"6d6",chi:6,status:["shock","stun"]},
+    {n:"Retorno Fatal",d:"O proprio raio do inimigo volve com forca multiplicada — irresistivel.",dmg:"7d6",chi:7,status:["shock","stun","burn"]},
+   ]},
+  {n:"Fulminacao Dupla",d:"Dispara dois raios simultaneos em direcoes independentes.",tier:3,req:["Fulminacao","Redirecao de Raio"],pos:"off",reqs:{CHI:10,ESP:8,PER:7},
+   attacks:[
+    {n:"Par de Centelhas",d:"Dois raios fracos em direcoes diferentes.",dmg:"2d10",chi:5,status:["shock"]},
+    {n:"Raios Gemeos",d:"Dois raios identicos disparados simultaneamente.",dmg:"3d8+2",chi:5,status:["shock","stun"]},
+    {n:"Bifurcacao Eletrica",d:"Um raio que se divide em dois no inicio.",dmg:"4d8",chi:6,status:["shock"]},
+    {n:"Tempestade Dupla",d:"Dois raios com trajetorias em arco que convergem por tras.",dmg:"4d8+4",chi:6,status:["shock","stun"]},
+    {n:"Cruz de Raios",d:"Dois raios em cruz — atinge quatro pontos em simultaneo.",dmg:"5d8",chi:7,status:["shock","slow"]},
+    {n:"Descarga Bifurcada",d:"Cada raio bifurca-se uma vez — quatro impactos totais.",dmg:"5d8+3",chi:7,status:["shock","stun"]},
+    {n:"Fulminacao Dupla I",d:"Versao completa com controlo total dos dois raios.",dmg:"6d8",chi:8,status:["shock","stun","blind"]},
+    {n:"Dois Raios da Morte",d:"Dois raios de maxima potencia — paralisa coracao e espirito.",dmg:"6d8+4",chi:8,status:["shock","stun","slow"]},
+    {n:"Tempestade Eletrica",d:"Seis raios em leque que cobrem 180 graus.",dmg:"8d6+4",chi:9,status:["shock","stun","burn"]},
+    {n:"Tormenta dos Raios",d:"O chi inteiro convertido em raios multiplos. Limpa toda a area.",dmg:"10d6+2",chi:10,status:["shock","stun","burn","blind"]},
+   ]},
+],
+brute:[
+  {n:"Jato de Chamas",d:"Jato largo de fogo que cobre area ampla a frente.",tier:0,req:[],pos:"off",reqs:{FOR:2,CHI:1},
+   attacks:[
+    {n:"Chama Basica",d:"Jato curto e direto — o mais simples dos ataques.",dmg:"1d6",chi:1,status:[]},
+    {n:"Lingua de Fogo",d:"Um jato em forma de lingua que lecca o alvo.",dmg:"1d6+2",chi:1,status:["burn"]},
+    {n:"Jato Curto",d:"Concentrado e rapido — media distancia.",dmg:"1d8",chi:2,status:[]},
+    {n:"Rajada de Calor",d:"Onda de ar quente antes das chamas — desequilibra o alvo.",dmg:"2d4+1",chi:2,status:["slow"]},
+    {n:"Onda de Chamas",d:"Onda horizontal de fogo em leque de 90 graus.",dmg:"2d6",chi:2,status:["burn"]},
+    {n:"Vaga Ardente",d:"Onda de fogo que rola pelo chao ate 5 metros.",dmg:"2d6+2",chi:3,status:["burn"]},
+    {n:"Diluvio de Fogo",d:"Jato continuo por 2 segundos — dano sobre tempo.",dmg:"3d4+2",chi:3,status:["burn","slow"]},
+    {n:"Torrente Igneo",d:"Jato maximo de fogo em cone de 120 graus.",dmg:"3d6",chi:3,status:["burn"]},
+    {n:"Jato Maximo",d:"Toda a forca concentrada num jato devastador.",dmg:"2d8+2",chi:4,status:["burn","stun"]},
+    {n:"Inferno em Jato",d:"Chamas de temperatura maxima — derretem metal.",dmg:"4d4+2",chi:4,status:["burn","slow"]},
+   ]},
+  {n:"Escudo de Calor",d:"Barreira de chamas que deflecte projeteis e ataques fisicos.",tier:0,req:[],pos:"def",reqs:{FOR:2,RES:1},
+   effect:{type:"def",dice:"2d6",chi:2,status:["burn"],sdesc:"Deflecte um ataque e causa 2d6 de queimadura ao atacante. Dura 1 turno. Inimigos corpo a corpo sofrem burn ao ataca-te."}},
+  {n:"Sopro do Dragao",d:"Exala uma onda de fogo persistente de grande area.",tier:1,req:["Jato de Chamas"],pos:"off",reqs:{FOR:4,CHI:3,RES:2},
+   attacks:[
+    {n:"Bafo de Calor",d:"Onda de calor que precede as chamas — deixa inimigos lentos.",dmg:"1d8+2",chi:2,status:["slow"]},
+    {n:"Sopro Inicial",d:"A primeira forma do sopro — cone de 90 graus.",dmg:"2d6",chi:2,status:["burn"]},
+    {n:"Exalacao Ardente",d:"Exalacao prolongada que cobre mais area.",dmg:"2d6+2",chi:3,status:["burn"]},
+    {n:"Sopro Prolongado",d:"Mantido por 3 segundos — dano continuo.",dmg:"3d6",chi:3,status:["burn","slow"]},
+    {n:"Alento do Inferno",d:"Temperatura extrema — queima ate atraves de escudos.",dmg:"3d6+2",chi:3,status:["burn"]},
+    {n:"Sopro Maximo",d:"Maximo de area e intensidade para esta tecnica.",dmg:"4d6",chi:4,status:["burn"]},
+    {n:"Chama do Dragao",d:"A forma completa — imita o sopro de um dragao ancestral.",dmg:"4d6+2",chi:4,status:["burn","stun"]},
+    {n:"Exalacao Total",d:"Liberta toda a energia numa unica exalacao.",dmg:"5d6",chi:5,status:["burn","blind"]},
+    {n:"Sopro Devastador",d:"Chamas que persistem no terreno por 2 turnos.",dmg:"4d8",chi:5,status:["burn","slow"]},
+    {n:"Rugido de Dragao",d:"O sopro maximo — purifica o ar de frio e escuridao.",dmg:"6d6",chi:6,status:["burn","stun","slow"]},
+   ]},
+  {n:"Roda de Fogo",d:"Rodopia criando um ciclone de chamas ao redor do corpo.",tier:1,req:["Escudo de Calor"],pos:"off",reqs:{FOR:4,AGI:3,CHI:2},
+   attacks:[
+    {n:"Giro de Chamas",d:"Rotacao simples — afasta inimigos proximos.",dmg:"1d8+1",chi:2,status:["burn"]},
+    {n:"Roda Inicial",d:"Roda completa de fogo — atinge todos os lados.",dmg:"2d6",chi:2,status:["burn"]},
+    {n:"Ciclone Pequeno",d:"Comeca a girar ar e fogo — dano crescente por turno.",dmg:"2d6+2",chi:3,status:["burn"]},
+    {n:"Roda em Expansao",d:"A roda de fogo expande-se para o dobro do raio.",dmg:"3d4+3",chi:3,status:["burn","slow"]},
+    {n:"Torvelhinho Ardente",d:"Giro rapido que suga inimigos para o centro.",dmg:"3d6",chi:3,status:["burn","stun"]},
+    {n:"Roda Veloz",d:"Rotacao tao rapida que forma uma esfera de fogo.",dmg:"3d6+2",chi:4,status:["burn"]},
+    {n:"Ciclone de Fogo",d:"Ciclone completo que arrasta inimigos e detritos.",dmg:"4d6",chi:4,status:["burn","stun"]},
+    {n:"Roda Destruidora",d:"Desloca-se em movimento enquanto gira — varredura de area.",dmg:"4d6+2",chi:4,status:["burn"]},
+    {n:"Inferno Giratorio",d:"A roda expande-se instantaneamente — explosao radial.",dmg:"5d6",chi:5,status:["burn","stun","blind"]},
+    {n:"Tempestade de Fogo",d:"Forma final — cria um tornado de fogo que persiste 2 turnos.",dmg:"4d8+2",chi:5,status:["burn","stun"]},
+   ]},
+  {n:"Nova de Fogo",d:"Explode uma onda esferica de calor em todas as direcoes.",tier:2,req:["Sopro do Dragao","Roda de Fogo"],pos:"off",reqs:{FOR:7,CHI:5,RES:3},
+   attacks:[
+    {n:"Micro-Nova",d:"Explosao pequena — raio de 2 metros.",dmg:"2d8",chi:3,status:["burn"]},
+    {n:"Nova Inicial",d:"Explosao de raio medio — 4 metros.",dmg:"3d6",chi:3,status:["burn","stun"]},
+    {n:"Onda de Calor",d:"A onda de calor precede as chamas — derruba inimigos.",dmg:"3d6+3",chi:4,status:["burn","stun"]},
+    {n:"Explosao Esferica",d:"Esfera perfeita de chamas — sem zonas de sombra.",dmg:"4d6",chi:4,status:["burn"]},
+    {n:"Nova Ardente",d:"Chamas persistem na area por 1 turno apos impacto.",dmg:"4d6+2",chi:4,status:["burn","slow"]},
+    {n:"Onda Devastadora",d:"A onda de pressao e tao forte que destrói estruturas.",dmg:"5d6",chi:5,status:["burn","stun"]},
+    {n:"Nova Solar",d:"Canaliza energia solar — duplica em plena luz do dia.",dmg:"4d8+2",chi:5,status:["burn","blind"]},
+    {n:"Explosao Total",d:"Raio maximo — 10 metros de chamas instantaneas.",dmg:"6d6",chi:5,status:["burn","stun","blind"]},
+    {n:"Nova Maxima",d:"A expansao e tao rapida que e impossivel de esquivar.",dmg:"5d8",chi:6,status:["burn","stun","slow"]},
+    {n:"Nova do Inferno",d:"Temperatura de sol — tudo no raio de 10m e vaporizado.",dmg:"7d6",chi:7,status:["burn","stun","blind","slow"]},
+   ]},
+  {n:"Fogo Azul",d:"Chamas de temperatura extrema — brancas e azuis. Dano maximo.",tier:2,req:["Nova de Fogo"],pos:"off",reqs:{FOR:8,CHI:7,RES:5},
+   attacks:[
+    {n:"Centelha Azul",d:"A primeira forma — mais quente que qualquer chama laranja.",dmg:"2d8+2",chi:4,status:["burn"]},
+    {n:"Chama Fria",d:"Ironicamente fria ao toque — queima por dentro.",dmg:"3d8",chi:4,status:["burn","stun"]},
+    {n:"Lingua Azul",d:"Fio de chama azul com alcance triplicado.",dmg:"3d8+2",chi:4,status:["burn"]},
+    {n:"Feixe Azul",d:"Feixe concentrado de chama branca que perfura tudo.",dmg:"4d8",chi:5,status:["burn","blind"]},
+    {n:"Onda Azul",d:"Onda de chama azul que nao se apaga com agua.",dmg:"4d8+3",chi:5,status:["burn","slow"]},
+    {n:"Jato Branco",d:"Temperatura de fusao — derrete pedra e aco.",dmg:"5d8",chi:5,status:["burn","stun"]},
+    {n:"Inferno Azul",d:"Area de chama azul que persiste 3 turnos.",dmg:"5d8+3",chi:6,status:["burn","slow"]},
+    {n:"Nova Branca",d:"Explosao de chama branca — cega todos no raio.",dmg:"6d8",chi:6,status:["burn","blind","stun"]},
+    {n:"Tempestade Azul",d:"Tornado de chama azul que dura 2 turnos.",dmg:"6d8+4",chi:7,status:["burn","stun","slow"]},
+    {n:"Chama Absoluta",d:"A mais quente das chamas. Nada resiste.",dmg:"8d8",chi:8,status:["burn","stun","blind","slow"]},
+   ]},
+  {n:"Coluna do Inferno",d:"Invoca uma coluna de fogo do chao que persiste por varios segundos.",tier:3,req:["Fogo Azul"],pos:"off",reqs:{FOR:10,CHI:8,RES:6},
+   attacks:[
+    {n:"Coluna Estreita",d:"Uma coluna de 1m de diametro — altissima precisao.",dmg:"3d8+2",chi:5,status:["burn"]},
+    {n:"Pilar de Fogo",d:"Pilar solido de fogo que dura 2 turnos.",dmg:"4d8",chi:5,status:["burn","stun"]},
+    {n:"Coluna Ardente",d:"Expande para 3m de diametro — cobre uma area de combate.",dmg:"4d8+3",chi:6,status:["burn"]},
+    {n:"Pilar Solar",d:"Alimentado pela luz solar — brilha e cega inimigos.",dmg:"5d8",chi:6,status:["burn","blind"]},
+    {n:"Coluna Persistente",d:"Persiste por 4 turnos — nega zona ao inimigo.",dmg:"5d8+3",chi:6,status:["burn","slow"]},
+    {n:"Inferno Vertical",d:"Cinco colunas que emergem simultaneamente numa linha.",dmg:"6d8",chi:7,status:["burn","stun"]},
+    {n:"Pilar do Dragao",d:"Coluna de fogo azul — temperatura maxima, dano continuo.",dmg:"6d8+4",chi:7,status:["burn","stun","slow"]},
+    {n:"Coluna Devastadora",d:"Coluna que explode apos 1 turno — dano duplo no segundo impacto.",dmg:"7d8",chi:7,status:["burn","stun","blind"]},
+    {n:"Pilar Eterno",d:"Persiste até o chi acabar — gasta 1 chi por turno.",dmg:"7d8+4",chi:8,status:["burn","stun"]},
+    {n:"Coluna do Fim",d:"Dez pilares emergem em circulo — prisao de fogo.",dmg:"10d8",chi:10,status:["burn","stun","blind","slow"]},
+   ]},
+]
+}},
+
+water:{tiers:[{t:"Iniciante",b:"t1"},{t:"Avancado",b:"t2"},{t:"Mestre",b:"t3"},{t:"Lendario",b:"t4"}],cats:{
+spirit:[
+  {n:"Escuta da Lua",d:"Medita sob a lua restaurando chi. Bonus a lua cheia.",tier:0,req:[],pos:"pass",reqs:{CHI:2,ESP:1},
+   effect:{type:"restore",dice:"1d8",chi:0,status:["regen"],sdesc:"Restaura 1d8 chi por turno de meditacao. A lua cheia restaura 2d8."}},
+  {n:"Sentir a Mare",d:"Percebe intuitivamente o fluxo de chi na agua e nos seres vivos.",tier:0,req:[],pos:"pass",reqs:{CHI:2,PER:2},
+   effect:{type:"utility",dice:"-",chi:1,status:[],sdesc:"Deteta seres vivos num raio de 15m atraves da agua. Passivo permanente."}},
+  {n:"Ligacao Lunar",d:"Dobra amplificada com a fase lunar. Regista e adapta ao calendario.",tier:1,req:["Escuta da Lua"],pos:"pass",reqs:{CHI:4,ESP:3},
+   effect:{type:"buff",dice:"1d4",chi:0,status:["regen"],sdesc:"Restaura 1d4 chi por turno durante a noite. Lua cheia: todos os ataques de agua ganham +2 dados de dano."}},
+  {n:"Cura pela Agua",d:"Usa agua para restaurar ferimentos canalizando energia lunar.",tier:1,req:["Sentir a Mare"],pos:"pass",reqs:{CHI:3,ESP:3,PER:2},
+   effect:{type:"heal",dice:"2d6+2",chi:3,status:["regen"],sdesc:"Restaura 2d6+2 pontos de vida a um aliado. Tambem remove veneno e queimadura."}},
+  {n:"Cura Espiritual",d:"Trata traumas do espirito e doencas sem origem fisica.",tier:2,req:["Cura pela Agua"],pos:"pass",reqs:{CHI:6,ESP:5,PER:3},
+   effect:{type:"heal",dice:"3d8",chi:5,status:["regen"],sdesc:"Restaura 3d8 vida. Remove todos os efeitos negativos de status. Pode curar cegueira e paralisia."}},
+  {n:"Visao da Nevoa",d:"Entra em transe dentro de nevoa para ver passado ou futuro imediato.",tier:2,req:["Ligacao Lunar","Sentir a Mare"],pos:"pass",reqs:{CHI:6,ESP:5},
+   effect:{type:"utility",dice:"-",chi:4,status:[],sdesc:"Ve acontecimentos ate 10 minutos no futuro. Dura 1 turno de meditacao. Permite preparacao unica."}},
+  {n:"Espelho da Alma",d:"Usa agua imóvel para espiar qualquer local no mundo.",tier:3,req:["Cura Espiritual","Visao da Nevoa"],pos:"pass",reqs:{CHI:10,ESP:9},
+   effect:{type:"utility",dice:"-",chi:8,status:[],sdesc:"Contacta ou observa qualquer ser que conhea por nome. Pode enviar mensagens atraves do espelho."}},
+],
+agility:[
+  {n:"Surf de Onda",d:"Cria uma onda de agua para deslocamento rapido.",tier:0,req:[],pos:"off",reqs:{AGI:2,CHI:1},
+   effect:{type:"move",dice:"-",chi:1,status:[],sdesc:"Velocidade triplicada em superficie aquatica. Pode subir encostas de agua."}},
+  {n:"Passo Escorregadio",d:"Cobre o chao de gelo fino para deslizar.",tier:0,req:[],pos:"off",reqs:{AGI:2,CHI:1},
+   effect:{type:"move",dice:"1d4",chi:1,status:["slow"],sdesc:"Cria caminho de gelo que aumenta velocidade propria e causa slow a inimigos que pisarem."}},
+  {n:"Redemoinho",d:"Roda numa corrente de agua que deflecte ataques e permite reposicionamento.",tier:1,req:["Surf de Onda"],pos:"def",reqs:{AGI:4,CHI:3},
+   effect:{type:"def",dice:"1d6",chi:2,status:[],sdesc:"Deflecte um ataque fisico ou de agua. Se bem sucedido, reposiciona imediatamente."}},
+  {n:"Pontes de Gelo",d:"Cria pontes ou rampas de gelo instantaneas para travessia vertical.",tier:1,req:["Passo Escorregadio"],pos:"off",reqs:{AGI:3,CHI:2},
+   effect:{type:"utility",dice:"-",chi:2,status:[],sdesc:"Cria estrutura de gelo ate 10m. Pode ser usada em combate para flanquear."}},
+  {n:"Corrente Submarina",d:"Move-se a alta velocidade submerso numa bola de agua.",tier:2,req:["Redemoinho","Surf de Onda"],pos:"off",reqs:{AGI:6,CHI:5},
+   effect:{type:"move",dice:"-",chi:3,status:[],sdesc:"Movimento subaquatico invisivel. Pode atacar a partir da agua com surpresa."}},
+  {n:"Esquiva Fluida",d:"Cada evasao transforma-se em contraataque de agua.",tier:1,req:["Redemoinho"],pos:"def",reqs:{AGI:4,PER:3},
+   effect:{type:"def",dice:"1d8",chi:2,status:["slow"],sdesc:"Ao esquivar, o contra-ataque de agua causa 1d8 e lentidao ao atacante."},
+   attacks:[
+    {n:"Contra-Agua",d:"A esquiva lanca uma onda de agua contra o atacante.",dmg:"1d8+2",chi:2,status:["slow"]},
+    {n:"Fluxo Inverso",d:"Usa o impeto do inimigo para amplificar o contra-ataque.",dmg:"2d6+2",chi:3,status:["slow","stun"]},
+    {n:"Vaga de Retorno",d:"Uma onda maior que varre o atacante para tras.",dmg:"3d6",chi:3,status:["stun"]},
+   ]},
+  {n:"Forma da Agua",d:"Torna o corpo tao fluido que ataques fisicos o atravessam parcialmente.",tier:3,req:["Corrente Submarina","Esquiva Fluida"],pos:"def",reqs:{AGI:9,CHI:7,ESP:4},
+   effect:{type:"def",dice:"-",chi:4,status:["regen"],sdesc:"Reduz dano fisico em 50% por 3 turnos. Restaura 1d4 chi por turno enquanto ativo."}},
+],
+precise:[
+  {n:"Chicote de Agua",d:"Projeta um tentaculo de agua para atacar, agarrar ou desarmar.",tier:0,req:[],pos:"off",reqs:{PER:2,CHI:1},
+   attacks:[
+    {n:"Chicote Rapido",d:"Um golpe de chicote de agua de velocidade media.",dmg:"1d4+2",chi:1,status:[]},
+    {n:"Golpe de Tentaculo",d:"Tentaculo que envolve e imobiliza um membro do alvo.",dmg:"1d6+1",chi:1,status:["slow"]},
+    {n:"Flagelo Aquatico",d:"Chicote duplo que atinge de dois lados em simultaneo.",dmg:"1d6+2",chi:2,status:[]},
+    {n:"Chicote Duplo",d:"Dois chicotes independentes controlados ao mesmo tempo.",dmg:"2d4+1",chi:2,status:[]},
+    {n:"Tentaculo Agudo",d:"Chicote afinado como fio que corta superficies.",dmg:"1d8+2",chi:2,status:[]},
+    {n:"Corrente de Agua",d:"Chicote prolongado que podes redirecionar mid-flight.",dmg:"2d6",chi:3,status:["slow"]},
+    {n:"Chicote Veloz",d:"Velocidade dobrada — quase invisivel.",dmg:"2d6+2",chi:3,status:[]},
+    {n:"Flagelo Glacial",d:"O chicote congela no impacto — imobiliza o membro atingido.",dmg:"3d4+2",chi:3,status:["freeze"]},
+    {n:"Tentaculo Gigante",d:"Tentaculo do tamanho de um tronco — derruba inimigos grandes.",dmg:"2d8",chi:4,status:["stun"]},
+    {n:"Mar em Furia",d:"Cinco chicotes em simultaneo em direcoes diferentes.",dmg:"3d6+2",chi:4,status:["freeze","slow"]},
+   ]},
+  {n:"Lanca de Gelo",d:"Cristaliza agua em projeteis perfurantes de alta velocidade.",tier:0,req:[],pos:"off",reqs:{PER:2,CHI:1},
+   attacks:[
+    {n:"Estilhaco de Gelo",d:"Projétil basico de gelo — simples e eficaz.",dmg:"1d6",chi:1,status:[]},
+    {n:"Lanca Pequena",d:"Lanca de gelo afiada de media dimensao.",dmg:"1d6+2",chi:1,status:[]},
+    {n:"Flecha de Gelo",d:"Projetil de gelo em forma de flecha — alta velocidade.",dmg:"1d8",chi:2,status:[]},
+    {n:"Lanca Media",d:"Lanca de gelo que atravessa armaduras leves.",dmg:"1d8+2",chi:2,status:["freeze"]},
+    {n:"Projetil Glacial",d:"Projetil de gelo a temperatura extrema — adere ao alvo.",dmg:"2d6",chi:2,status:["freeze"]},
+    {n:"Lanca Grande",d:"Lanca de 2 metros de comprimento lancada a alta velocidade.",dmg:"2d6+2",chi:3,status:["freeze","slow"]},
+    {n:"Javelina de Gelo",d:"Javelina de gelo que explode em estilhacos no impacto.",dmg:"2d8",chi:3,status:["freeze"]},
+    {n:"Arpao Glacial",d:"Arpao que se prende ao alvo e o puxa de volta.",dmg:"2d8+2",chi:3,status:["freeze","slow"]},
+    {n:"Lanca Perfurante",d:"Atravessa armor media — afiada a nivel molecular.",dmg:"3d6",chi:4,status:["freeze"]},
+    {n:"Espigao do Polo",d:"Lanca de gelo polar — temperatura de -50 graus. Congela ao toque.",dmg:"3d6+3",chi:4,status:["freeze","stun"]},
+   ]},
+  {n:"Navalha de Gelo",d:"Projeteis de gelo extremamente finos que cortam como laminas.",tier:1,req:["Lanca de Gelo"],pos:"off",reqs:{PER:4,AGI:3},
+   attacks:[
+    {n:"Lasca Afiada",d:"Fragmeto de gelo afiado como vidro.",dmg:"1d8+2",chi:2,status:[]},
+    {n:"Disco de Gelo",d:"Disco giratório de gelo que corta em linha.",dmg:"2d6",chi:2,status:[]},
+    {n:"Navalha Dupla",d:"Dois discos de gelo lancados em angulos opostos.",dmg:"2d6+2",chi:3,status:[]},
+    {n:"Chuva de Laminas",d:"Dezena de navalhas de gelo em chuva.",dmg:"3d4+2",chi:3,status:["freeze"]},
+    {n:"Disco Veloz",d:"Disco de gelo a velocidade subsonica — impossivel de bloquear.",dmg:"2d8",chi:3,status:[]},
+    {n:"Salva de Navalhas",d:"Vinte navalhas em leque de 180 graus.",dmg:"3d6",chi:4,status:["freeze"]},
+    {n:"Tempestade Cortante",d:"Vortice de navalhas de gelo em torno do alvo.",dmg:"3d6+2",chi:4,status:["freeze","slow"]},
+    {n:"Laminas em Cascata",d:"Navalhas que surgem em cascata — impossivel de bloquear todas.",dmg:"4d6",chi:4,status:["freeze"]},
+    {n:"Corte do Polo",d:"Navalha de gelo polar — corta atraves de qualquer material.",dmg:"4d6+2",chi:5,status:["freeze","stun"]},
+    {n:"Diluvio de Navalhas",d:"Centenas de navalhas em tempestade permanente.",dmg:"5d6",chi:5,status:["freeze","slow","stun"]},
+   ]},
+  {n:"Tentaculo Preciso",d:"Controla varios chicotes independentes para imobilizar multiplos alvos.",tier:1,req:["Chicote de Agua"],pos:"off",reqs:{PER:4,CHI:3},
+   attacks:[
+    {n:"Dois Tentaculos",d:"Dois tentaculos controlados independentemente.",dmg:"2d4+2",chi:2,status:[]},
+    {n:"Tentaculos Rapidos",d:"Velocidade dobrada em cada tentaculo.",dmg:"2d6",chi:2,status:[]},
+    {n:"Tres Chicotes",d:"Tres tentaculos que envolvem o alvo.",dmg:"2d6+2",chi:3,status:["slow"]},
+    {n:"Abraco Aquatico",d:"Os tentaculos enrolam-se ao redor do alvo — imobiliza.",dmg:"3d4+2",chi:3,status:["stun"]},
+    {n:"Tentaculos Agudos",d:"Cada tentaculo afia-se em ponta — perfura armadura.",dmg:"3d6",chi:3,status:[]},
+    {n:"Rede de Agua",d:"Rede de tentaculos que captura alvos multiplos.",dmg:"3d6+3",chi:4,status:["slow","stun"]},
+    {n:"Tempestade de Tentaculos",d:"Oito tentaculos em todas as direcoes.",dmg:"4d6",chi:4,status:["slow"]},
+    {n:"Octopus Aquatico",d:"Doze tentaculos em zona de controlo total.",dmg:"4d6+2",chi:5,status:["slow","freeze"]},
+    {n:"Maelstrom de Chicotes",d:"Vortice de tentaculos — impossivel de escapar.",dmg:"5d6",chi:5,status:["slow","stun","freeze"]},
+    {n:"Calamar da Morte",d:"Vinte tentaculos que esmagam e perfuram simultaneamente.",dmg:"6d6",chi:6,status:["slow","stun","freeze"]},
+   ]},
+  {n:"Agulhas de Gelo",d:"Dezenas de micro-projeteis de gelo que perfuram armaduras.",tier:2,req:["Navalha de Gelo"],pos:"off",reqs:{PER:6,AGI:4,CHI:4},
+   attacks:[
+    {n:"Salva de Agulhas",d:"Cinquenta agulhas em cone frontal.",dmg:"2d6+2",chi:3,status:["freeze"]},
+    {n:"Chuva Glacial",d:"Chuva vertical de agulhas sobre uma area.",dmg:"3d4+3",chi:3,status:["freeze","slow"]},
+    {n:"Tempestade de Agulhas",d:"Agulhas em todas as direcoes a partir do centro.",dmg:"3d6",chi:4,status:["freeze"]},
+    {n:"Diluvio Gelado",d:"Agulhas tao densas que bloqueiam a visao.",dmg:"3d6+3",chi:4,status:["freeze","blind"]},
+    {n:"Centenas de Agulhas",d:"Cobertura total de uma area de 5x5 metros.",dmg:"4d6",chi:4,status:["freeze","slow"]},
+    {n:"Tormenta Glacial",d:"Agulhas persistem na area por 1 turno.",dmg:"4d6+3",chi:5,status:["freeze","stun"]},
+    {n:"Nevasca de Agulhas",d:"Nevasca de gelo que reduz visibilidade a zero.",dmg:"5d6",chi:5,status:["freeze","blind","slow"]},
+    {n:"Vendaval de Gelo",d:"Vento forcado que guia as agulhas ao redor de cobertura.",dmg:"5d6+3",chi:5,status:["freeze","stun"]},
+    {n:"Cataclismo Glacial",d:"Area enorme — impossivel de escapar do raio de acao.",dmg:"6d6",chi:6,status:["freeze","stun","slow"]},
+    {n:"Polo Norte",d:"A temperatura cai para -100. Tudo no raio e congelado.",dmg:"6d6+4",chi:7,status:["freeze","stun","slow","blind"]},
+   ]},
+  {n:"Corte da Lua",d:"Um arco de gelo que atravessa o campo com velocidade e precisao maximas.",tier:2,req:["Agulhas de Gelo","Navalha de Gelo"],pos:"off",reqs:{PER:7,CHI:5,AGI:5},
+   attacks:[
+    {n:"Arco Lunar",d:"Um arco de gelo simples inspirado na forma da lua.",dmg:"2d8+2",chi:3,status:[]},
+    {n:"Crescente de Gelo",d:"Forma de crescente lunar que corta ao longo da trajetoria.",dmg:"3d6+2",chi:4,status:["freeze"]},
+    {n:"Meia-Lua Glacial",d:"Arco que se divide em dois no ponto medio.",dmg:"3d8",chi:4,status:["freeze"]},
+    {n:"Corte Rapido",d:"A velocidade do arco e tao alta que e quase invisivel.",dmg:"4d6+2",chi:4,status:[]},
+    {n:"Arco Veloz",d:"Dois arcos em direcoes opostas lancados simultaneamente.",dmg:"4d6+3",chi:5,status:["freeze"]},
+    {n:"Lua Cheia Cortante",d:"Arco completo — 360 graus de gelo cortante.",dmg:"4d8",chi:5,status:["freeze","stun"]},
+    {n:"Disco Lunar",d:"Disco de gelo com a forma e brilho da lua cheia.",dmg:"5d6+2",chi:5,status:["freeze","blind"]},
+    {n:"Arco Devastador",d:"Arco que deixa um corte permanente no ar — zona de dano.",dmg:"5d8",chi:6,status:["freeze","slow"]},
+    {n:"Corte da Lua Cheia",d:"O arco maxima potencia — usa a energia lunar completa.",dmg:"6d6+4",chi:6,status:["freeze","stun","slow"]},
+    {n:"A Lua Corta",d:"A lua cheia emprestou o seu poder ao arco — absoluto.",dmg:"6d8+2",chi:7,status:["freeze","stun","blind","slow"]},
+   ]},
+  {n:"Dobra de Sangue",d:"Controla os fluidos biologicos de outro ser. Apenas a lua cheia. Proibida.",tier:3,req:["Corte da Lua","Tentaculo Preciso"],pos:"off",reqs:{CHI:10,ESP:8,PER:8},
+   attacks:[
+    {n:"Toque de Controlo",d:"Contacto minimo — causa confusao e desorientacao.",dmg:"1d4",chi:5,status:["stun"]},
+    {n:"Paralisia Parcial",d:"Paralisa um membro escolhido.",dmg:"1d6",chi:5,status:["slow","stun"]},
+    {n:"Controlo de Membro",d:"Domina completamente um membro do alvo.",dmg:"2d4",chi:6,status:["slow"]},
+    {n:"Imobilizacao",d:"O alvo fica completamente imóvel — nao pode dobrar.",dmg:"2d6",chi:6,status:["stun","silence"]},
+    {n:"Controlo Total",d:"Domina o corpo inteiro do alvo por 1 turno.",dmg:"3d4",chi:7,status:["stun","silence"]},
+    {n:"Hemorragia Interna",d:"Causa dano interno sem contacto visivel.",dmg:"3d6",chi:7,status:["slow","poison"]},
+    {n:"Marioneta de Sangue",d:"Controla o alvo como marioneta por 2 turnos.",dmg:"4d4",chi:8,status:["stun","silence"]},
+    {n:"Dominio Completo",d:"Domina completamente — pode usar como escudo ou arma.",dmg:"4d6",chi:8,status:["stun","silence","slow"]},
+    {n:"Esmagamento Interno",d:"Os fluidos internos esmagam os orgaos. Dano extremo.",dmg:"5d6",chi:9,status:["stun","slow","poison"]},
+    {n:"A Morte Vermelha",d:"O sangue para. Morte certa sem intervencao imediata.",dmg:"6d6",chi:10,status:["stun","silence","slow","poison"]},
+   ]},
+],
+brute:[
+  {n:"Escudo Aquatico",d:"Cria uma barreira de agua que absorve impactos.",tier:0,req:[],pos:"def",reqs:{FOR:2,CHI:1,RES:1},
+   effect:{type:"def",dice:"2d8",chi:2,status:[],sdesc:"Absorve 2d8 de dano. Se o escudo for partido, a agua restante explode para os lados causando 1d6 a inimigos proximos."}},
+  {n:"Onda de Pressao",d:"Projeta uma onda de agua de grande volume e forca.",tier:0,req:[],pos:"off",reqs:{FOR:2,CHI:1},
+   attacks:[
+    {n:"Onda Pequena",d:"Onda de 1 metro de altura — empurra inimigos.",dmg:"1d6+1",chi:1,status:["slow"]},
+    {n:"Pressao Aquatica",d:"Agua comprimida que desequilibra o alvo.",dmg:"1d8",chi:1,status:[]},
+    {n:"Onda Media",d:"Onda que derruba inimigos de tamanho normal.",dmg:"1d8+2",chi:2,status:["stun"]},
+    {n:"Vaga de Pressao",d:"Onda de 3 metros que arrasta inimigos.",dmg:"2d6",chi:2,status:["slow"]},
+    {n:"Onda de Choque",d:"Onda de pressao que atinge atraves de cobertura.",dmg:"2d6+2",chi:2,status:["stun"]},
+    {n:"Onda Grande",d:"Onda de 5 metros — varre uma linha inteira.",dmg:"3d6",chi:3,status:["slow","stun"]},
+    {n:"Vaga Devastadora",d:"Vaga que destroi estruturas leves.",dmg:"3d6+2",chi:3,status:["stun"]},
+    {n:"Muro de Agua",d:"Muro de agua que comprime o inimigo contra uma superficie.",dmg:"2d8+2",chi:3,status:["stun","slow"]},
+    {n:"Tsunami Pequeno",d:"Uma onda de 8 metros que limpa uma area.",dmg:"4d6",chi:4,status:["slow","stun"]},
+    {n:"Pressao Abissal",d:"Pressao de aguas profundas — esmaga ossos.",dmg:"4d6+3",chi:4,status:["stun","slow","freeze"]},
+   ]},
+  {n:"Armadura de Gelo",d:"Reveste o corpo com placas de gelo que absorvem dano.",tier:1,req:["Escudo Aquatico"],pos:"def",reqs:{FOR:3,RES:3,CHI:2},
+   effect:{type:"def",dice:"3d6",chi:3,status:["freeze"],sdesc:"Reduz dano fisico em 3d6 por ataque. Inimigos corpo a corpo sofrem freeze 1 turno. Dura 5 ataques ou 3 turnos."}},
+  {n:"Tsunami Local",d:"Ergue uma parede de agua que varre inimigos numa linha.",tier:1,req:["Onda de Pressao"],pos:"off",reqs:{FOR:5,CHI:4},
+   attacks:[
+    {n:"Vaga Inicial",d:"Parede de agua de 3 metros que avanca em linha.",dmg:"2d6+2",chi:2,status:["slow"]},
+    {n:"Parede Aquatica",d:"Parede de 5 metros que empurra tudo a sua frente.",dmg:"3d6",chi:3,status:["stun"]},
+    {n:"Tsunami Pequeno",d:"Vaga de 8 metros que derruba e arrasta.",dmg:"3d6+2",chi:3,status:["slow","stun"]},
+    {n:"Vaga Colossal",d:"Vaga de 12 metros — destroi estruturas leves.",dmg:"4d6",chi:3,status:["stun"]},
+    {n:"Muro do Mar",d:"Parede de agua que se curva para envolver o alvo.",dmg:"4d6+3",chi:4,status:["freeze","stun"]},
+    {n:"Tsunami Medio",d:"Onda de 15 metros — ninguem escapa.",dmg:"5d6",chi:4,status:["slow","stun"]},
+    {n:"Vaga do Abismo",d:"Agua tao profunda que o impacto parte estruturas.",dmg:"5d6+3",chi:5,status:["stun","freeze"]},
+    {n:"Grande Tsunami",d:"Tsunami de 20 metros — limpa tudo no raio de 30m.",dmg:"6d6",chi:5,status:["slow","stun"]},
+    {n:"Mar em Ira",d:"O oceano avanca — vaga de potencia catastrofica.",dmg:"6d6+4",chi:5,status:["stun","freeze","slow"]},
+    {n:"Fim do Litoral",d:"Tsunami total — nivela tudo o que encontra.",dmg:"4d10+2",chi:6,status:["stun","freeze","slow"]},
+   ]},
+  {n:"Mare de Gelo",d:"Congela um campo inteiro instantaneamente, imobilizando tudo.",tier:2,req:["Armadura de Gelo","Tsunami Local"],pos:"off",reqs:{FOR:7,CHI:6,RES:4},
+   attacks:[
+    {n:"Geada Inicial",d:"Congela o chao num raio de 3m — inimigos perdem equilibrio.",dmg:"2d8",chi:3,status:["freeze","slow"]},
+    {n:"Congelamento Rapido",d:"Congela um alvo individual instantaneamente.",dmg:"3d6+2",chi:3,status:["freeze","stun"]},
+    {n:"Camada de Gelo",d:"Camada de gelo de 10cm que cobre toda a arena.",dmg:"3d8",chi:4,status:["freeze","slow"]},
+    {n:"Gelo Profundo",d:"Gelo de 30cm — impossivel partir sem dobra de fogo.",dmg:"4d6+2",chi:4,status:["freeze","stun"]},
+    {n:"Congelamento Total",d:"Tudo no raio de 10m congela simultaneamente.",dmg:"4d8",chi:4,status:["freeze","stun","slow"]},
+    {n:"Mare Glacial",d:"Onda de gelo que avanca e congela tudo no seu caminho.",dmg:"5d6+3",chi:5,status:["freeze","stun"]},
+    {n:"Campo de Gelo",d:"Arena inteira coberta de gelo — terreno favoravel ao dobrador.",dmg:"5d8",chi:5,status:["freeze","slow"]},
+    {n:"Tundra Instantanea",d:"A temperatura cai 50 graus instantaneamente.",dmg:"6d6+3",chi:5,status:["freeze","stun","slow"]},
+    {n:"Polo Artificial",d:"Gelo polar — temperatura de -80. Congelamento permanente sem fogo.",dmg:"6d8",chi:6,status:["freeze","stun","slow","blind"]},
+    {n:"Era Glacial",d:"Uma era glacial localizada — impossivel de sobreviver sem fogo.",dmg:"8d6+4",chi:7,status:["freeze","stun","slow","blind"]},
+   ]},
+  {n:"Coluna de Oceano",d:"Invoca uma coluna de agua do solo. Escala enorme.",tier:2,req:["Tsunami Local"],pos:"off",reqs:{FOR:7,CHI:5},
+   attacks:[
+    {n:"Coluna Estreita",d:"Coluna de 1m de diametro que surge a alta velocidade.",dmg:"3d6+2",chi:3,status:["stun"]},
+    {n:"Pilar Aquatico",d:"Pilar de 2m que lanca o alvo ao ar.",dmg:"3d8",chi:4,status:["stun"]},
+    {n:"Coluna Media",d:"Coluna de 3m que derruba e arrasta.",dmg:"4d6+2",chi:4,status:["stun","slow"]},
+    {n:"Geyser de Combate",d:"Jato de agua a alta pressao que perfura armaduras.",dmg:"4d8",chi:4,status:["stun"]},
+    {n:"Coluna Grande",d:"Coluna de 5m — lanca alvos varios metros no ar.",dmg:"5d6+3",chi:5,status:["stun","slow"]},
+    {n:"Pilar do Mar",d:"Pilar de agua salgada que corroi armaduras metalicas.",dmg:"5d8",chi:5,status:["stun","slow"]},
+    {n:"Coluna Colossal",d:"10m de coluna que destroi estruturas ao redor.",dmg:"6d6+4",chi:5,status:["stun","blind"]},
+    {n:"Geyser Devastador",d:"Pressao abissal — o impacto equivale a uma avalanche.",dmg:"6d8",chi:6,status:["stun","freeze"]},
+    {n:"Pilar do Oceano",d:"Coluna de 20m — visivel a grande distancia.",dmg:"7d6+4",chi:6,status:["stun","freeze","slow"]},
+    {n:"Coluna do Abismo",d:"Agua das profundezas — fria, densa e irresistivel.",dmg:"8d6+2",chi:7,status:["stun","freeze","slow","blind"]},
+   ]},
+  {n:"Glaciar Vivo",d:"Cria e controla um iceberg colossal que se move e esmaga tudo.",tier:3,req:["Mare de Gelo","Coluna de Oceano"],pos:"off",reqs:{FOR:10,CHI:9,RES:6},
+   attacks:[
+    {n:"Iceberg Pequeno",d:"Iceberg de 5m que desliza e esmaga.",dmg:"4d8",chi:5,status:["freeze","stun"]},
+    {n:"Gelo Vivo",d:"Gelo que se move e adapta para atingir o alvo.",dmg:"5d8",chi:5,status:["freeze"]},
+    {n:"Glaciar Inicial",d:"Glaciar de 10m que esmaga tudo ao seu caminho.",dmg:"5d8+3",chi:6,status:["freeze","stun"]},
+    {n:"Esmagamento Glacial",d:"O glaciar desce sobre o alvo — peso absoluto.",dmg:"6d8",chi:6,status:["freeze","stun","slow"]},
+    {n:"Glaciar em Marcha",d:"O glaciar avanca imparavelmente por 3 turnos.",dmg:"6d8+4",chi:7,status:["freeze","stun"]},
+    {n:"Avalanche de Gelo",d:"O glaciar explode em avalanche de fragmentos.",dmg:"7d8",chi:7,status:["freeze","stun","blind"]},
+    {n:"Colossus Glacial",d:"Glaciar de 50m controlado como arma.",dmg:"7d8+4",chi:8,status:["freeze","stun","slow"]},
+    {n:"Mar Congelado",d:"Congela uma area de 100m em segundos.",dmg:"8d8",chi:8,status:["freeze","stun","slow","blind"]},
+    {n:"Fim do Calor",d:"Temperatura cai a valores incompatíveis com a vida.",dmg:"10d8",chi:9,status:["freeze","stun","slow","blind"]},
+    {n:"Inverno Eterno",d:"O inverno eterno desce. Tudo congela para sempre.",dmg:"12d6+6",chi:10,status:["freeze","stun","slow","blind","poison"]},
+   ]},
+]
+}}
+};
+
+const CATS=["spirit","agility","precise","brute"];
+const MAX_LV=40;
+const PTS_PER_LV=3;
+const ATTR_MAX=15;
+
+let playerState={
+  level:1,xp:0,
+  attrs:{FOR:0,AGI:0,CHI:0,PER:0,RES:0,ESP:0},
+  ptsAvail:0,
+  unlocked:{}
+};
+Object.keys(ELEMS).forEach(e=>{playerState.unlocked[e]={};});
+
+let curElem="fire",curCat="precise";
+
+function xpForLevel(lv){return lv<=1?0:Math.round(200*Math.pow(lv-1,1.55));}
+function xpRequired(lv){
+  let acc=0;for(let i=2;i<=lv;i++)acc+=xpForLevel(i);return acc;
+}
+
+function addXP(){
+  playerState.xp+=100;
+  checkLevelUp();
+  renderAttrPanel();
+  renderPanel(curElem);
+}
+
+function checkLevelUp(){
+  while(playerState.level<MAX_LV && playerState.xp>=xpRequired(playerState.level+1)){
+    playerState.level++;
+    playerState.ptsAvail+=PTS_PER_LV;
+  }
+}
+
+function addAttr(k){
+  if(playerState.ptsAvail<=0||playerState.attrs[k]>=ATTR_MAX)return;
+  playerState.attrs[k]++;
+  playerState.ptsAvail--;
+  renderAttrPanel();
+  renderPanel(curElem);
+}
+function remAttr(k){
+  if(playerState.attrs[k]<=0)return;
+  playerState.attrs[k]--;
+  playerState.ptsAvail++;
+  renderAttrPanel();
+  renderPanel(curElem);
+}
+
+function meetsReqs(reqs){
+  return Object.entries(reqs).every(([k,v])=>playerState.attrs[k]>=v);
+}
+
+function reqsMet(e,s){
+  return meetsReqs(s.reqs)&&(s.req.length===0||s.req.every(r=>playerState.unlocked[e][r]));
+}
+
+function toggleSkill(e,name){
+  const s=findSkill(e,name);
+  if(!s)return;
+  if(playerState.unlocked[e][name]){
+    for(const c of CATS)for(const sk of ELEMS[e].cats[c])
+      if(sk.req.includes(name)&&playerState.unlocked[e][sk.n])return;
+    delete playerState.unlocked[e][name];
+  } else {
+    if(!reqsMet(e,s))return;
+    playerState.unlocked[e][name]=true;
+  }
+  renderPanel(e);
+}
+
+function findSkill(e,name){
+  for(const c of CATS)for(const s of ELEMS[e].cats[c])if(s.n===name)return s;
+  return null;
+}
+
+function renderAttrPanel(){
+  const lv=playerState.level;
+  const xpCur=playerState.xp;
+  const xpNext=xpRequired(lv+1);
+  const xpPrev=xpRequired(lv);
+  const pct=lv>=MAX_LV?100:Math.round((xpCur-xpPrev)/(xpNext-xpPrev)*100);
+  document.getElementById('lv-disp').textContent=lv;
+  document.getElementById('xp-disp').textContent=xpCur.toLocaleString();
+  document.getElementById('pts-avail').textContent=playerState.ptsAvail;
+  document.getElementById('xp-bar').style.width=Math.min(100,pct)+'%';
+  document.getElementById('xp-cur-lbl').textContent=xpCur.toLocaleString()+' XP';
+  document.getElementById('xp-nxt-lbl').textContent=(lv>=MAX_LV?'MAX':xpNext.toLocaleString()+' XP');
+  const colors={FOR:'#D85A30',AGI:'#1D9E75',CHI:'#7F77DD',PER:'#378ADD',RES:'#BA7517',ESP:'#D4537E'};
+  const bars={FOR:'#F0997B',AGI:'#5DCAA5',CHI:'#AFA9EC',PER:'#85B7EB',RES:'#EF9F27',ESP:'#ED93B1'};
+  let html='';
+  ATTRS_DEF.forEach(a=>{
+    const v=playerState.attrs[a.k];
+    html+=`<div class="attr-row">
+      <div class="attr-name"><span>${a.name}</span><span style="color:var(--color-text-primary);font-weight:500">${v}</span></div>
+      <div class="attr-bar-bg"><div class="attr-bar-fill" style="width:${v/ATTR_MAX*100}%;background:${bars[a.k]}"></div></div>
+      <div class="attr-controls">
+        <button class="attr-btn" onclick="remAttr('${a.k}')">-</button>
+        <span class="attr-val">${v}</span>
+        <button class="attr-btn" onclick="addAttr('${a.k}')">+</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('attrs-container').innerHTML=html;
+}
+
+function statusTags(arr){
+  if(!arr||!arr.length)return'';
+  return arr.map(s=>{const d=STATUS[s];return d?`<span class="status-badge ${d.cls}">${d.label}</span>`:''}).join(' ');
+}
+
+function renderEffect(s){
+  if(!s.effect)return'';
+  const e=s.effect;
+  const chiTag=e.type==='restore'||e.type==='heal'
+    ?`<span class="achip chi-restore">+${e.dice} chi/PV</span>`
+    :`<span class="achip chi-cost">${e.chi} chi</span>`;
+  return `<div class="attacks-section">
+    <div class="attacks-label">Efeito Passivo / Utilitario</div>
+    <div class="attack-row">
+      <div class="attack-left">
+        <div class="aname">${e.sdesc}</div>
+        <div style="margin-top:3px">${statusTags(e.status)}</div>
+      </div>
+      <span class="achip dmg">${e.dice}</span>
+      ${chiTag}
+    </div>
+  </div>`;
+}
+
+function renderAttacks(s){
+  if(!s.attacks||!s.attacks.length)return'';
+  const rows=s.attacks.map(a=>`<div class="attack-row">
+    <div class="attack-left">
+      <div class="aname">${a.n}</div>
+      <div class="adesc">${a.d}</div>
+      <div style="margin-top:2px">${statusTags(a.status)}</div>
+    </div>
+    <span class="achip dmg">${a.dmg}</span>
+    <span class="achip chi-cost">${a.chi} chi</span>
+  </div>`).join('');
+  return `<div class="attacks-section"><div class="attacks-label">Ataques</div>${rows}</div>`;
+}
+
+function renderPanel(e){
+  const td=ELEMS[e].tiers;
+  let html=`<div class="cat-tabs">${CATS.map(c=>`<button class="ctab ${c}${curCat===c?' on':''}" onclick="switchCat('${e}','${c}')">${CAT_LABELS[c]}</button>`).join('')}</div>`;
+  for(const c of CATS){
+    const cd=ELEMS[e].cats[c];
+    const tg={};
+    cd.forEach(s=>{if(!tg[s.tier])tg[s.tier]=[];tg[s.tier].push(s);});
+    html+=`<div class="cat-panel${curCat===c?' on':''}">
+      <p class="cat-desc">${CAT_DESCS[e][c]}</p>`;
+    Object.keys(tg).sort().forEach(ti=>{
+      const tinfo=td[ti];
+      html+=`<div class="tier-label">${tinfo.t}</div><div class="skills-grid">`;
+      tg[ti].forEach(s=>{
+        const met=meetsReqs(s.reqs);
+        const depMet=s.req.length===0||s.req.every(r=>playerState.unlocked[e][r]);
+        const on=!!playerState.unlocked[e][s.n];
+        const lk=!met||!depMet;
+        const isLeg=s.tier===3;
+        const posD=POS[s.pos]||POS.any;
+        html+=`<div class="sc ${c}${on?' on':''}${lk?' locked':''}${isLeg?' legend':''}" onclick="toggleSkill('${e}','${s.n.replace(/'/g,"\\'")}')">
+          <div class="sdot"></div>
+          <div class="meta-row">
+            <span class="sbadge ${isLeg?'legend':tinfo.b}">${isLeg?'Lendaria':tinfo.t}</span>
+            ${posHTML(s.pos)}
+          </div>
+          <div class="sname">${s.n}</div>
+          <div class="sdesc">${s.d}</div>
+          <div class="req-attr">${attrChipHTML(s.reqs)}</div>
+          ${s.req.length?`<div class="req-line">Req: ${s.req.join(', ')}</div>`:''}
+          ${renderEffect(s)}
+          ${renderAttacks(s)}
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('right-panel').innerHTML=html;
+}
+
+function switchCat(e,c){curCat=c;renderPanel(e);}
+function showElem(e){
+  if(e==='xp'){
+    document.getElementById('game-layout').style.display='none';
+    document.getElementById('xp-panel').style.display='block';
+    document.querySelectorAll('.etab').forEach(b=>b.classList.remove('on'));
+    document.querySelector('.etab.xp-tab').classList.add('on');
+    return;
+  }
+  document.getElementById('game-layout').style.display='grid';
+  document.getElementById('xp-panel').style.display='none';
+  curElem=e;
+  document.querySelectorAll('.elem-panel').forEach(p=>p&&p.classList.remove('on'));
+  document.querySelectorAll('.etab').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.etab.'+e).classList.add('on');
+  renderPanel(e);
+}
+
+function buildXPTable(){
+  const milestones={5:"Aprendiz",10:"Discipulo",15:"Praticante",20:"Veterano",25:"Especialista",30:"Mestre",35:"Grande Mestre",40:"Lendario"};
+  let html='',acc=0;
+  for(let lv=1;lv<=40;lv++){
+    const needed=xpForLevel(lv);
+    acc+=needed;
+    const totalPts=(lv-1)*3;
+    const ms=milestones[lv]||'';
+    const isMile=!!ms;
+    html+=`<tr${isMile?' class="milestone"':''}>
+      <td>${lv}</td>
+      <td>${lv===1?'-':needed.toLocaleString()}</td>
+      <td>${(acc-needed).toLocaleString()}</td>
+      <td>${lv===1?'3 iniciais':'+3'}</td>
+      <td>${totalPts+3}</td>
+      <td style="color:var(--color-text-secondary);font-style:${ms?'normal':'italic'}">${ms||'-'}</td>
+    </tr>`;
+  }
+  document.getElementById('xp-tbody').innerHTML=html;
+}
+
+renderAttrPanel();
+renderPanel('fire');
+buildXPTable();
+</script>
