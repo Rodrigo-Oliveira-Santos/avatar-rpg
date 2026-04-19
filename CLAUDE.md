@@ -10,24 +10,110 @@ Web-based RPG character management system inspired by Avatar: The Last Airbender
 - **Game data:** `Initial Files/*.json` (skill definitions for Fire, Water, Earth, Air, No-Bending)
 - **Target:** Split into modern frontend/backend architecture
 
+## Documentation
+- **[FEATURES.md](./FEATURES.md)** — Todas as páginas e mecânicas (atuais e futuras)
+- **[DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md)** — Fluxos e mecânicas do jogo
+- **[DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md)** — Arquitetura, schema DB, APIs, schemas JSON
+
 ## Tech Stack
 - **Frontend:** HTML5 + CSS3 + JavaScript (ES6+) — sem frameworks, interface clean baseada no `avatar_rpg_v6.html`
 - **Backend:** Netlify Functions (serverless) + Supabase (PostgreSQL + Auth)
 
 ## Key Game Mechanics
-- **Attributes:** FOR, AGI, CHI, PER, RES, ESP
-- **Max level:** 40, 3 points per level
-- **Elements:** Fire, Water, Earth, Air, No-Bending
-- **Skill tiers:** 1-4 (Beginner → Legendary)
-- **Derived stats:** Health, Chi Max, Spirit Max, Defense, Dodge
+
+### Attributes
+| Atributo | Descrição |
+|----------|-----------|
+| **FOR** (Força) | Dano físico, requisitos de armas |
+| **AGI** (Agilidade) | Esquiva, velocidade |
+| **CHI** (Chi) | Energia para habilidades |
+| **PER** (Percepção) | Precisão, detecção |
+| **RES** (Resistência) | Defesa física |
+| **ESP** (Espírito) | Vida espiritual, cura |
+
+### Derived Stats (Fórmulas Atuais)
+- **Vida:** 10 + (nível × 8) + (FOR × 3)
+- **Chi máx:** 6 + (nível × 5) + (CHI × 4)
+- **Espírito máx:** 8 + (nível × 6) + (ESP × 3)
+- **Defesa:** (RES × 2) + nível + bónus_armadura
+- **Esquiva:** 10 + ((AGI × 2) + PER) × 0,2 - penalidade_armadura
+
+### Progression
+- **Nível máximo:** 40
+- **Pontos por nível:** 3 (distribuídos livremente)
+- **XP para próximo nível:** `round(200 × (nível-1)^1.55)`
+- **Skill tiers:** 1-4 (Iniciante → Lendário)
+- **Elementos:** Fogo, Água, Terra, Ar, Non-Bending
+
+### Economy (Em desenvolvimento)
+- **Moedas:** Ouro (base), futuro: 3 tipos adicionais + distinção por nação
+- **Raridade de itens:** Comum, Raro, Épico, Lendário
+- **Armaduras:** Slot único, com bónus de defesa e penalidade de esquiva
+
+## Roles e Permissões
+
+| Role | Descrição | Permissões Principais |
+|------|-----------|----------------------|
+| **JOGADOR** | Jogador normal | Editar ficha própria, ver árvore de habilidades, inventário próprio, comprar na loja, trocar com jogadores, exportar personagem (JSON) |
+| **GM** | Game Master | Tudo do Jogador + ver TODAS as fichas, dar ouro/recompensas, gerir loja, entregar loot, importar JSON |
+| **ADMIN** | Administrador (1-3 contas) | TUDO do GM + gerir utilizadores, promover/despromover GMs, backup/restore DB, logs completos, exportar dados completos |
+
+**Notas:**
+- Apenas ADMIN pode criar/promover utilizadores para GM
+- Máximo de 2-3 contas ADMIN no sistema
+- ADMIN pode exportar base de dados completa para backup
 
 ## Development Priorities
-1. MVP: Character sheet, skill tree viewer, auto-save, JSON import/export
-2. Import system: Validate/generate skill JSON via AI prompts
-3. GM tools: Encounter builder, combat simulator (future)
+
+### Fase 1 — MVP (Em desenvolvimento)
+1. Ficha de personagem com atributos editáveis
+2. Árvore de habilidades por elemento
+3. Auto-save (debounce 2s)
+4. Exportar personagem para JSON (jogador)
+
+### Fase 2 — Economia e Inventário
+1. Sistema de ouro e inventário
+2. Loja (visão jogador + GM)
+3. Raridade de itens
+4. Armaduras com bónus/penalidade
+
+### Fase 3 — Ferramentas de Grupo
+1. Página de perfis simplificados
+2. Recompensas de ouro (GM)
+3. Troca entre jogadores com notificações
+
+### Fase 4 — ADMIN e Gestão
+1. Role ADMIN com permissões completas
+2. Gestão de utilizadores
+3. Backup/restore da base de dados
+4. Logs de sistema
+
+### Futuro
+- Moedas por nação
+- Subclasses desbloqueáveis
+- Companheiros com stats próprios
+- Limites de habilidades por categoria/nível
 
 ## Working Style
 - Iterative development over perfect architecture
 - Auto-save is critical (2s debounce)
-- Content import must be plug-and-play
+- Content import must be plug-and-play (schemas em DIAGRAMAS-TÉCNICOS.md)
 - Portuguese (PT-BR) preferred for user-facing text
+- GM tools should be intuitive — o GM não gere inventário global, itens são "criados" quando entregues
+- ADMIN role deve ter controlo total mas com logs de todas as ações
+
+## Available Skills
+
+As skills do Claude estão em `.claude/skills/`:
+- `generate-skill-json.md` — Template para gerar JSON de habilidades
+- `validate-json.sh` — Validar ficheiros JSON
+- `run-dev.sh` — Correr servidor de desenvolvimento
+- `new-component.sh` — Criar novos componentes
+
+## Schemas de Importação
+
+Ver [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md#9-schema-para-importação) para schemas completos:
+- `skill-import-v1` — Habilidades
+- `item-import-v1` — Itens, armaduras, poções
+- `companion-import-v1` — Companheiros
+- `attack-import-v1` — Ataques standalone

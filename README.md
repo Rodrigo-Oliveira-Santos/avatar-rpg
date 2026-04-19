@@ -1,5 +1,10 @@
 # Avatar RPG — Sistema de Personagem Web
 
+> **Documentação Completa:**
+> - [FEATURES.md](./FEATURES.md) — Todas as páginas e mecânicas (atuais e futuras)
+> - [DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md) — Fluxos e mecânicas do jogo
+> - [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
+
 ## Visão Geral
 
 Sistema de RPG customizado inspirado em **Avatar: The Last Air Bender**, estilo D&D, com foco em:
@@ -83,11 +88,18 @@ Para agora: desenvolver o Avatar RPG como projeto standalone. Manter a consciên
 | Atributo | Descrição | Fórmula Derivada |
 |----------|-----------|------------------|
 | **FOR** (Força) | Dano físico, requisitos de armas | — |
-| **AGI** (Agilidade) | Esquiva, velocidade | Esquiva = AGI×2 + PER |
+| **AGI** (Agilidade) | Esquiva, velocidade | — |
 | **CHI** (Chi) | Energia para habilidades | Chi máx = 6 + (nível×5) + (CHI×4) |
 | **PER** (Percepção) | Precisão, detecção | — |
-| **RES** (Resistência) | Defesa física | Defesa = RES×2 + nível |
+| **RES** (Resistência) | Defesa física | — |
 | **ESP** (Espírito) | Vida espiritual, cura | Espírito máx = 8 + (nível×6) + (ESP×3) |
+
+**Stats Derivados (fórmulas completas):**
+- **Vida:** 10 + (nível × 8) + (FOR × 3)
+- **Chi máx:** 6 + (nível × 5) + (CHI × 4)
+- **Espírito máx:** 8 + (nível × 6) + (ESP × 3)
+- **Defesa:** (RES × 2) + nível + bónus_armadura
+- **Esquiva:** 10 + ((AGI × 2) + PER) × 0,2 - penalidade_armadura
 
 **Vida:** 10 + (nível × 8) + (FOR × 3)
 
@@ -120,76 +132,48 @@ Para agora: desenvolver o Avatar RPG como projeto standalone. Manter a consciên
 
 ## Funcionalidades Planejadas
 
-### MVP (Fase 1)
+> **Nota:** A lista completa e detalhada de features está em [FEATURES.md](./FEATURES.md).
 
-- [ ] Autenticação simples (nome do personagem)
-- [ ] Criação de personagem (nome, elemento, aparência)
-- [ ] Ficha de personagem com atributos editáveis
-- [ ] Árvore de habilidades visual e interativa
-- [ ] Auto-save (debounce 2s após mudança)
-- [ ] Exportar personagem para JSON
-- [ ] Importar personagem de JSON
+### Resumo por Fase
 
-### Fase 2 (Import System)
-
-- [ ] Importar JSON de habilidades (novos elementos, sub-classes)
-- [ ] Validador de schema
-- [ ] Prompt template para chatbots gerarem conteúdo compatível
-
-### Fase 3 (GM Tools)
-
-- [ ] Role de GM (flag na conta)
-- [ ] Criador de encontros/inimigos
-- [ ] Visualizar sheets de todos os jogadores
-- [ ] Simulador de combate básico
-
-### Futuro (Backlog)
-
-- [ ] Auto-backups agendados
-- [ ] Histórico de sessões (anotações por sessão)
-- [ ] Sistema de inventário completo
-- [ ] Integração com Discord (webhooks)
-- [ ] Modo offline (PWA + IndexedDB)
-- [ ] Tradução PT/EN
+| Fase | Descrição | Status |
+|------|-----------|--------|
+| **Fase 1** | MVP (Ficha, Skill Tree, Auto-save, Import/Export) | 🟡 Em desenvolvimento |
+| **Fase 2** | Economia e Inventário (Ouro, Loja, Raridade, Armaduras) | ⚪ Planeado |
+| **Fase 3** | Ferramentas de Grupo (Perfis, Recompensas, Trocas) | ⚪ Planeado |
+| **Fase 4** | Moedas por Nação | ⚪ Backlog |
+| **Fase 5** | Subclasses e Progressão | ⚪ Backlog |
+| **Fase 6** | Sistema Avançado de Habilidades | ⚪ Backlog |
+| **Fase 7** | Companheiros | ⚪ Em discussão |
 
 ---
 
-## Schema de Importação (Exemplo)
+## Schema de Importação
 
-Para gerar novos conteúdos via chatbot, use este prompt:
+**Documentação completa:** [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md#9-schema-para-importação)
 
-```
-Crie um JSON de habilidade para Avatar RPG com esta estrutura:
+### Schema de Habilidade (Resumo)
 
+```json
 {
-  "element": "fogo|agua|terra|ar|nenhum",
-  "category": "spirit|agility|precise|brute",
-  "tier": 1-4,
+  "element": "fogo|agua|terra|ar|non_bending",
+  "category": "spirit|agility|precise_combat|brute_combat",
+  "tier": 1|2|3|4,
   "name": "Nome da Habilidade",
-  "description": "Descrição curta (1-2 frases)",
+  "description": "Descrição curta",
   "requirements": { "FOR": 0, "AGI": 0, "CHI": 0, "PER": 0, "RES": 0, "ESP": 0 },
-  "prerequisites": ["Nome da Habilidade Prévia"],
+  "prerequisites": ["Nome Habilidade Prévia"],
   "position": "off|def|any|pass",
-  "attacks": [
-    {
-      "name": "Nome do Ataque",
-      "description": "Descrição do ataque",
-      "damage": "2d6+2",
-      "chi_cost": 3,
-      "status": ["burn", "stun"]
-    }
-  ],
-  "passive_effect": {
-    "type": "buff|debuff|restore|heal|move|utility",
-    "dice": "1d6",
-    "chi_cost": 2,
-    "description": "O que o efeito faz",
-    "status": ["regen"]
-  }
+  "attacks": [...],
+  "passive_effect": {...}
 }
-
-Status válidos: burn, freeze, shock, blind, poison, slow, stun, regen, shield, silence, root, bleed, fear
 ```
+
+### Outros Schemas Disponíveis
+
+- **Item:** `item-import-v1` — Itens, armaduras, poções, materiais
+- **Companheiro:** `companion-import-v1` — Pets/companheiros de personagem
+- **Ataque:** `attack-import-v1` — Ataques standalone
 
 ---
 
