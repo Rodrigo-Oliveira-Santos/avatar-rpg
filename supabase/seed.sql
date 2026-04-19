@@ -1,0 +1,3 @@
+-- Seed file intentionally empty.
+-- Skills and items are loaded via GM import flow (POST /api/gm/import).
+-- See DIAGRAMAS-TÉCNICOS.md section 9 for import schemas.

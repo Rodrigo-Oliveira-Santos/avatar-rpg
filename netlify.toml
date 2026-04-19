@@ -2,9 +2,108 @@
   functions = "netlify/functions"
   publish = "public"
 
+# Auth routes
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/auth/login"
+  to = "/.netlify/functions/auth-login"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/logout"
+  to = "/.netlify/functions/auth-logout"
+  status = 200
+
+[[redirects]]
+  from = "/api/auth/me"
+  to = "/.netlify/functions/auth-me"
+  status = 200
+
+# Characters — specific routes before dynamic
+[[redirects]]
+  from = "/api/characters/all"
+  to = "/.netlify/functions/characters-all"
+  status = 200
+
+[[redirects]]
+  from = "/api/characters/:id"
+  to = "/.netlify/functions/character-by-id"
+  status = 200
+
+[[redirects]]
+  from = "/api/characters"
+  to = "/.netlify/functions/characters"
+  status = 200
+
+# Skills
+[[redirects]]
+  from = "/api/skills/:element"
+  to = "/.netlify/functions/skills-by-element"
+  status = 200
+
+[[redirects]]
+  from = "/api/skills"
+  to = "/.netlify/functions/skills"
+  status = 200
+
+# Items
+[[redirects]]
+  from = "/api/items/shop"
+  to = "/.netlify/functions/items-shop"
+  status = 200
+
+[[redirects]]
+  from = "/api/items"
+  to = "/.netlify/functions/items"
+  status = 200
+
+# Shop
+[[redirects]]
+  from = "/api/shop/purchase"
+  to = "/.netlify/functions/shop-purchase"
+  status = 200
+
+# Inventory
+[[redirects]]
+  from = "/api/inventory"
+  to = "/.netlify/functions/inventory"
+  status = 200
+
+# GM routes
+[[redirects]]
+  from = "/api/gm/reward-gold"
+  to = "/.netlify/functions/gm-reward-gold"
+  status = 200
+
+[[redirects]]
+  from = "/api/gm/give-item"
+  to = "/.netlify/functions/gm-give-item"
+  status = 200
+
+[[redirects]]
+  from = "/api/gm/import"
+  to = "/.netlify/functions/gm-import"
+  status = 200
+
+[[redirects]]
+  from = "/api/gm/actions-log"
+  to = "/.netlify/functions/gm-actions-log"
+  status = 200
+
+# Admin routes
+[[redirects]]
+  from = "/api/admin/users"
+  to = "/.netlify/functions/admin-users"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/backup"
+  to = "/.netlify/functions/admin-backup"
+  status = 200
+
+# Notifications
+[[redirects]]
+  from = "/api/notifications"
+  to = "/.netlify/functions/notifications"
   status = 200
 
 [dev]

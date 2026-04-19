@@ -52,7 +52,7 @@ export function calculateDefense(level, RES) {
  * @returns {number} Dodge value
  */
 export function calculateDodge(AGI, PER) {
-  return (AGI * 2) + PER;
+  return Math.round(10 + ((AGI * 2) + PER) * 0.2);
 }
 
 /**
@@ -61,8 +61,8 @@ export function calculateDodge(AGI, PER) {
  * @returns {object} Derived stats
  */
 export function calculateAllStats(character) {
-  const { nivel, atributos } = character.identidade;
-  const { FOR, AGI, CHI, RES, ESP } = atributos;
+  const { nivel } = character.identidade;
+  const { FOR, AGI, CHI, PER, RES, ESP } = character.atributos;
 
   return {
     maxHP: calculateMaxHP(nivel, FOR),

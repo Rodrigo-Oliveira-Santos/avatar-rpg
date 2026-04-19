@@ -14,8 +14,35 @@
   <link rel="stylesheet" href="css/components/item-card.css">
   <link rel="stylesheet" href="css/components/character-section.css">
   <link rel="stylesheet" href="css/components/xp-table.css">
+  <link rel="stylesheet" href="css/components/overlay.css">
 </head>
 <body>
+  <!-- App loader -->
+  <div id="app-loader" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+    <div class="loader-spinner"></div>
+    <span style="color:var(--text2); font-size:13px;">Carregando...</span>
+  </div>
+
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="overlay">
+    <div class="login-box">
+      <div class="login-logo">⚡ Avatar RPG</div>
+      <h2 class="login-title">Entrar</h2>
+      <form id="login-form" autocomplete="on">
+        <div class="login-field">
+          <label for="login-username">Utilizador</label>
+          <input type="text" id="login-username" name="username" placeholder="Nome de utilizador" autocomplete="username" required>
+        </div>
+        <div class="login-field">
+          <label for="login-password">Senha</label>
+          <input type="password" id="login-password" name="password" placeholder="Senha" autocomplete="current-password" required>
+        </div>
+        <p id="login-error" class="login-error"></p>
+        <button type="submit" id="login-btn" class="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
   <div class="app">
     <!-- Navigation Tabs -->
     <nav class="nav" role="tablist">

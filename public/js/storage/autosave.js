@@ -103,9 +103,16 @@ export class AutoSave {
    * @param {object} payload - Character data
    */
   async saveToAPI(payload) {
-    const response = await fetch('/api/characters/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const id = payload.id;
+    const url = id ? `/api/characters/${id}` : '/api/characters';
+    const method = id ? 'PUT' : 'POST';
+    const token = localStorage.getItem('avatar_rpg_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(url, {
+      method,
+      headers,
       body: JSON.stringify(payload),
     });
 
@@ -113,7 +120,12 @@ export class AutoSave {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    // Store returned id if creating new character
+    if (!id && result.id) {
+      this.character.data.id = result.id;
+    }
+    return result;
   }
 
   /**
@@ -156,12 +168,14 @@ export class AutoSave {
         log('info', 'beforeunload: saving with sendBeacon');
 
         const payload = this.character.serialize();
+        const id = payload.id;
+        const url = id ? `/api/characters/${id}` : '/api/characters';
         const blob = new Blob([JSON.stringify(payload)], {
           type: 'application/json',
         });
 
         // sendBeacon survives page unload
-        navigator.sendBeacon('/api/characters/save', blob);
+        navigator.sendBeacon(url, blob);
 
         // Also save to localStorage as backup
         this.saveToLocal(payload);

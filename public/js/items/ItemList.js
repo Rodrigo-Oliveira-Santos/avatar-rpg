@@ -125,17 +125,31 @@ function createCategoryTabs(activeCategory, onCategoryChange) {
  */
 export class ItemList {
   /**
-   * @param {array} items - All available items
    * @param {object} character - Character instance
    * @param {HTMLElement} container - DOM container
    */
-  constructor(items, character, container) {
-    this.items = items;
+  constructor(character, container) {
+    this.items = [];
     this.character = character;
     this.container = container;
     this.activeCategory = 'all';
 
-    this.render();
+    this.loadItems();
+  }
+
+  /**
+   * Load items from API
+   */
+  async loadItems() {
+    this.container.innerHTML = '<p style="color: var(--text2); padding: 20px;">Carregando itens...</p>';
+    try {
+      const { loadItems } = await import('./data.js');
+      this.items = await loadItems();
+      this.render();
+    } catch {
+      this.items = [];
+      this.render();
+    }
   }
 
   /**

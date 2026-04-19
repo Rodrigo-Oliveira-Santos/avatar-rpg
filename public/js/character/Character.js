@@ -13,6 +13,7 @@ import { getAvailableSlots } from './slots.js';
  */
 function createDefaultCharacter() {
   return {
+    id: null,
     identidade: {
       nome: '',
       elemento: 'fire',
@@ -73,10 +74,10 @@ export class Character {
    * Recalculate all derived values
    */
   recalculateAll() {
-    const { nivel, atributos } = this.data.identidade;
+    const { nivel } = this.data.identidade;
 
     // Calculate derived stats
-    this.data.stats_derived = calculateAllStats(this.data.identidade);
+    this.data.stats_derived = calculateAllStats(this.data);
 
     // Update milestone
     this.data.identidade.marco = getMilestone(nivel);
@@ -92,9 +93,9 @@ export class Character {
    * Recalculate available attribute points
    */
   recalculatePoints() {
-    const { nivel, atributos } = this.data.identidade;
+    const { nivel } = this.data.identidade;
     const totalPoints = (nivel - 1) * GAME.POINTS_PER_LEVEL;
-    const spentPoints = Object.values(atributos).reduce((sum, val) => sum + (val - 8), 0);
+    const spentPoints = Object.values(this.data.atributos).reduce((sum, val) => sum + (val - 8), 0);
     this.data.pontos_disponiveis = totalPoints - spentPoints;
   }
 
@@ -108,14 +109,14 @@ export class Character {
     const validAttrs = Object.keys(this.data.atributos);
     if (!validAttrs.includes(attr)) return false;
 
-    const current = this.data.identidade.atributos[attr];
+    const current = this.data.atributos[attr];
     const newValue = current + delta;
 
     // Check limits
     if (newValue < 1) return false;
     if (this.data.pontos_disponiveis < -delta && delta > 0) return false;
 
-    this.data.identidade.atributos[attr] = newValue;
+    this.data.atributos[attr] = newValue;
     this.recalculateAll();
     this.notify();
     return true;
@@ -133,7 +134,7 @@ export class Character {
 
     if (value < 1) return false;
 
-    this.data.identidade.atributos[attr] = value;
+    this.data.atributos[attr] = value;
     this.recalculateAll();
     this.notify();
     return true;

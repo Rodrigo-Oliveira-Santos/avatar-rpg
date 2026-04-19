@@ -1,60 +1,45 @@
 /**
  * Skill Data Loader
- * Loads skill JSON files from data/skills/
+ * Loads skills from API (/api/skills/:element)
  */
 
-const SKILL_PATHS = {
-  fire: '/data/skills/fire.json',
-  water: '/data/skills/water.json',
-  earth: '/data/skills/earth.json',
-  air: '/data/skills/air.json',
-  none: '/data/skills/none.json',
-};
+import { getSkills } from '../api/skills.js';
 
 /**
  * Load skills for a specific element
  * @param {string} element - Element name
- * @returns {Promise<object>} Skill data
+ * @returns {Promise<object>} Skill data { skills: [...] }
  */
 export async function loadSkills(element) {
-  const path = SKILL_PATHS[element];
-  if (!path) {
+  const validElements = ['fire', 'water', 'earth', 'air', 'none'];
+  if (!validElements.includes(element)) {
     throw new Error(`Unknown element: ${element}`);
   }
 
   try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    return await response.json();
+    const skills = await getSkills(element);
+    return { skills: Array.isArray(skills) ? skills : [] };
   } catch (err) {
-    console.error(`[Skills] Failed to load ${element}:`, err);
+    console.warn(`[Skills] Failed to load ${element} from API:`, err.message);
     return { skills: [], error: err.message };
   }
 }
 
 /**
  * Load all skills for all elements
- * @returns {Promise<object>} All skill data
+ * @returns {Promise<object>} All skill data keyed by element
  */
 export async function loadAllSkills() {
+  const elements = ['fire', 'water', 'earth', 'air', 'none'];
   const results = {};
 
-  for (const [element, path] of Object.entries(SKILL_PATHS)) {
+  await Promise.all(elements.map(async (element) => {
     try {
-      const response = await fetch(path);
-      if (response.ok) {
-        results[element] = await response.json();
-      } else {
-        console.warn(`[Skills] No data for ${element}`);
-        results[element] = { skills: [] };
-      }
-    } catch (err) {
-      console.warn(`[Skills] Error loading ${element}:`, err);
-      results[element] = { skills: [], error: err.message };
+      results[element] = await loadSkills(element);
+    } catch {
+      results[element] = { skills: [] };
     }
-  }
+  }));
 
   return results;
 }

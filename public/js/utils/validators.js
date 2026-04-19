@@ -102,7 +102,7 @@ export function validateCharacterSchema(character) {
     return { valid: false, errors };
   }
 
-  const { identidade } = character.identidade;
+  const identidade = character.identidade;
 
   if (!identidade.nome) errors.push('Missing character name');
   if (!identidade.elemento) errors.push('Missing character element');
@@ -113,13 +113,13 @@ export function validateCharacterSchema(character) {
     }
   }
 
-  if (identidade.atributos) {
+  if (character.atributos) {
     const validAttrs = Object.keys(ATTRIBUTES);
-    Object.keys(identidade.atributos).forEach(attr => {
+    Object.keys(character.atributos).forEach(attr => {
       if (!validAttrs.includes(attr)) {
         errors.push(`Invalid attribute: ${attr}`);
       }
-      if (typeof identidade.atributos[attr] !== 'number') {
+      if (typeof character.atributos[attr] !== 'number') {
         errors.push(`Attribute ${attr} must be a number`);
       }
     });
