@@ -1,23 +1,48 @@
 # Avatar RPG — Claude Code Context
 
+**Última atualização:** 2026-04-20
+
 ## Project Overview
-Web-based RPG character management system inspired by Avatar: The Last Airbender. Single-player focused with simple authentication (character name), skill trees, and JSON import/export.
+
+Web-based RPG character management system inspired by Avatar: The Last Airbender. Single-player focused with simple authentication (username only), skill trees, and JSON import/export.
 
 **Contexto mais amplo:** Este é o primeiro "sub-projeto" de um portal web mais amplo. A arquitetura deve permitir que futuros sites/tools sejam adicionados como módulos independentes, com uma página inicial (landing/hub) para navegação entre eles.
 
 ## Current State
+
 - **Prototype files:** `index.html`, `patch.js.txt` (monolithic HTML/JS)
 - **Game data:** `Initial Files/*.json` (skill definitions for Fire, Water, Earth, Air, No-Bending)
 - **Target:** Split into modern frontend/backend architecture
 
 ## Documentation
+
 - **[FEATURES.md](./FEATURES.md)** — Todas as páginas e mecânicas (atuais e futuras)
 - **[DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md)** — Fluxos e mecânicas do jogo
 - **[DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md)** — Arquitetura, schema DB, APIs, schemas JSON
+- **[PRIORIDADES-IMPLEMENTACAO.md](./PRIORIDADES-IMPLEMENTACAO.md)** — Ordem de prioridades e dependências
 
 ## Tech Stack
-- **Frontend:** HTML5 + CSS3 + JavaScript (ES6+) — sem frameworks, interface clean baseada no `avatar_rpg_v6.html`
+
+- **Frontend:** HTML5 + CSS3 + JavaScript (ES6+) — sem frameworks, interface clean
 - **Backend:** Netlify Functions (serverless) + Supabase (PostgreSQL + Auth)
+- **Hosting:** Netlify (free tier)
+
+## 🚧 Current Phase: MVP (Fase 1)
+
+**Foco atual:** Sistema funcional mínimo para um jogador gerir o seu personagem.
+
+| Feature | Status |
+|---------|--------|
+| Autenticação (username, sem password) | 🚧 |
+| Ficha de personagem (atributos + stats) | 🚧 |
+| Árvore de habilidades (estrutura visual, mock) | 🚧 |
+| Loja (layout + mock) | 🚧 |
+| Hub de Jogadores (mock) | 🚧 |
+
+**Não incluído na Fase 1:**
+- ❌ Auto-save (debounce 2s) — 📋 Backlog
+- ❌ Importar/Exportar JSON — 📋 Fase 2
+- ❌ Elementos completos — 📋 Fase 2 (via JSON)
 
 ## Key Game Mechanics
 
@@ -42,13 +67,8 @@ Web-based RPG character management system inspired by Avatar: The Last Airbender
 - **Nível máximo:** 40
 - **Pontos por nível:** 3 (distribuídos livremente)
 - **XP para próximo nível:** `round(200 × (nível-1)^1.55)`
-- **Skill tiers:** 1-4 (Iniciante → Lendário)
+- **Skill tiers:** 1-4 (Iniciado → Lendário)
 - **Elementos:** Fogo, Água, Terra, Ar, Non-Bending
-
-### Economy (Em desenvolvimento)
-- **Moedas:** Ouro (base), futuro: 3 tipos adicionais + distinção por nação
-- **Raridade de itens:** Comum, Raro, Épico, Lendário
-- **Armaduras:** Slot único, com bónus de defesa e penalidade de esquiva
 
 ## Roles e Permissões
 
@@ -61,54 +81,54 @@ Web-based RPG character management system inspired by Avatar: The Last Airbender
 **Notas:**
 - Apenas ADMIN pode criar/promover utilizadores para GM
 - Máximo de 2-3 contas ADMIN no sistema
-- ADMIN pode exportar base de dados completa para backup
 
-## Development Priorities
+## Development Priorities (Resumo)
 
-### Fase 1 — MVP (Em desenvolvimento)
-1. Ficha de personagem com atributos editáveis
-2. Árvore de habilidades por elemento
-3. Auto-save (debounce 2s)
-4. Exportar personagem para JSON (jogador)
+### 🚧 Fase 1 — MVP (Atual)
+1. Autenticação simples (username, sem password)
+2. Ficha de personagem com atributos editáveis
+3. Árvore de habilidades visual (mock)
+4. Loja e Hub com dados de exemplo
 
-### Fase 2 — Economia e Inventário
+### 📋 Fase 2 — Economia e JSON
 1. Sistema de ouro e inventário
-2. Loja (visão jogador + GM)
-3. Raridade de itens
-4. Armaduras com bónus/penalidade
+2. Importar/Exportar JSON (habilidades, itens, personagens)
+3. Loja funcional (dados da BD)
+4. Raridade de itens (visual)
 
-### Fase 3 — Ferramentas de Grupo
-1. Página de perfis simplificados
+### 📦 Fase 3 — Grupo
+1. Hub de Jogadores funcional
 2. Recompensas de ouro (GM)
-3. Troca entre jogadores com notificações
+3. Troca entre jogadores
 
-### Fase 4 — ADMIN e Gestão
-1. Role ADMIN com permissões completas
-2. Gestão de utilizadores
-3. Backup/restore da base de dados
-4. Logs de sistema
+### 📦 Fase 4 — Admin
+1. Gestão de utilizadores
+2. Backup/restore DB
+3. Logs de sistema
 
-### Futuro
+### 🔮 Futuro
 - Moedas por nação
 - Subclasses desbloqueáveis
 - Companheiros com stats próprios
-- Limites de habilidades por categoria/nível
+- Página dedicada de inventário
+- Sistema de "gifts" / trocas forçadas
 
 ## Working Style
-- Iterative development over perfect architecture
-- Auto-save is critical (2s debounce)
-- Content import must be plug-and-play (schemas em DIAGRAMAS-TÉCNICOS.md)
-- Portuguese (PT-BR) preferred for user-facing text
-- GM tools should be intuitive — o GM não gere inventário global, itens são "criados" quando entregues
-- ADMIN role deve ter controlo total mas com logs de todas as ações
+
+- **Iterative development over perfect architecture** — MVP primeiro, otimizações depois
+- **PT-PT** para texto visível ao utilizador
+- **GM tools** devem ser intuitivos — o GM não gere inventário global, itens são "criados" quando entregues
+- **ADMIN** deve ter controlo total mas com logs de todas as ações
+- **Restrições Netlify + Supabase Free:** 500MB storage, 125k functions/mês
 
 ## Available Skills
 
 As skills do Claude estão em `.claude/skills/`:
 - `generate-skill-json.md` — Template para gerar JSON de habilidades
+- `generate-item-json.md` — Template para gerar JSON de itens
 - `validate-json.sh` — Validar ficheiros JSON
 - `run-dev.sh` — Correr servidor de desenvolvimento
-- `new-component.sh` — Criar novos componentes
+- `new-component.sh` — Criar novos componentes frontend (HTML/CSS/JS vanilla)
 
 ## Schemas de Importação
 

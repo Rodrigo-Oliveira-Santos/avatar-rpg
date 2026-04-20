@@ -1,28 +1,98 @@
-# Avatar RPG — Copilot Instructions
+# Avatar RPG — GitHub Copilot Instructions
 
-## Project Overview
-Web-based RPG character management system inspired by Avatar: The Last Airbender. Single-player focused with simple authentication (character name), skill trees, and JSON import/export.
+**Última atualização:** 2026-04-20
+
+## Visão Geral do Projeto
+
+Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG inspirado em Avatar: The Last Airbender.
 
 **Contexto mais amplo:** Este é o primeiro "sub-projeto" de um portal web mais amplo. A arquitetura deve permitir que futuros sites/tools sejam adicionados como módulos independentes, com uma página inicial (landing/hub) para navegação entre eles.
 
-## Current State
-- **Prototype files:** `index.html`, `patch.js.txt` (monolithic HTML/JS)
-- **Game data:** `Initial Files/*.json` (skill definitions for Fire, Water, Earth, Air, No-Bending)
-- **Target:** Split into modern frontend/backend architecture
+## Fase Atual: MVP (Fase 1)
 
-## Documentation
-- **[FEATURES.md](./FEATURES.md)** — Todas as páginas e mecânicas (atuais e futuras)
-- **[DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md)** — Fluxos e mecânicas do jogo
-- **[DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md)** — Arquitetura, schema DB, APIs, schemas JSON
+**Foco:** Sistema funcional mínimo para um jogador gerir o seu personagem.
 
-## Tech Stack
-- **Frontend:** HTML5 + CSS3 + JavaScript (ES6+) — sem frameworks, interface clean
+| Feature | Status |
+|---------|--------|
+| Autenticação (username, sem password) | 🚧 |
+| Ficha de personagem (atributos + stats) | 🚧 |
+| Árvore de habilidades (estrutura visual, mock) | 🚧 |
+| Loja (layout + mock) | 🚧 |
+| Hub de Jogadores (mock) | 🚧 |
+
+**Não incluído na Fase 1:**
+- ❌ Auto-save complexo (debounce 2s) — 📋 Backlog
+- ❌ Importar/Exportar JSON — 📋 Fase 2
+- ❌ Elementos completos — 📋 Fase 2 (via JSON)
+
+## Arquitetura
+
+- **Frontend:** HTML5 + CSS3 + JavaScript (ES6+) — sem frameworks
 - **Backend:** Netlify Functions (serverless) + Supabase (PostgreSQL + Auth)
-- **Deploy:** Netlify (frontend + functions), Supabase (free tier, 500MB)
+- **Hosting:** Netlify (free tier)
 
-## Key Game Mechanics
+## Estrutura de Pastas
 
-### Attributes
+### Fase 1 (Atual)
+```
+public/
+├── index.html
+├── css/
+│   ├── global.css
+│   └── avatar-rpg/
+│       ├── character.css
+│       ├── skills.css
+│       ├── inventory.css
+│       ├── shop.css
+│       └── hub.css
+└── js/
+    ├── app.js
+    └── avatar-rpg/
+        ├── character/
+        ├── skills/
+        ├── inventory/
+        └── auth/
+```
+
+### Futuro (Pós-Fase 2)
+```
+public/
+├── index.html          # Landing page / Hub do portal
+├── avatar-rpg/         # Módulo Avatar RPG completo
+│   ├── index.html
+│   ├── css/
+│   └── js/
+└── future-module/      # Futuros módulos do portal
+```
+
+## Próximas Fases
+
+### Fase 2 — Economia e JSON
+- Sistema de ouro e inventário
+- Importar/Exportar JSON (habilidades, itens, personagens)
+- Loja funcional (dados da BD)
+- Raridade de itens (visual)
+
+### Fase 3 — Grupo
+- Hub de Jogadores funcional
+- Recompensas de ouro (GM)
+- Troca entre jogadores
+
+### Fase 4 — Admin
+- Gestão de utilizadores
+- Backup/restore DB
+- Logs de sistema
+
+### Futuro
+- Moedas por nação
+- Subclasses desbloqueáveis
+- Companheiros com stats próprios
+- Página dedicada de inventário
+- Sistema de "gifts" / trocas forçadas
+
+## Mecânicas do Jogo
+
+### Atributos
 | Atributo | Descrição |
 |----------|-----------|
 | **FOR** (Força) | Dano físico, requisitos de armas |
@@ -32,170 +102,73 @@ Web-based RPG character management system inspired by Avatar: The Last Airbender
 | **RES** (Resistência) | Defesa física |
 | **ESP** (Espírito) | Vida espiritual, cura |
 
-### Derived Stats (Fórmulas Atuais)
-- **Vida:** 10 + (nível × 8) + (FOR × 3)
-- **Chi máx:** 6 + (nível × 5) + (CHI × 4)
-- **Espírito máx:** 8 + (nível × 6) + (ESP × 3)
-- **Defesa:** (RES × 2) + nível + bónus_armadura
-- **Esquiva:** 10 + ((AGI × 2) + PER) × 0,2 - penalidade_armadura
+### Fórmulas de Stats Derivados
+```javascript
+vida: 10 + (nivel * 8) + (FOR * 3)
+chiMax: 6 + (nivel * 5) + (CHI * 4)
+espiritoMax: 8 + (nivel * 6) + (ESP * 3)
+defesa: (RES * 2) + nivel + bonusArmadura
+esquiva: 10 + ((AGI * 2) + PER) * 0.2 - penalidadeArmadura
+```
 
-### Progression
-- **Nível máximo:** 40
-- **Pontos por nível:** 3 (distribuídos livremente)
-- **XP para próximo nível:** `round(200 × (nível-1)^1.55)`
-- **Skill tiers:** 1-4 (Iniciante → Lendário)
-- **Elementos:** Fogo, Água, Terra, Ar, Non-Bending
-
-### Economy (Em desenvolvimento)
-- **Moedas:** Ouro (base), futuro: 3 tipos adicionais + distinção por nação
-- **Raridade de itens:** Comum, Raro, Épico, Lendário
-- **Armaduras:** Slot único, com bónus de defesa e penalidade de esquiva
+### Progressão
+- Nível máximo: 40
+- Pontos por nível: 3
+- XP para próximo nível: `round(200 × (nível-1)^1.55)`
+- Skill tiers: 1-4 (Iniciante → Lendário)
+- Elementos: Fogo, Água, Terra, Ar, Non-Bending
 
 ## Roles e Permissões
 
-| Role | Descrição | Permissões Principais |
-|------|-----------|----------------------|
-| **JOGADOR** | Jogador normal | Editar ficha própria, ver árvore de habilidades, inventário próprio, comprar na loja, trocar com jogadores, exportar personagem (JSON) |
-| **GM** | Game Master | Tudo do Jogador + ver TODAS as fichas, dar ouro/recompensas, gerir loja, entregar loot, importar JSON |
-| **ADMIN** | Administrador (1-3 contas) | TUDO do GM + gerir utilizadores, promover/despromover GMs, backup/restore DB, logs completos, exportar dados completos |
+| Role | Permissões |
+|------|------------|
+| **JOGADOR** | Editar ficha própria, ver skills, inventário, comprar, trocar, exportar JSON |
+| **GM** | Tudo do Jogador + ver todas as fichas, dar ouro/loot, gerir loja, importar JSON |
+| **ADMIN** | TUDO do GM + gerir utilizadores, promover/despromover GMs, backup/restore DB |
 
 **Notas:**
 - Apenas ADMIN pode criar/promover utilizadores para GM
 - Máximo de 2-3 contas ADMIN no sistema
-- ADMIN pode exportar base de dados completa para backup
 
-## Development Priorities
+## Guidelines de Código
 
-### Fase 1 — MVP (Em desenvolvimento)
-1. Ficha de personagem com atributos editáveis
-2. Árvore de habilidades por elemento
-3. Auto-save (debounce 2s)
-4. Exportar personagem para JSON (jogador)
+### Estilo e Convenções
+- JavaScript ES6+ (arrow functions, async/await, modules)
+- CSS modular por componente
+- PT-PT para texto visível ao utilizador
+- Comentários apenas para lógica complexa (não para óbvio)
 
-### Fase 2 — Economia e Inventário
-1. Sistema de ouro e inventário
-2. Loja (visão jogador + GM)
-3. Raridade de itens
-4. Armaduras com bónus/penalidade
+### Padrões Importantes
+- Save híbrido: tempo + deteção de mudanças + beforeunload (Fase 1)
+- Debounce de 2s para auto-save (Fase 2)
+- Validação de schemas JSON no client e server
 
-### Fase 3 — Ferramentas de Grupo
-1. Página de perfis simplificados
-2. Recompensas de ouro (GM)
-3. Troca entre jogadores com notificações
+### Restrições Netlify + Supabase Free Tier
+- Supabase: 500MB storage → otimizar queries
+- Netlify Functions: 125k invocações/mês → debounce, caching
+- Monitorar bandwidth de images/assets
 
-### Fase 4 — ADMIN e Gestão
-1. Role ADMIN com permissões completas
-2. Gestão de utilizadores
-3. Backup/restore da base de dados
-4. Logs de sistema
+## Documentação Completa
 
-### Futuro
-- Moedas por nação
-- Subclasses desbloqueáveis
-- Companheiros com stats próprios
-- Limites de habilidades por categoria/nível
-
-## Working Style
-- Iterative development over perfect architecture
-- Auto-save is critical (2s debounce)
-- Content import must be plug-and-play (schemas em DIAGRAMAS-TÉCNICOS.md)
-- Portuguese (PT-BR) preferred for user-facing text
-- GM tools should be intuitive — o GM não gere inventário global, itens são "criados" quando entregues
-- ADMIN role deve ter controlo total mas com logs de todas as ações
-
-## Available Skills
-
-As skills estão em `.copilot/skills/`:
-- `generate-skill-json` — Template para gerar JSON de habilidades
-- `generate-item-json` — Template para gerar JSON de itens
-- `validate-json` — Validar ficheiros JSON do projeto
-- `run-dev` — Correr servidor de desenvolvimento
-- `new-component` — Criar novos componentes frontend (HTML/CSS/JS)
+- `FEATURES.md` — Todas as páginas e mecânicas
+- `DIAGRAMAS-NÃO-TÉCNICOS.md` — Fluxos e mecânicas do jogo
+- `DIAGRAMAS-TÉCNICOS.md` — Arquitetura, schema DB, APIs
+- `PRIORIDADES-IMPLEMENTACAO.md` — Ordem de prioridades
+- `CLAUDE.md` — Contexto para Claude Code
 
 ## Schemas de Importação
 
-Ver [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md#9-schema-para-importação) para schemas completos:
+Ver `DIAGRAMAS-TÉCNICOS.md` para schemas completos:
 - `skill-import-v1` — Habilidades
 - `item-import-v1` — Itens, armaduras, poções
 - `companion-import-v1` — Companheiros
 - `attack-import-v1` — Ataques standalone
 
-## Frontend File Structure
+## Available Skills
 
-```
-public/
-├── index.html          # Página única (SPA-like)
-├── css/
-│   ├── main.css        # Estilos globais
-│   └── components/     # Componentes modulares
-│       ├── nav-tabs.css
-│       ├── attr-panel.css
-│       ├── stat-bars.css
-│       ├── skill-card.css
-│       ├── item-card.css
-│       └── character-section.css
-└── js/
-    ├── app.js          # Inicialização e estado global
-    ├── main.js         # Event listeners e UI bindings
-    ├── character/      # Lógica de personagem
-    │   ├── Character.js
-    │   ├── stats.js
-    │   ├── xp.js
-    │   └── slots.js
-    ├── skills/         # Sistema de habilidades
-    │   ├── data.js
-    │   ├── SkillCard.js
-    │   ├── SkillTree.js
-    │   └── index.js
-    ├── items/          # Sistema de inventário e itens
-    │   ├── inventory.js
-    │   ├── ItemList.js
-    │   └── index.js
-    ├── storage/        # Persistência (auto-save, import/export)
-    │   ├── autosave.js
-    │   ├── export.js
-    │   ├── import.js
-    │   └── index.js
-    └── utils/          # Utilitários
-        ├── constants.js
-        ├── dom.js
-        ├── validators.js
-        └── index.js
-```
-
-## API Endpoints (Netlify Functions)
-
-```
-POST   /api/auth/login
-POST   /api/auth/logout
-GET    /api/auth/me
-
-GET    /api/characters
-POST   /api/characters
-GET    /api/characters/:id
-PUT    /api/characters/:id      # auto-save endpoint
-DELETE /api/characters/:id
-GET    /api/characters/all      # GM only
-
-GET    /api/skills
-GET    /api/skills/:element
-POST   /api/skills              # GM only
-PUT    /api/skills/:id          # GM only
-DELETE /api/skills/:id          # GM only
-
-GET    /api/items
-GET    /api/items/shop
-POST   /api/items               # GM only
-PUT    /api/items/:id           # GM only
-
-POST   /api/gm/reward-gold
-POST   /api/gm/give-item
-POST   /api/gm/import
-GET    /api/gm/actions-log
-
-GET    /api/admin/users         # ADMIN only
-POST   /api/admin/promote       # ADMIN only
-GET    /api/admin/backup        # ADMIN only
-POST   /api/admin/restore       # ADMIN only
-GET    /api/admin/system-logs   # ADMIN only
-```
+Skills do Copilot estão em `.copilot/skills/`:
+- `generate-skill-json` — Template para gerar JSON de habilidades
+- `generate-item-json` — Template para gerar JSON de itens
+- `validate-json` — Validar ficheiros JSON
+- `run-dev` — Correr servidor de desenvolvimento
+- `new-component` — Criar novos componentes frontend

@@ -2,6 +2,12 @@
 
 **Objetivo:** Explicar o fluxo das mecânicas e features do jogo de forma visual e compreensível.
 
+**Legenda de Status:**
+- ✅ Implementado
+- 🚧 Em desenvolvimento
+- 📋 Backlog (Fase 2+)
+- 🔮 Futuro (longo prazo)
+
 ---
 
 ## 1. Visão Geral do Sistema de Páginas
@@ -34,6 +40,11 @@
    │ - Tipo      │           │ - Loot individual
    │ - Armadura? │           │ - Gestão Loja   │
    └─────────────┘           └─────────────────┘
+
+Legenda:
+  ✅ Ficha, Árvore, Loja (mock), Hub (mock) — Fase 1
+  📋 Inventário, Gestão de Grupo — Fase 2/3
+  🔮 Página própria de Inventário — Futuro
 ```
 
 ---
@@ -169,6 +180,8 @@ Jogador A                         Sistema                        Jogador B
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
+│  📋 FASE 2: LOJA COM UMA MOEDA (OURO)                                    │
+│                                                                          │
 │  BANCO GLOBAL DE ITENS (todos os itens disponíveis)                      │
 │                                                                          │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐        │
@@ -180,32 +193,45 @@ Jogador A                         Sistema                        Jogador B
                             │ GM seleciona
                             ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  ITENS NA LOJA (visível aos jogadores)                                   │
+│  ITENS NA LOJA (visível aos jogadores) — FASE 2                         │
 │                                                                          │
 │  ┌─────────────────────────────────────────────────────────────────────┐ │
-│  │  Item              │ Preço  │ Raridade │ Nação Moeda │ [Editar]    │ │
+│  │  Item              │ Preço (Ouro) │ [Editar]                        │ │
 │  ├─────────────────────────────────────────────────────────────────────┤ │
-│  │  Espada de Fogo    │ 150    │ Raro     │ Fogo        │ [✏️]        │ │
-│  │  Poção de Cura     │ 50     │ Comum    │ Todas       │ [✏️]        │ │
-│  │  Armadura de Terra │ 300    │ Épico    │ Terra       │ [✏️]        │ │
+│  │  Espada de Fogo    │ 150          │ [✏️]                            │ │
+│  │  Poção de Cura     │ 50           │ [✏️]                            │ │
+│  │  Armadura de Terra │ 300          │ [✏️]                            │ │
 │  └─────────────────────────────────────────────────────────────────────┘ │
 │                                                                          │
-│  [ + Adicionar Item ]  [ Definir Filtro de Nação: Todas ▼ ]             │
+│  [ + Adicionar Item ]                                                    │
+│                                                                          │
+│  NOTA: Apenas moeda de OURO nesta fase.                                  │
 └──────────────────────────────────────────────────────────────────────────┘
                             │
                             │ Jogadores veem
                             ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  LOJA (visão do Jogador)                                                 │
+│  LOJA (visão do Jogador) — FASE 2                                       │
 │                                                                          │
 │  [ Search bar: ______________ ]  [ Filtro Categoria: Todas ▼ ]          │
 │                                                                          │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                        │
 │  │Espada Fogo  │ │Poção Cura   │ │Armadura     │                        │
-│  │🔥 Raro      │ │💚 Comum     │ │🟤 Épico     │                        │
-│  │150 (Fogo)   │ │50 (Todas)   │ │300 (Terra)  │                        │
+│  │150 Ouro     │ │50 Ouro      │ │300 Ouro     │                        │
 │  │[ Comprar ]  │ │[ Comprar ]  │ │[ Comprar ]  │                        │
 │  └─────────────┘ └─────────────┘ └─────────────┘                        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  🔮 FUTURO: MOEDAS POR NAÇÃO                                             │
+│                                                                          │
+│  Após Fase 2 funcionar com OURO apenas:                                 │
+│  • 3 tipos adicionais de moedas (Prata, Bronze, Cobre)                   │
+│  • Distinção por nação (Fogo, Água, Terra, Ar)                           │
+│  • Filtros de nação na loja                                              │
+│  • Restrições de compra por nação                                        │
+│                                                                          │
+│  Ver Secção 10 para diagrama completo do sistema de nações.              │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -215,21 +241,44 @@ Jogador A                         Sistema                        Jogador B
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         TIERS DE RARIDADE                                   │
+│                    TIERS DE RARIDADE — 📋 FASE 2+                           │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────┬──────────────┬──────────────┬──────────────┐
-│   COMUM      │    RARO      │    ÉPICO     │   LENDÁRIO   │
-│              │              │              │              │
-│  ⚪ Cor branca│  🟢 Cor verde│  🟣 Cor roxa │  🟠 Cor laranja│
-│              │              │              │              │
-│  Stats básicos│  Stats +10%  │  Stats +25%  │  Stats +50%  │
-│  Preço base   │  Preço ×1.5  │  Preço ×2.5  │  Preço ×4    │
-│              │              │              │              │
-│  Drop comum   │  Drop médio  │  Drop raro   │  Drop único  │
-└──────────────┴──────────────┴──────────────┴──────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  📋 FASE 2: RARIDADE VISUAL (SEM IMPLICAÇÕES MECÂNICAS)                 │
+│                                                                         │
+│  A raridade é apenas uma TAG VISUAL na descrição do item.               │
+│  O balanceamento é feito pelo GM através de atributos e preço.          │
+│                                                                         │
+│  ┌──────────────┬──────────────┬──────────────┬──────────────┐          │
+│  │   COMUM      │    RARO      │    ÉPICO     │   LENDÁRIO   │          │
+│  │              │              │              │              │          │
+│  │  ⚪ Branco   │  🟢 Verde    │  🟣 Roxo     │  🟠 Laranja  │          │
+│  │              │              │              │              │          │
+│  │  Sem bónus   │  Sem bónus   │  Sem bónus   │  Sem bónus   │          │
+│  │  (visual)    │  (visual)    │  (visual)    │  (visual)    │          │
+│  └──────────────┴──────────────┴──────────────┴──────────────┘          │
+│                                                                         │
+│  IMPLEMENTAÇÃO: Campo `rarity` no JSON do item.                         │
+└─────────────────────────────────────────────────────────────────────────┘
 
-NOTA: Valores exatos são definidos pelo GM no JSON de cada item.
+┌─────────────────────────────────────────────────────────────────────────┐
+│  🔮 FUTURO: RARIDADE COM IMPLICAÇÕES MECÂNICAS                          │
+│                                                                         │
+│  Após Fase 2 estar funcional, pode-se adicionar:                        │
+│                                                                         │
+│  ┌──────────────┬──────────────┬──────────────┬──────────────┐          │
+│  │   COMUM      │    RARO      │    ÉPICO     │   LENDÁRIO   │          │
+│  │              │              │              │              │          │
+│  │  Stats base  │  Stats +10%  │  Stats +25%  │  Stats +50%  │          │
+│  │  Preço base  │  Preço ×1.5  │  Preço ×2.5  │  Preço ×4    │          │
+│  │              │              │              │              │          │
+│  │  Drop comum  │  Drop médio  │  Drop raro   │  Drop único  │          │
+│  └──────────────┴──────────────┴──────────────┴──────────────┘          │
+│                                                                         │
+│  NOTA: Esta implementação futura requer rebalanceamento                 │
+│  cuidadoso para não quebrar a economia do jogo.                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -500,6 +549,111 @@ Personagem Nível 1
 │  │  Vida: 50                   │          │  Vida: 50                  ││
 │  │  Chi Max: 30                │          │  Chi Max: 30               ││
 │  └─────────────────────────────┘          └────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 12. Sistema de Inventário (Atualizado)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    INVENTÁRIO — LOCALIZAÇÃO E FLUXO                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  📍 FASE 1/2: INVENTÁRIO NA FICHA DE PERSONAGEM                         │
+│                                                                         │
+│  O inventário está INTEGRADO na página da Ficha de Personagem,          │
+│  não é uma página separada.                                             │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  FICHA DE PERSONAGEM                                              │  │
+│  │  ┌─────────────────┐  ┌─────────────────┐                         │  │
+│  │  │   ATRIBUTOS     │  │    STATS        │                         │  │
+│  │  │   FOR  [10]     │  │   Vida: 50/50   │                         │  │
+│  │  │   AGI  [8]      │  │   Chi: 30/30    │                         │  │
+│  │  │   ...           │  │   Defesa: 25    │                         │  │
+│  │  └─────────────────┘  └─────────────────┘                         │  │
+│  │  ┌─────────────────────────────────────────────────────────────┐  │
+│  │  │  INVENTÁRIO (Secção integrada)                              │  │
+│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │  │
+│  │  │  │  Espada     │ │  Poção x3   │ │  Armadura   │            │  │
+│  │  │  │  (Equipada) │ │  (Consum.)  │ │  (Slot)     │            │  │
+│  │  │  └─────────────┘ └─────────────┘ └─────────────┘            │  │
+│  │  │                                                            │  │
+│  │  │  Ouro: 500                                                │  │
+│  │  │  [ Abrir Trocas ] [ Ver Histórico ]                       │  │
+│  │  └─────────────────────────────────────────────────────────────┘  │
+│  └───────────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  🔮 FUTURO: PÁGINA DEDICADA DE INVENTÁRIO                               │
+│                                                                         │
+│  Quando o sistema crescer, pode fazer sentido criar uma página           │
+│  própria para o inventário com:                                         │
+│                                                                         │
+│  • Gestão avançada de itens (organizar por categorias)                  │
+│  • Mais descrições detalhadas de cada item                              │
+│  • Funções de gestão (vender, descartar, comparar)                      │
+│  • Histórico completo de aquisições                                     │
+│  • Filtros e busca avançada                                             │
+│                                                                         │
+│  JUSTIFICATIVA: Manter inventário na ficha é mais simples               │
+│  e direto para o MVP. Página dedicada adiciona complexidade             │
+│  desnecessária na Fase 1.                                               │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 13. Sistema de Trocas Avançadas (Futuro)
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    TROCAS AVANÇÇADAS E GIFTS (FUTURO)                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  FEATURE: GIFTS / TROCAS FORÇADAS                                       │
+│                                                                         │
+│  Cenários de uso:                                                       │
+│  • GM entrega item secreto a jogador (missão)                           │
+│  • Jogador deixa "presente escondido" para outro                        │
+│  • Evento de RPG: roubo, entrega discreta, etc.                         │
+│                                                                         │
+│  ┌───────────────────────────────────────────────────────────────────┐  │
+│  │  FLUXO DE GIFT ESCONDIDO                                          │  │
+│  │                                                                   │  │
+│  │  1. Jogador A seleciona item → "Entregar escondido"               │  │
+│  │  2. Escolhe Jogador B                                             │  │
+│  │  3. (Opcional) Adiciona mensagem secreta                          │  │
+│  │  4. Sistema adiciona ao inventário de B sem notificação pública   │  │
+│  │  5. Jogador B descobre ao abrir inventário                        │  │
+│  │                                                                   │  │
+│  │  ─────────────────────────────────────────────────────────────    │  │
+│  │  NOTA: Requer role GM para trocas forçadas verdadeiras            │
+│  └───────────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  COMPARAÇÃO: TROCA NORMAL vs GIFT                                       │
+│                                                                         │
+│  TROCA NORMAL:                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │ Jogador A propõe → Jogador B vê notificação → [Aceitar/Recusar] │    │
+│  │ → Transação visível para ambos                                  │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                         │
+│  GIFT / TROCA FORÇADA:                                                  │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │ Jogador A envia → Item aparece no inventário de B              │    │
+│  │ → Sem notificação (ou notificação discreta)                     │    │
+│  │ → Jogador B descobre ao abrir inventário                        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                         │
+│  STATUS: 🔮 Backlog (após sistema de trocas básico funcionar)           │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 

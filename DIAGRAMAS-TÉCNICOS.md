@@ -2,6 +2,12 @@
 
 **Objetivo:** Documentação técnica da arquitetura, schema da base de dados, e fluxos de implementação.
 
+**Legenda de Fases:**
+- 🚧 Fase 1 (MVP — Em desenvolvimento)
+- 📋 Fase 2 (Economia + JSON)
+- 📦 Fase 3+ (Backlog)
+- 🔮 Futuro (longo prazo)
+
 ---
 
 ## 1. Arquitetura do Sistema
@@ -22,51 +28,49 @@
                           Netlify               500MB storage
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  COMPONENTES DO FRONTEND                                                    │
+│  ⚠️  RESTRIÇÕES DE ARQUITETURA (Netlify + Supabase Free Tier)              │
+│                                                                             │
+│  • Supabase: 500MB storage → otimizar queries, evitar redundância          │
+│  • Netlify Functions: 125k invocações/mês → debounce, caching no frontend  │
+│  • Bandwidth: Monitorar tráfego de imagens/assets                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ESTRUTURA DE PASTAS — FASE 1 (ATUAL)                                       │
 │                                                                             │
 │  public/                                                                    │
-│  ├── index.html          # Página única (SPA-like)                         │
+│  ├── index.html          # Hub de navegação + SPA                          │
 │  ├── css/                                                                   │
-│  │   ├── main.css        # Estilos globais                                  │
-│  │   └── components/     # Componentes modulares                           │
-│  │       ├── nav-tabs.css                                                   │
-│  │       ├── attr-panel.css                                                 │
-│  │       ├── stat-bars.css                                                  │
-│  │       ├── skill-card.css                                                 │
-│  │       ├── item-card.css                                                  │
-│  │       └── character-section.css                                          │
+│  │   ├── global.css      # Estilos globais                                  │
+│  │   └── avatar-rpg/     # Módulo Avatar RPG                                │
+│  │       ├── character.css                                                  │
+│  │       ├── skills.css                                                     │
+│  │       ├── inventory.css                                                  │
+│  │       ├── shop.css                                                       │
+│  │       └── hub.css                                                        │
 │  └── js/                                                                    │
 │      ├── app.js          # Inicialização e estado global                   │
-│      ├── main.js         # Event listeners e UI bindings                   │
-│      ├── character/      # Lógica de personagem                            │
-│      │   ├── Character.js                                                   │
-│      │   ├── stats.js                                                       │
-│      │   ├── xp.js                                                          │
-│      │   └── slots.js                                                       │
-│      ├── skills/         # Sistema de habilidades                          │
-│      │   ├── data.js                                                        │
-│      │   ├── SkillCard.js                                                   │
-│      │   ├── SkillTree.js                                                   │
-│      │   └── index.js                                                       │
-│      ├── items/          # Sistema de inventário e itens                   │
-│      │   ├── inventory.js                                                   │
-│      │   ├── ItemList.js                                                    │
-│      │   └── index.js                                                       │
-│      ├── combat/         # Sistema de combate                              │
-│      │   ├── dice.js                                                        │
-│      │   ├── status.js                                                      │
-│      │   ├── resolver.js                                                    │
-│      │   └── index.js                                                       │
-│      ├── storage/        # Persistência (auto-save, import/export)         │
-│      │   ├── autosave.js                                                    │
-│      │   ├── export.js                                                      │
-│      │   ├── import.js                                                      │
-│      │   └── index.js                                                       │
-│      └── utils/          # Utilitários                                     │
-│          ├── constants.js                                                   │
-│          ├── dom.js                                                         │
-│          ├── validators.js                                                  │
-│          └── index.js                                                       │
+│      └── avatar-rpg/     # Módulo Avatar RPG                                │
+│          ├── character/                                                     │
+│          ├── skills/                                                        │
+│          ├── inventory/                                                     │
+│          └── auth/                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🔮 ESTRUTURA DE PASTAS — FUTURO (PÓS-FASE 2)                               │
+│                                                                             │
+│  public/                                                                    │
+│  ├── index.html          # Landing page / Hub do portal                    │
+│  ├── avatar-rpg/         # Módulo Avatar RPG (completo)                     │
+│  │   ├── index.html      # Página principal do módulo                      │
+│  │   ├── css/                                                               │
+│  │   └── js/                                                                │
+│  └── future-module/      # Futuros módulos do portal                        │
+│      └── ...                                                                │
+│                                                                             │
+│  JUSTIFICATIVA: Estrutura modular permite adicionar novos sites/tools       │
+│  como módulos independentes do portal.                                      │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -80,25 +84,34 @@
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: users                                                           │
+│  🚧 FASE 1: TABELAS PRINCIPAIS (Foco Inicial)                            │
+│──────────────────────────────────────────────────────────────────────────│
+│                                                                          │
+│  Prioridade: Users + Characters funcionais primeiro.                     │
+│  Resto do schema é adicionado nas Fases 2-4.                             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: users (🚧 Fase 1)                                               │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  auth_id         UUID UNIQUE (Supabase Auth)                             │
 │  username        VARCHAR(50) UNIQUE                                      │
-│  role            VARCHAR(20) DEFAULT 'player' CHECK (player, gm, admin)  │
+│  role            VARCHAR(20) DEFAULT 'player'                            │
+│                  CHECK (player, gm, admin)                               │
 │  created_at      TIMESTAMP DEFAULT NOW()                                 │
 │  updated_at      TIMESTAMP DEFAULT NOW()                                 │
 │                                                                          │
-│  NOTAS:                                                                  │
-│  - Apenas ADMIN pode criar/promover utilizadores para GM                 │
-│  - ADMIN pode promover/despromover outros utilizadores                   │
-│  - Máximo de 2-3 contas ADMIN no sistema                                 │
+│  NOTAS DE IMPLEMENTAÇÃO:                                                 │
+│  • 🚧 Fase 1: Login sem password (apenas username)                       │
+│  • Apenas ADMIN pode criar/promover utilizadores para GM                 │
+│  • Máximo de 2-3 contas ADMIN no sistema                                 │
 └──────────────────────────────────────────────────────────────────────────┘
                           │
                           │ 1:N
                           ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: characters                                                      │
+│  TABELA: characters (🚧 Fase 1)                                          │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  user_id         UUID REFERENCES users(id)                               │
@@ -107,15 +120,10 @@
 │  level           INT DEFAULT 1 CHECK (level <= 40)                       │
 │  xp              INT DEFAULT 0                                           │
 │  xp_to_next      INT                                                     │
-│  gold            INT DEFAULT 0                                           │
-│  gold_nation     VARCHAR(20) DEFAULT 'todas'                             │
-│  armor_equipped  UUID REFERENCES items(id) NULL                          │
-│  companion_id    UUID REFERENCES companions(id) NULL                     │
-│  subclass        VARCHAR(50) NULL                                        │
 │  created_at      TIMESTAMP DEFAULT NOW()                                 │
 │  updated_at      TIMESTAMP DEFAULT NOW()                                 │
 │                                                                          │
-│  -- Atributos base                                                       │
+│  -- Atributos base (Fase 1)                                              │
 │  attr_for        INT DEFAULT 5                                           │
 │  attr_agi        INT DEFAULT 5                                           │
 │  attr_chi        INT DEFAULT 5                                           │
@@ -125,11 +133,20 @@
 │                                                                          │
 │  -- Pontos disponíveis                                                   │
 │  points_available INT DEFAULT 0                                          │
+│                                                                          │
+│  -- 📋 Fase 2: Economia                                                  │
+│  gold            INT DEFAULT 0                                           │
+│  armor_equipped  UUID REFERENCES items(id) NULL                          │
+│                                                                          │
+│  -- 🔮 Futuro                                                            │
+│  gold_nation     VARCHAR(20) DEFAULT 'todas'                             │
+│  companion_id    UUID REFERENCES companions(id) NULL                     │
+│  subclass        VARCHAR(50) NULL                                        │
 └──────────────────────────────────────────────────────────────────────────┘
                           │
         ┌─────────────────┼─────────────────┐
         │                 │                 │
-        │ 1:N             │ 1:N             │ 1:1
+        │ 📋 Fase 2       │ 📋 Fase 2       │ 🔮 Futuro
         ▼                 ▼                 ▼
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │  character_  │  │  character_  │  │  companions  │
@@ -137,7 +154,11 @@
 └──────────────┘  └──────────────┘  └──────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: character_skills                                                │
+│  📋 FASE 2: TABELAS DE ECONOMIA E ITENS                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: character_skills (📋 Fase 2)                                    │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
@@ -149,36 +170,20 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: character_inventory                                             │
+│  TABELA: character_inventory (📋 Fase 2)                                 │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
 │  item_id         UUID REFERENCES items(id)                               │
 │  quantity        INT DEFAULT 1                                           │
-│  acquired_from   VARCHAR(20) DEFAULT 'shop' CHECK (shop, loot, trade, gm)│
+│  acquired_from   VARCHAR(20) DEFAULT 'shop'                              │
+│                  CHECK (shop, loot, trade, gm)                           │
 │  acquired_at     TIMESTAMP DEFAULT NOW()                                 │
 │  UNIQUE(character_id, item_id)                                           │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: companions                                                      │
-│──────────────────────────────────────────────────────────────────────────│
-│  id              UUID PRIMARY KEY                                        │
-│  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
-│  name            VARCHAR(100)                                            │
-│  animal_type     VARCHAR(50)                                             │
-│  level           INT DEFAULT 1                                           │
-│  hp_max          INT                                                     │
-│  hp_current      INT                                                     │
-│  attack          INT                                                     │
-│  defense         INT                                                     │
-│  armor_slots     INT DEFAULT 0                                           │
-│  created_at      TIMESTAMP DEFAULT NOW()                                 │
-│  updated_at      TIMESTAMP DEFAULT NOW()                                 │
-└──────────────────────────────────────────────────────────────────────────┘
-
-┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: skills (Global — carregado via JSON)                            │
+│  TABELA: skills (📋 Fase 2 — Global, carregado via JSON)                 │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  name            VARCHAR(100) UNIQUE                                     │
@@ -195,13 +200,15 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: items (Global — carregado via JSON)                             │
+│  TABELA: items (📋 Fase 2 — Global, carregado via JSON)                  │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  name            VARCHAR(100)                                            │
 │  description     TEXT                                                    │
-│  type            VARCHAR(30) CHECK (weapon, armor, potion, material, other)│
-│  rarity          VARCHAR(20) DEFAULT 'comum' CHECK (comum, raro, epico, lendario)│
+│  type            VARCHAR(30) CHECK (weapon, armor, potion, material,     │
+│                                    other)                                │
+│  rarity          VARCHAR(20) DEFAULT 'comum'                             │
+│                  CHECK (comum, raro, epico, lendario)                    │
 │  price           INT                                                     │
 │  price_nation    VARCHAR(20) DEFAULT 'todas'                             │
 │  weight_class    VARCHAR(10) CHECK (leve, medio, pesado)                 │
@@ -216,7 +223,7 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: shop_config (Configuração da loja pelo GM)                      │
+│  TABELA: shop_config (📋 Fase 2)                                         │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  item_id         UUID REFERENCES items(id)                               │
@@ -228,21 +235,43 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: trade_proposals                                               │
+│  📦 FASE 3-4: TABELAS DE GRUPO E ADMINISTRAÇÃO                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: companions (🔮 Futuro)                                          │
+│──────────────────────────────────────────────────────────────────────────│
+│  id              UUID PRIMARY KEY                                        │
+│  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
+│  name            VARCHAR(100)                                            │
+│  animal_type     VARCHAR(50)                                             │
+│  level           INT DEFAULT 1                                           │
+│  hp_max          INT                                                     │
+│  hp_current      INT                                                     │
+│  attack          INT                                                     │
+│  defense         INT                                                     │
+│  armor_slots     INT DEFAULT 0                                           │
+│  created_at      TIMESTAMP DEFAULT NOW()                                 │
+│  updated_at      TIMESTAMP DEFAULT NOW()                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: trade_proposals (📦 Fase 3)                                     │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  sender_id       UUID REFERENCES users(id)                               │
 │  receiver_id     UUID REFERENCES users(id)                               │
 │  items_offered   JSONB  -- [{item_id, quantity}]                         │
 │  gold_offered    INT DEFAULT 0                                           │
-│  status          VARCHAR(20) DEFAULT 'pending' CHECK (pending, accepted, declined, expired)│
+│  status          VARCHAR(20) DEFAULT 'pending'                           │
+│                  CHECK (pending, accepted, declined, expired)            │
 │  created_at      TIMESTAMP DEFAULT NOW()                                 │
 │  expires_at      TIMESTAMP                                               │
 │  responded_at    TIMESTAMP NULL                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: notifications                                                   │
+│  TABELA: notifications (📦 Fase 3)                                       │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  user_id         UUID REFERENCES users(id)                               │
@@ -255,7 +284,7 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: gm_actions (Log de ações do GM)                                 │
+│  TABELA: gm_actions (📦 Fase 4 — ADMIN)                                  │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  gm_id           UUID REFERENCES users(id)                               │
@@ -268,73 +297,63 @@
 
 ---
 
-## 3. Fluxo de Auto-Save (2s Debounce)
+## 3. Fluxo de Save (📋 Backlog)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         FLUXO DE AUTO-SAVE                                  │
+│                         SISTEMA DE SAVE — FASE 1                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-Utilizador altera atributo
-         │
-         ▼
-┌─────────────────────────┐
-│  Evento: change         │
-│  detectado no input     │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  Clear timeout          │
-│  existente (se houver)  │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  Set novo timeout       │
-│  para 2000ms            │
-└──────────┬──────────────┘
-           │
-           │ (aguarda 2s sem mudanças)
-           ▼
-┌─────────────────────────┐
-│  Timeout dispara        │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  Serializar estado      │
-│  do personagem          │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  PUT /api/characters/:id│
-│  (Netlify Function)     │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  Supabase: UPDATE       │
-│  characters             │
-└──────────┬──────────────┘
-           │
-           ▼
-┌─────────────────────────┐
-│  Feedback visual:       │
-│  "Salvo!" (toast)       │
-└─────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  📋 BACKLOG: AUTO-SAVE (2s Debounce)                                    │
+│                                                                         │
+│  Status: Não é crítico na Fase 1. Implementação posterior.              │
+│                                                                         │
+│  Sistema híbrido planeado:                                              │
+│  • Save por tempo (debounce 2s)                                         │
+│  • Deteção de mudanças reais (não salva se inalterado)                  │
+│  • Save ao fechar página (beforeunload)                                 │
+└─────────────────────────────────────────────────────────────────────────┘
 
-Código exemplo (simplificado):
+┌─────────────────────────────────────────────────────────────────────────┐
+│  🚧 FASE 1: SAVE MANUAL / CONTÍNUO                                      │
+│                                                                         │
+│  Implementação inicial mais simples:                                    │
+│  • Save contínuo enquanto edita (sem debounce complexo)                 │
+│  • Save explícito ao fechar página                                      │
+│  • localStorage como backup temporário                                  │
+└─────────────────────────────────────────────────────────────────────────┘
 
-let saveTimeout = null;
-
-function handleAttributeChange() {
-  if (saveTimeout) clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(() => {
-    saveCharacter();
-  }, 2000);
-}
+┌─────────────────────────────────────────────────────────────────────────┐
+│  FLUXO DE AUTO-SAVE (Futuro — 📋 Backlog)                               │
+│                                                                         │
+│  Utilizador altera atributo                                             │
+│         │                                                               │
+│         ▼                                                               │
+│  Clear timeout existente                                                │
+│         │                                                               │
+│         ▼                                                               │
+│  Set novo timeout para 2000ms                                           │
+│         │                                                               │
+│         ▼ (aguarda 2s sem mudanças)                                     │
+│  Timeout dispara → Serializa estado                                     │
+│         │                                                               │
+│         ▼                                                               │
+│  PUT /api/characters/:id (Netlify Function)                             │
+│         │                                                               │
+│         ▼                                                               │
+│  Supabase: UPDATE characters                                            │
+│         │                                                               │
+│         ▼                                                               │
+│  Feedback visual: "Salvo!" (toast)                                      │
+│                                                                         │
+│  Código exemplo (simplificado):                                         │
+│  let saveTimeout = null;                                                │
+│  function handleAttributeChange() {                                     │
+│    if (saveTimeout) clearTimeout(saveTimeout);                          │
+│    saveTimeout = setTimeout(() => { saveCharacter(); }, 2000);          │
+│  }                                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -433,47 +452,66 @@ function handleAttributeChange() {
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  AUTH                                                                    │
+│  🚧 FASE 1: ENDPOINTS ESSENCIAIS                                         │
 │──────────────────────────────────────────────────────────────────────────│
-│  POST   /api/auth/login          # Login (nome personagem)               │
+│                                                                          │
+│  Foco inicial: Auth + Characters. Apenas 1 personagem por user.          │
+│  Redirecionamento automático para ficha do personagem após login.        │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  AUTH (🚧 Fase 1)                                                        │
+│──────────────────────────────────────────────────────────────────────────│
+│  POST   /api/auth/login          # Login (username, sem password)        │
 │  POST   /api/auth/logout         # Logout                                │
 │  GET    /api/auth/me             # Verificar sessão atual                │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  CHARACTERS                                                              │
+│  CHARACTERS (🚧 Fase 1)                                                  │
 │──────────────────────────────────────────────────────────────────────────│
-│  GET    /api/characters          # Listar personagens (por user)         │
-│  POST   /api/characters          # Criar novo personagem                 │
-│  GET    /api/characters/:id      # Obter personagem específico           │
-│  PUT    /api/characters/:id      # Atualizar personagem (auto-save)      │
-│  DELETE /api/characters/:id      # Eliminar personagem                   │
+│  GET    /api/characters/me       # Obter personagem do user atual        │
+│  PUT    /api/characters/me       # Atualizar personagem (save)           │
 │                                                                          │
-│  GET    /api/characters/all      # Listar TODOS (apenas GM)              │
+│  🔮 Futuro:                                                              │
+│  GET    /api/characters          # Listar todos (apenas GM)              │
+│  GET    /api/characters/:id      # Obter personagem específico           │
+│  POST   /api/characters          # Criar novo personagem                 │
+│  DELETE /api/characters/:id      # Eliminar personagem                   │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  SKILLS                                                                  │
+│  📋 FASE 2: SKILLS E ITENS (via JSON)                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SKILLS (📋 Fase 2)                                                      │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/skills              # Listar todas as habilidades           │
 │  GET    /api/skills/:element     # Filtrar por elemento                  │
+│  POST   /api/skills/import        # Importar JSON (apenas GM)            │
+│                                                                          │
+│  🔮 Futuro:                                                              │
 │  POST   /api/skills              # Criar habilidade (apenas GM)          │
 │  PUT    /api/skills/:id          # Atualizar habilidade (apenas GM)      │
 │  DELETE /api/skills/:id          # Eliminar habilidade (apenas GM)       │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  ITEMS                                                                   │
+│  ITEMS (📋 Fase 2)                                                       │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/items               # Listar todos os itens                 │
 │  GET    /api/items/shop          # Itens disponíveis na loja             │
-│  POST   /api/items              # Criar item (apenas GM)                 │
-│  PUT    /api/items/:id          # Atualizar item (apenas GM)             │
-│  DELETE /api/items/:id          # Eliminar item (apenas GM)              │
+│  POST   /api/items/import         # Importar JSON (apenas GM)            │
+│                                                                          │
+│  🔮 Futuro:                                                              │
+│  POST   /api/items               # Criar item (apenas GM)                │
+│  PUT    /api/items/:id           # Atualizar item (apenas GM)            │
+│  DELETE /api/items/:id           # Eliminar item (apenas GM)             │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  SHOP                                                                    │
+│  SHOP (📋 Fase 2)                                                        │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/shop/config         # Obter configuração da loja            │
 │  PUT    /api/shop/config         # Atualizar configuração (apenas GM)    │
@@ -481,7 +519,7 @@ function handleAttributeChange() {
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  INVENTORY                                                               │
+│  INVENTORY (📋 Fase 2)                                                   │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/inventory           # Obter inventário do personagem        │
 │  PUT    /api/inventory/equip     # Equipar item (armadura)               │
@@ -490,16 +528,23 @@ function handleAttributeChange() {
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  GM ACTIONS                                                              │
+│  📦 FASE 3: GM ACTIONS                                                   │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  GM ACTIONS (📦 Fase 3)                                                  │
 │──────────────────────────────────────────────────────────────────────────│
 │  POST   /api/gm/reward-gold      # Dar ouro a grupo/jogador              │
 │  POST   /api/gm/give-item        # Dar item a jogador                    │
-│  POST   /api/gm/import           # Importar JSON (skills/items)          │
 │  GET    /api/gm/actions-log      # Ver log de ações do GM                │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  ADMIN ACTIONS (apenas role ADMIN)                                       │
+│  📦 FASE 4: ADMIN ACTIONS (apenas role ADMIN)                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  ADMIN ACTIONS (📦 Fase 4)                                               │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/admin/users         # Listar todos os utilizadores          │
 │  POST   /api/admin/users         # Criar novo utilizador                 │
@@ -517,10 +562,17 @@ function handleAttributeChange() {
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  NOTIFICATIONS                                                           │
+│  🔮 FUTURO: NOTIFICATIONS                                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  NOTIFICATIONS (🔮 Futuro)                                               │
 │──────────────────────────────────────────────────────────────────────────│
 │  GET    /api/notifications       # Obter notificações do utilizador      │
 │  PUT    /api/notifications/:id   # Marcar notificação como lida          │
+│                                                                          │
+│  NOTA: Polling a cada 30s na Fase 3.                                    │
+│  Futuro: WebSocket/Supabase Realtime para tempo real.                   │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 

@@ -1,7 +1,14 @@
 # Avatar RPG — Documento de Features
 
-**Última atualização:** 2026-04-19  
+**Última atualização:** 2026-04-20  
 **Status:** Em desenvolvimento ativo
+
+**Legenda de Fases:**
+- ✅ Implementado
+- 🚧 Em desenvolvimento
+- 📋 Fase 2 (Próxima prioridade)
+- 📦 Fase 3+ (Backlog)
+- 🔮 Futuro (longo prazo)
 
 ---
 
@@ -17,13 +24,13 @@
 
 ## Visão Geral
 
-Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG inspirado em Avatar: The Last Airbender. O sistema suporta múltiplos jogadores, um GM (Game Master) com ferramentas de gestão, uma role ADMIN com acesso total, e um sistema de economia baseado em moedas por nação.
+Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG inspirado em Avatar: The Last Airbender. O sistema suporta múltiplos jogadores, um GM (Game Master) com ferramentas de gestão, uma role ADMIN com acesso total.
 
 **Princípios de design:**
-- Auto-save é crítico (debounce de 2s)
-- Importação de conteúdo via JSON deve ser plug-and-play
 - Design iterativo sobre arquitetura perfeita
-- PT-BR para texto visível ao utilizador
+- Conteúdo importado via JSON (Fase 2)
+- PT-PT para texto visível ao utilizador
+- Foco no MVP primeiro: autenticação, ficha, skill tree visual
 
 ---
 
@@ -45,14 +52,13 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 
 **Público:** Jogador (edição completa), GM (visualização)
 
-**Funcionalidades:**
+**Funcionalidades (Fase 1):**
 - Atributos editáveis (FOR, AGI, CHI, PER, RES, ESP)
 - Distribuição de pontos (3 pontos por nível, máx nível 40)
 - Visualização de stats derivados (Vida, Chi Max, Espírito Max, Defesa, Esquiva)
-- Equipamento de armaduras (slot único)
-- Árvore de habilidades por elemento
-- Inventário pessoal
-- Companheiro (link para página individual)
+- Equipamento de armaduras (slot único) — 📋 Fase 2
+- Secção de inventário integrada — 📋 Fase 2
+- Companheiro (link para página individual) — 🔮 Futuro
 
 **Stats derivados (fórmulas atuais):**
 | Stat | Fórmula |
@@ -63,7 +69,7 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 | Defesa | RES × 2 + nível + bónus_armadura |
 | Esquiva | 10 + ((AGI × 2) + PER) × 0,2 - penalidade_armadura |
 
-**Estado:** ✅ Em desenvolvimento
+**Estado:** 🚧 Em desenvolvimento (atributos + stats)
 
 ---
 
@@ -71,20 +77,25 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 
 **Público:** Jogador
 
-**Funcionalidades:**
-- Habilidades organizadas por elemento (Fogo, Água, Terra, Ar, Non-Bending)
-- Habilidades organizadas por categoria (Espiritualidade, Agilidade, Combate Preciso, Combate Bruto)
+**Funcionalidades (Fase 1):**
+- Estrutura visual organizada por categoria (Espiritualidade, Agilidade, Combate Preciso, Combate Bruto)
 - Tiers de 1-4 (Iniciante → Lendário)
 - Requisitos visíveis (atributos, nível, habilidades prévias)
+- Dados de exemplo (mock) — elementos completos via JSON na Fase 2
+
+**Funcionalidades (📋 Fase 2):**
+- Habilidades carregadas via JSON (todos os 5 elementos)
 - Sistema de slots de sub-habilidades (2 base + 1 a cada 3 níveis)
-- Pergaminhos para melhorar habilidades (feature futura)
-- Limites de desbloqueio por categoria/nível (feature futura)
+
+**Funcionalidades (🔮 Futuro):**
+- Pergaminhos para melhorar habilidades
+- Limites de desbloqueio por categoria/nível
 
 **Regras:**
 - Personagem só pode selecionar habilidades do seu elemento
 - Subclasses escondidas até cumprir requisitos (nível + atributos + habilidade prévia)
 
-**Estado:** ✅ Em desenvolvimento
+**Estado:** 🚧 Em desenvolvimento (estrutura visual com mock)
 
 ---
 
@@ -92,20 +103,22 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 
 **Público:** Todos os jogadores (visão simplificada), GM (visão expandida)
 
-**Funcionalidades (visão simplificada):**
-- Nome do jogador
-- Vida atual / Vida máxima
-- Buffs/Debuffs ativos
-- Companheiro (nome + tipo de animal)
-- Elemento do personagem
+**Funcionalidades (Fase 1 — Mock):**
+- Layout da página implementado
+- Dados de exemplo (3-5 personagens fictícios)
+- Cards com: nome, nível, elemento, vida atual/máx
+- **NOTA:** Sem dados reais nesta fase — apenas visual para teste
 
-**Funcionalidades (visão GM expandida):**
-- Inventário completo do jogador
-- Stats detalhados (todos os atributos)
-- Histórico de loot recebido
-- Opção de abrir ficha completa em overlay/modal
+**Funcionalidades (📋 Fase 3 — Dados Reais):**
 
-**Estado:** 🔜 A implementar
+| Visão | Funcionalidades |
+|-------|-----------------|
+| **Jogador (simplificada)** | Nome, Vida atual/máx, Buffs/Debuffs ativos, Elemento |
+| **GM (expandida)** | Inventário completo, Stats detalhados, Histórico de loot, Link para ficha completa |
+
+**Nota de Implementação:** Hub de Jogadores e Gestão de Grupo são a mesma página. GM vê secção adicional de gestão (ver secção 4).
+
+**Estado:** 🚧 Mock em desenvolvimento
 
 ---
 
@@ -113,19 +126,20 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 
 **Público:** GM
 
-**Funcionalidades:**
-- Lista de todos os jogadores ativos
+**Nota:** Esta página é uma extensão do Hub de Jogadores (Secção 3). GM vê uma secção adicional com ferramentas de gestão.
+
+**Funcionalidades (📋 Fase 3):**
+- Lista de todos os jogadores ativos (dados reais da BD)
 - Recompensas de ouro em grupo (valor total dividido igualmente)
 - Entrega individual de itens/ouro a jogadores específicos
-- Gestão da loja (selecionar itens disponíveis)
-- Definição de filtros de nação para moedas na loja
+- Gestão da loja (selecionar itens disponíveis) — 📋 Fase 2
 
 **Fluxo de recompensa em grupo:**
 ```
 GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador recebe sua parte
 ```
 
-**Estado:** 🔜 A implementar
+**Estado:** 📦 Fase 3 (aguarda Hub funcional)
 
 ---
 
@@ -133,21 +147,25 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 **Público:** Jogador (compra), GM (gestão)
 
-**Funcionalidades (visão Jogador):**
-- Search bar para busca de itens
-- Filtros por categoria (sem filtro = mostra todos)
-- Exibição de itens selecionados pelo GM
-- Preços visíveis
-- Indicador de raridade do item (Comum/Raro/Épico/Lendário)
-- Filtro de nação da moeda (apenas itens compráveis com moedas do jogador)
+**Funcionalidades (Fase 1 — Mock):**
+- Layout da loja implementado
+- Search bar funcional (sobre dados mock)
+- Filtros básicos de categoria
+- Dados de exemplo (hardcoded)
 
-**Funcionalidades (visão GM):**
-- Selecionar/deselecionar itens para exposição na loja
-- Alterar preços dos itens
-- Definir nação de moedas aceites
-- Adicionar/editar detalhes dos itens
+**Funcionalidades (📋 Fase 2 — Funcional):**
 
-**Estado:** 🔜 A implementar
+| Visão | Funcionalidades |
+|-------|-----------------|
+| **Jogador** | Search bar, filtros por categoria, itens da BD, preços em Ouro, raridade visual |
+| **GM** | Selecionar itens para loja, alterar preços |
+
+**Funcionalidades (🔮 Futuro):**
+- Raridade com implicações mecânicas (não apenas visual)
+- Filtro de nação da moeda
+- Moedas por nação (Fogo, Água, Terra, Ar)
+
+**Estado:** 🚧 Mock em desenvolvimento
 
 ---
 
@@ -155,14 +173,21 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 **Público:** Jogador
 
-**Funcionalidades:**
+**Nota de Implementação:** O inventário está integrado na Ficha de Personagem (Secção 1), não é uma página separada.
+
+**Funcionalidades (📋 Fase 2):**
 - Lista de itens possuídos (com quantidades)
-- Ouro atual (detalhado por tipo e nação)
+- Ouro atual (apenas moeda de Ouro nesta fase)
 - Equipar armaduras (slot único)
 - Sistema de troca com outros jogadores
-- Notificações de propostas de troca pendentes
 
-**Estado:** 🔜 A implementar
+**Funcionalidades (🔮 Futuro — Página Dedicada):**
+- Página própria de inventário com mais descrições e funções
+- Organização por categorias
+- Filtros e busca avançada
+- Histórico completo de aquisições
+
+**Estado:** 📦 Fase 2
 
 ---
 
@@ -170,14 +195,14 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 **Público:** Jogador
 
-**Funcionalidades:**
+**Funcionalidades (🔮 Futuro):**
 - Stats básicos (Vida, Ataque, Defesa)
 - Tipo de animal
 - Link para página do personagem principal
-- (Futuro) Slots de armadura para companheiro
-- (Futuro) Progressão de nível do companheiro
+- Slots de armadura para companheiro
+- Progressão de nível do companheiro
 
-**Estado:** 📦 Planeado (em discussão)
+**Estado:** 🔮 Planeado (longo prazo)
 
 ---
 
@@ -185,25 +210,20 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 **Público:** GM (importação), ADMIN (importação/exportação completa), Jogador (exportação própria)
 
-**Funcionalidades (GM):**
-- Carregar ficheiros JSON de habilidades
-- Carregar ficheiros JSON de itens
-- Carregar ficheiros JSON de ataques
-- Validação de schema
-- Preview dos dados antes de importar para a base de dados
+**Funcionalidades (📋 Fase 2):**
 
-**Funcionalidades (ADMIN):**
-- Tudo do GM
+| Role | Funcionalidades |
+|------|-----------------|
+| **GM** | Carregar JSON de habilidades, itens, ataques; Validação de schema; Preview antes de importar |
+| **Jogador** | Exportar personagem completo (atributos, habilidades, inventário) |
+
+**Funcionalidades (📋 Fase 4 — ADMIN):**
 - Exportar base de dados completa (backup JSON)
 - Exportar todas as habilidades/itens para JSON
 - Importar dados em bulk
 - Limpar dados importados
 
-**Funcionalidades (Jogador):**
-- Exportar personagem completo para JSON (inclui atributos, habilidades, inventário, companheiro)
-- Ficheiro pronto para partilha ou backup pessoal
-
-**Estado:** 🔜 A implementar
+**Estado:** 📦 Fase 2 (GM + Jogador), Fase 4 (ADMIN)
 
 ---
 
@@ -211,30 +231,40 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 ### Sistema de Economia
 
-**Moedas:**
-- Tipo base: Ouro
-- Futuro: 3 tipos adicionais de moedas (maior e menor valor)
-- Futuro: Distinção por nação (Fogo, Água, Terra, Ar)
+**Fase 2 (📋):**
+- Tipo base: Ouro (única moeda)
+- Sistema de inventário com quantidades
+- Armaduras com bónus de defesa e penalidade de esquiva
 
-**Regra de nação:** Moedas apenas podem ser gastas na nação correspondente (ex: moedas de Ouro da Água apenas em lojas da Água). O GM define quais moedas são aceites em cada loja.
+**Futuro (🔮):**
+- 3 tipos adicionais de moedas (Prata, Bronze, Cobre)
+- Distinção por nação (Fogo, Água, Terra, Ar)
+- Regra de nação: Moedas apenas podem ser gastas na nação correspondente
+- O GM define quais moedas são aceites em cada loja
 
-**Transações entre jogadores:**
+**Transações entre jogadores (📋 Fase 3):**
 - Troca de ouro/loot assíncrona com notificação
 - Jogador recebe notificação de proposta de troca/presente
 - Pode aceitar ou recusar
-- (Futuro) Restrições em combate/imobilizado
+
+**Features Avançadas (🔮 Futuro):**
+- Restrições em combate/imobilizado
+- Sistema de "gifts" / trocas forçadas (GM)
 
 ---
 
 ### Sistema de Raridade de Itens
 
-**Tiers de raridade:**
-- Comum
-- Raro
-- Épico
-- Lendário
+**Fase 2 (📋):**
+- Tiers: Comum, Raro, Épico, Lendário
+- Tag visual na descrição do item
+- Sem implicações mecânicas diretas
 
-**Implementação:** Tag na descrição do item. Raridade não tem implicações mecânicas diretas — o balanceamento é feito pelo GM através de atributos e preço.
+**Futuro (🔮):**
+- Raridade com implicações mecânicas (bónus de stats, preço multiplicado)
+- Ver DIAGRAMAS-NÃO-TÉCNICOS.md Secção 6 para detalhes
+
+**Implementação:** Campo `rarity` no JSON do item. Balanceamento feito pelo GM através de atributos e preço.
 
 ---
 
@@ -281,72 +311,67 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 ## Features por Fase
 
-### Fase 1 — MVP (Em desenvolvimento)
+### Fase 1 — MVP (🚧 Em Desenvolvimento)
+
+**Objetivo:** Sistema funcional mínimo para um jogador gerir o seu personagem.
+
+| Feature | Status | Prioridade | Notas |
+|---------|--------|------------|-------|
+| Autenticação (username, sem password) | 🚧 | Crítica | Login simples |
+| Ficha de personagem (atributos + stats) | 🚧 | Crítica | Edição em tempo real |
+| Árvore de habilidades (estrutura visual) | 🚧 | Crítica | Dados mock |
+| Loja (layout + mock) | 🚧 | Alta | Dados hardcoded |
+| Hub de Jogadores (mock) | 🚧 | Alta | Dados de exemplo |
+| Estrutura de pastas reorganizada | 📋 | Alta | Separar avatar-rpg/ |
+
+**Não incluído na Fase 1:**
+- ❌ Auto-save (debounce 2s) — Backlog
+- ❌ Importar/Exportar JSON — Fase 2
+- ❌ Elementos completos — Fase 2 (via JSON)
+
+### Fase 2 — Sistema de Economia e Dados (📋 Próxima Prioridade)
 
 | Feature | Status | Prioridade |
 |---------|--------|------------|
-| Ficha de personagem | ✅ | Crítica |
-| Árvore de habilidades | ✅ | Crítica |
-| Auto-save (2s debounce) | ✅ | Crítica |
-| Exportar JSON | ✅ | Alta |
-| Importar JSON | 🔜 | Alta |
-| Elementos fixos (Fogo, Água, Terra, Ar, Non-Bending) | ✅ | Crítica |
+| Atributo de ouro no personagem | 📦 | Alta |
+| Inventário com quantidades | 📦 | Alta |
+| Importar JSON (habilidades, itens, ataques) | 📦 | Alta |
+| Exportar JSON (personagem) | 📦 | Alta |
+| Loja funcional (dados da BD) | 📦 | Alta |
+| Raridade de itens (visual) | 📦 | Média |
+| Armaduras com bónus/penalidade | 📦 | Alta |
 
-### Fase 2 — Sistema de Economia e Inventário
-
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| Atributo de ouro no personagem | 🔜 | Alta |
-| Inventário com quantidades | 🔜 | Alta |
-| Página de Loja (visão jogador + GM) | 🔜 | Alta |
-| Search bar + filtros na loja | 🔜 | Média |
-| Sistema de raridade de itens | 🔜 | Média |
-| Armaduras com bónus/penalidade | 🔜 | Alta |
-
-### Fase 3 — Ferramentas de Grupo
+### Fase 3 — Ferramentas de Grupo (📦 Backlog)
 
 | Feature | Status | Prioridade |
 |---------|--------|------------|
-| Página de perfis simplificados | 🔜 | Alta |
-| Visão expandida do GM | 🔜 | Alta |
-| Recompensas de ouro em grupo | 🔜 | Média |
-| Entrega individual de loot | 🔜 | Média |
-| Troca de itens entre jogadores | 🔜 | Média |
-| Notificações de troca | 🔜 | Baixa |
+| Hub de Jogadores funcional (dados reais) | 📦 | Alta |
+| Visão expandida do GM | 📦 | Alta |
+| Recompensas de ouro em grupo | 📦 | Média |
+| Entrega individual de loot | 📦 | Média |
+| Troca de itens entre jogadores | 📦 | Média |
+| Notificações de troca | 📦 | Baixa |
 
-### Fase 4 — Sistema de Moedas por Nação
-
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| Múltiplos tipos de moedas | 📦 | Baixa |
-| Distinção de nação das moedas | 📦 | Baixa |
-| Filtro de nação na loja | 📦 | Baixa |
-
-### Fase 5 — Subclasses e Progressão Avançada
+### Fase 4 — ADMIN e Gestão (📦 Longo Prazo)
 
 | Feature | Status | Prioridade |
 |---------|--------|------------|
-| Sistema de subclasses | 📦 | Média |
-| Requisitos de nível/atributos | 📦 | Média |
-| Campo escondido até desbloquear | 📦 | Baixa |
+| Role ADMIN com permissões completas | 📦 | Alta |
+| Gestão de utilizadores | 📦 | Alta |
+| Backup/restore da base de dados | 📦 | Média |
+| Logs de sistema | 📦 | Baixa |
 
-### Fase 6 — Sistema Avançado de Habilidades
+### Futuro (🔮 Backlog de Longo Prazo)
 
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| Limites de desbloqueio por categoria | 📦 | Baixa |
-| Pergaminhos para melhorar habilidades | 📦 | Baixa |
-| Separação maior na skill tree | 🔜 | Média |
-
-### Fase 7 — Companheiros
-
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| Página de companheiros | 📦 | Baixa |
-| Stats básicos de companheiro | 📦 | Baixa |
-| Link para personagem principal | 📦 | Baixa |
-| (Futuro) Slots de armadura | 📦 | Muito Baixa |
-| (Futuro) Progressão de nível | 📦 | Muito Baixa |
+| Sistema | Features | Prioridade |
+|---------|----------|------------|
+| **Moedas Avançadas** | 3 tipos adicionais, distinção por nação | Baixa |
+| **Raridade Mecânica** | Bónus de stats, multiplicadores de preço | Baixa |
+| **Subclasses** | Campo escondido, requisitos de desbloqueio | Média |
+| **Habilidades Avançadas** | Limites por categoria, pergaminhos, slots extra | Baixa |
+| **Companheiros** | Stats próprios, progressão, armadura | Baixa |
+| **Gifts/Trocas Forçadas** | Entrega escondida de itens | Baixa |
+| **Página de Inventário Dedicada** | Mais funções e descrições | Baixa |
 
 ---
 
