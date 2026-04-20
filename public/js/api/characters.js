@@ -2,57 +2,41 @@
  * Characters API
  */
 
+// BYPASS TEMPORÁRIO: import do client comentado (reverter: descomentar)
+// import { get, post, put, del } from './client.js';
+
+/* BYPASS TEMPORÁRIO: funções originais comentadas — reverter: descomentar tudo abaixo e apagar os mocks, descomentar o import acima
+
 import { get, post, put, del } from './client.js';
 
-/**
- * List current user's characters
- * @returns {Promise<object[]>}
- */
-export function list() {
-  return get('/api/characters');
-}
+export function list() { return get('/api/characters'); }
+export function create(data) { return post('/api/characters', data); }
+export function getById(id) { return get(`/api/characters/${id}`); }
+export function update(id, data) { return put(`/api/characters/${id}`, data); }
+export function remove(id) { return del(`/api/characters/${id}`); }
+export function listAll() { return get('/api/characters/all'); }
 
-/**
- * Create a new character
- * @param {object} data - Character data
- * @returns {Promise<object>}
- */
+*/
+
+/** BYPASS TEMPORÁRIO: retorna lista vazia — a app faz fallback para localStorage */
+export function list() { return Promise.resolve([]); }
+
+/** BYPASS TEMPORÁRIO */
 export function create(data) {
-  return post('/api/characters', data);
+  return Promise.resolve({ id: 'local-char', ...data });
 }
 
-/**
- * Get a character by ID
- * @param {string} id
- * @returns {Promise<object>}
- */
+/** BYPASS TEMPORÁRIO */
 export function getById(id) {
-  return get(`/api/characters/${id}`);
+  const saved = localStorage.getItem('avatar_rpg_character');
+  return saved ? Promise.resolve(JSON.parse(saved)) : Promise.resolve(null);
 }
 
-/**
- * Update a character
- * @param {string} id
- * @param {object} data - Character data
- * @returns {Promise<object>}
- */
-export function update(id, data) {
-  return put(`/api/characters/${id}`, data);
-}
+/** BYPASS TEMPORÁRIO */
+export function update(id, data) { return Promise.resolve(data); }
 
-/**
- * Delete a character
- * @param {string} id
- * @returns {Promise<null>}
- */
-export function remove(id) {
-  return del(`/api/characters/${id}`);
-}
+/** BYPASS TEMPORÁRIO */
+export function remove(id) { return Promise.resolve(null); }
 
-/**
- * Get all characters (GM only)
- * @returns {Promise<object[]>}
- */
-export function listAll() {
-  return get('/api/characters/all');
-}
+/** BYPASS TEMPORÁRIO: retorna lista vazia */
+export function listAll() { return Promise.resolve([]); }
