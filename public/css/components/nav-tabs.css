@@ -70,3 +70,13 @@
   border-bottom-color: var(--green);
   color: var(--green);
 }
+
+.nav-btn.shop-tab.on {
+  border-bottom-color: var(--gold);
+  color: var(--gold);
+}
+
+.nav-btn.hub-tab.on {
+  border-bottom-color: var(--spirit);
+  color: var(--spirit);
+}

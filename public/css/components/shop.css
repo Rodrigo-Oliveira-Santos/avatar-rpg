@@ -1,0 +1,196 @@
+/* ===================================
+   Shop Page
+   =================================== */
+
+/* Search Bar */
+.shop-search-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.shop-search {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.shop-search::placeholder {
+  color: var(--text3);
+}
+
+.shop-search:focus {
+  border-color: var(--border2);
+}
+
+/* Category Filters */
+.shop-filters {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.shop-filter-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all .15s;
+}
+
+.shop-filter-btn:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.shop-filter-btn.on {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: #1a1208;
+}
+
+/* Shop Grid */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+/* Shop Item Card */
+.shop-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  transition: border-color .15s;
+}
+
+.shop-card:hover {
+  border-color: var(--border2);
+}
+
+.shop-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.shop-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.shop-card-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.shop-card-desc {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.shop-card-meta {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+/* Rarity badges */
+.rarity-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.rarity-common {
+  background: #101418;
+  color: #8090a0;
+}
+
+.rarity-rare {
+  background: #081018;
+  color: #4090e0;
+}
+
+.rarity-epic {
+  background: #140820;
+  color: #a050e0;
+}
+
+.rarity-legendary {
+  background: #1a1208;
+  color: #e0a020;
+}
+
+/* Shop Buy Button */
+.shop-buy-btn {
+  width: 100%;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all .15s;
+}
+
+.shop-buy-btn:hover {
+  background: #1a1208;
+}
+
+.shop-buy-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.shop-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+/* Shop Stats Bar */
+.shop-gold-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.shop-gold-val {
+  font-weight: 600;
+  color: var(--gold);
+  font-size: 14px;
+}

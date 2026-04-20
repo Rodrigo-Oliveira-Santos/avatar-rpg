@@ -9,6 +9,9 @@ import { createElement, on, $, $$ } from './utils/dom.js';
 import { ATTRIBUTES } from './utils/constants.js';
 import { SkillTree } from './skills/index.js';
 import { ItemList } from './items/index.js';
+import { ShopPage } from './shop/index.js';
+import { HubPage } from './hub/index.js';
+import { AuthManager } from './auth/index.js';
 import * as API from './api/index.js';
 
 /**
@@ -20,6 +23,9 @@ export class App {
     this.autoSave = null;
     this.skillTrees = {};
     this.itemList = null;
+    this.shopPage = null;
+    this.hubPage = null;
+    this.authManager = null;
     this.activeTab = 'character';
     this.currentHp = 0;
     this.currentSp = 0;
@@ -31,10 +37,23 @@ export class App {
   async init() {
     this.showLoading(true);
 
-    const session = await this.checkAuth();
+    this.authManager = new AuthManager({
+      onLoginSuccess: async () => {
+        this.showLoading(true);
+        await this.loadCharacter();
+        this.setupUI();
+        this.showLoading(false);
+      },
+      onLogout: () => {
+        this.showLoading(false);
+        this.authManager.showLogin();
+      },
+    });
+
+    const session = await this.authManager.checkSession();
     if (!session) {
       this.showLoading(false);
-      this.showLoginOverlay();
+      this.authManager.showLogin();
       return;
     }
 
@@ -45,60 +64,15 @@ export class App {
   }
 
   async checkAuth() {
-    try {
-      return await API.auth.getMe();
-    } catch {
-      return null;
-    }
+    return this.authManager ? this.authManager.checkSession() : null;
   }
 
   showLoginOverlay() {
-    const overlay = $('#login-overlay');
-    if (!overlay) return;
-    overlay.classList.add('on');
-
-    const form = $('#login-form');
-    if (form) {
-      on(form, 'submit', async (e) => {
-        e.preventDefault();
-        await this.handleLogin();
-      });
-    }
+    this.authManager?.showLogin();
   }
 
   async handleLogin() {
-    const usernameInput = $('#login-username');
-    const passwordInput = $('#login-password');
-    const errorEl = $('#login-error');
-    const btn = $('#login-btn');
-
-    const username = usernameInput?.value?.trim();
-    const password = passwordInput?.value;
-
-    if (!username || !password) {
-      if (errorEl) errorEl.textContent = 'Preencha todos os campos.';
-      return;
-    }
-
-    if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
-    if (errorEl) errorEl.textContent = '';
-
-    try {
-      const result = await API.auth.login(username, password);
-      if (result.token) localStorage.setItem('avatar_rpg_token', result.token);
-
-      const overlay = $('#login-overlay');
-      if (overlay) overlay.classList.remove('on');
-
-      this.showLoading(true);
-      await this.loadCharacter();
-      this.setupUI();
-      this.showLoading(false);
-    } catch (err) {
-      if (errorEl) errorEl.textContent = err.message || 'Erro ao entrar. Tente novamente.';
-    } finally {
-      if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
-    }
+    await this.authManager?.handleLogin();
   }
 
   async loadCharacter() {
@@ -140,6 +114,8 @@ export class App {
     this.setupElementSelector();
     this.initSkillTrees();
     this.initItemList();
+    this.initShop();
+    this.initHub();
 
     this.character.subscribe((data) => this.updateUI(data));
     this.updateUI(this.character.getData());
@@ -330,6 +306,20 @@ export class App {
     const container = $('#items-container');
     if (container) {
       this.itemList = new ItemList(this.character, container);
+    }
+  }
+
+  initShop() {
+    const container = $('#shop-container');
+    if (container) {
+      this.shopPage = new ShopPage(container);
+    }
+  }
+
+  initHub() {
+    const container = $('#hub-container');
+    if (container) {
+      this.hubPage = new HubPage(container);
     }
   }
 

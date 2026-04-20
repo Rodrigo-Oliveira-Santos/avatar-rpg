@@ -1,0 +1,184 @@
+/* ===================================
+   Hub / Player Profiles Page
+   =================================== */
+
+/* Hub Header */
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.hub-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hub-count {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Player Cards Grid */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+/* Player Card */
+.player-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  transition: border-color .15s;
+}
+
+.player-card:hover {
+  border-color: var(--border2);
+}
+
+/* Player Card Header */
+.player-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.player-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.player-level {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  background: var(--bg3);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Element Badge */
+.player-element {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.player-element.fire {
+  background: var(--fire-bg);
+  color: var(--fire-light);
+  border: 1px solid var(--fire);
+}
+
+.player-element.water {
+  background: var(--water-bg);
+  color: var(--water-light);
+  border: 1px solid var(--water);
+}
+
+.player-element.earth {
+  background: var(--earth-bg);
+  color: var(--earth-light);
+  border: 1px solid var(--earth);
+}
+
+.player-element.air {
+  background: var(--air-bg);
+  color: var(--air-light);
+  border: 1px solid var(--air);
+}
+
+.player-element.none {
+  background: var(--none-bg);
+  color: var(--none-light);
+  border: 1px solid var(--none);
+}
+
+/* Player Stats Row */
+.player-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.player-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.player-stat-lbl {
+  font-size: 9px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.player-stat-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* HP Bar in Player Card */
+.player-hp-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.player-hp-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #c03020, #e05030);
+  transition: width .3s;
+}
+
+/* Buffs/Debuffs */
+.player-buffs {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.player-buff {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.player-buff.positive {
+  background: #081408;
+  color: var(--green);
+}
+
+.player-buff.negative {
+  background: #1a0808;
+  color: var(--red);
+}
+
+/* Hub Empty State */
+.hub-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+  font-size: 13px;
+}

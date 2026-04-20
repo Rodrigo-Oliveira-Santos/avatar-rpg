@@ -15,6 +15,8 @@
   <link rel="stylesheet" href="css/components/character-section.css">
   <link rel="stylesheet" href="css/components/xp-table.css">
   <link rel="stylesheet" href="css/components/overlay.css">
+  <link rel="stylesheet" href="css/components/shop.css">
+  <link rel="stylesheet" href="css/components/hub.css">
 </head>
 <body>
   <!-- App loader -->
@@ -53,6 +55,8 @@
       <button class="nav-btn air" data-page="air">Ar</button>
       <button class="nav-btn none" data-page="none">Sem Dobra</button>
       <button class="nav-btn items-tab" data-page="items">Itens</button>
+      <button class="nav-btn shop-tab" data-page="shop">Loja</button>
+      <button class="nav-btn hub-tab" data-page="hub">Jogadores</button>
     </nav>
 
     <!-- Character Page -->
@@ -294,6 +298,16 @@
     <!-- Items Page -->
     <main id="items-page" class="page" role="tabpanel">
       <div id="items-container"></div>
+    </main>
+
+    <!-- Shop Page -->
+    <main id="shop-page" class="page" role="tabpanel">
+      <div id="shop-container"></div>
+    </main>
+
+    <!-- Hub / Players Page -->
+    <main id="hub-page" class="page" role="tabpanel">
+      <div id="hub-container"></div>
     </main>
   </div>
 
