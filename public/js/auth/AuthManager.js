@@ -66,15 +66,18 @@ export class AuthManager {
    */
   async handleLogin() {
     const usernameInput = $('#login-username');
-    const passwordInput = $('#login-password');
+    // BYPASS TEMPORÁRIO: passwordInput comentado (reverter: descomentar e restaurar validação abaixo)
+    // const passwordInput = $('#login-password');
     const errorEl = $('#login-error');
     const btn = $('#login-btn');
 
     const username = usernameInput?.value?.trim();
-    const password = passwordInput?.value;
+    // BYPASS TEMPORÁRIO: password comentada
+    // const password = passwordInput?.value;
 
-    if (!username || !password) {
-      if (errorEl) errorEl.textContent = 'Preencha todos os campos.';
+    // BYPASS TEMPORÁRIO: validação original comentada (reverter: trocar por `if (!username || !password)`)
+    if (!username) {
+      if (errorEl) errorEl.textContent = 'Preencha o nome de utilizador.';
       return;
     }
 
@@ -82,7 +85,8 @@ export class AuthManager {
     if (errorEl) errorEl.textContent = '';
 
     try {
-      const result = await authAPI.login(username, password);
+      // BYPASS TEMPORÁRIO: login sem password (reverter: authAPI.login(username, password))
+      const result = await authAPI.login(username);
       if (result.token) {
         localStorage.setItem('avatar_rpg_token', result.token);
       }

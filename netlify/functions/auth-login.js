@@ -20,11 +20,44 @@ export const handler = async (event) => {
     return error('JSON inválido');
   }
 
+  const { username } = body;
+  // BYPASS TEMPORÁRIO: só username obrigatório (reverter: restaurar bloco original abaixo)
+  if (!username) return error('Utilizador é obrigatório');
+
+  try {
+    // BYPASS TEMPORÁRIO: aceitar qualquer username sem autenticação Supabase
+    // Tenta buscar user na BD; se não existir, cria resposta com dados genéricos
+    let dbUser = null;
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('id, username, role')
+        .eq('username', username.toLowerCase())
+        .single();
+      dbUser = data;
+    } catch {
+      // user não existe na BD, usar dados genéricos
+    }
+
+    return ok({
+      token: 'bypass-token-temporary',
+      refreshToken: 'bypass-refresh-temporary',
+      user: {
+        id: dbUser?.id || 'bypass-id',
+        username: dbUser?.username || username,
+        role: dbUser?.role || 'player',
+      },
+    });
+  } catch (err) {
+    console.error('[auth-login]', err);
+    return serverError();
+  }
+
+  /* BYPASS TEMPORÁRIO: código original comentado (reverter: descomentar e apagar o bloco acima)
   const { username, password } = body;
   if (!username || !password) return error('Utilizador e senha são obrigatórios');
 
   try {
-    // Authenticate with Supabase Auth (email = username@avatar-rpg.local convention)
     const email = `${username.toLowerCase()}@avatar-rpg.local`;
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -32,7 +65,6 @@ export const handler = async (event) => {
       return error('Credenciais inválidas', 401);
     }
 
-    // Get user role from users table
     const { data: dbUser } = await supabase
       .from('users')
       .select('id, username, role')
@@ -52,4 +84,5 @@ export const handler = async (event) => {
     console.error('[auth-login]', err);
     return serverError();
   }
+  */
 };
