@@ -3,7 +3,7 @@
  * Displays items in a grid with filtering
  */
 
-import { createElement, on } from '../utils/dom.js';
+import { createElement, on, setClasses } from '../utils/dom.js';
 import { addItem, equipItem, getInventory } from './inventory.js';
 
 /**
@@ -54,17 +54,23 @@ export function createItemCard(item, inInventory = false, onAdd = null, onEquip 
   }
 
   if (item.weight) {
-    chips.appendChild(createElement('span', {
-      class: 'item-chip ic-wt',
-      textContent: `${item.weight} kg`,
-    }));
+    const weightVal = String(item.weight).trim();
+    if (weightVal) {
+      chips.appendChild(createElement('span', {
+        class: 'item-chip ic-wt',
+        textContent: `${weightVal} kg`,
+      }));
+    }
   }
 
   if (item.element) {
-    chips.appendChild(createElement('span', {
-      class: `item-chip ic-elem ic-${item.element}`,
-      textContent: item.element,
-    }));
+    const elementValue = item.element || '';
+    if (elementValue) {
+      chips.appendChild(createElement('span', {
+        class: `item-chip ic-elem ic-${elementValue}`,
+        textContent: elementValue,
+      }));
+    }
   }
 
   card.appendChild(chips);
@@ -110,9 +116,12 @@ function createCategoryTabs(activeCategory, onCategoryChange) {
 
   categories.forEach(cat => {
     const btn = createElement('button', {
-      class: `icat-btn ${cat === activeCategory ? 'on' : ''}`,
+      class: 'icat-btn',
       textContent: labels[cat],
     });
+    if (cat === activeCategory) {
+      setClasses(btn, 'on');
+    }
     on(btn, 'click', () => onCategoryChange(cat));
     container.appendChild(btn);
   });
@@ -146,7 +155,8 @@ export class ItemList {
       const { loadItems } = await import('./data.js');
       this.items = await loadItems();
       this.render();
-    } catch {
+    } catch (err) {
+      console.warn('ItemList: failed to load items', err);
       this.items = [];
       this.render();
     }

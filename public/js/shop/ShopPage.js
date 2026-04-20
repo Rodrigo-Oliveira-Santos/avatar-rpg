@@ -3,7 +3,7 @@
  * Displays shop items with search and category filtering
  */
 
-import { createElement, on, $ } from '../utils/dom.js';
+import { createElement, on, $, setClasses } from '../utils/dom.js';
 import { getShopItems } from './data.js';
 
 const CATEGORIES = [
@@ -63,9 +63,12 @@ export class ShopPage {
     const filters = createElement('div', { class: 'shop-filters' });
     CATEGORIES.forEach(cat => {
       const btn = createElement('button', {
-        class: `shop-filter-btn ${cat.id === this.activeCategory ? 'on' : ''}`,
+        class: 'shop-filter-btn',
         textContent: cat.label,
       });
+      if (cat.id === this.activeCategory) {
+        setClasses(btn, 'on');
+      }
       on(btn, 'click', () => {
         this.activeCategory = cat.id;
         this.render();
@@ -126,8 +129,9 @@ export class ShopPage {
     const meta = createElement('div', { class: 'shop-card-meta' });
 
     // Rarity badge
-    const rarityClass = `rarity-badge rarity-${item.rarity}`;
-    meta.appendChild(createElement('span', { class: rarityClass, textContent: RARITY_LABELS[item.rarity] || item.rarity }));
+    const rarityValue = item.rarity || 'common';
+    const rarityClass = `rarity-badge rarity-${rarityValue}`;
+    meta.appendChild(createElement('span', { class: rarityClass, textContent: RARITY_LABELS[rarityValue] || rarityValue }));
 
     // Type chip
     meta.appendChild(createElement('span', { class: 'item-chip ic-wt', textContent: this.getTypeLabel(item.type) }));

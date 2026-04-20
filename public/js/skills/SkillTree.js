@@ -19,9 +19,13 @@ function createCategoryTabs(activeCategory, onCategoryChange) {
 
   Object.keys(CATEGORIES).forEach(cat => {
     const btn = createElement('button', {
-      class: `ctab ${cat} ${cat === activeCategory ? 'on' : ''}`,
+      class: `ctab ${cat}`,
       textContent: CATEGORIES[cat],
     });
+
+    if (cat === activeCategory) {
+      setClasses(btn, 'on');
+    }
 
     on(btn, 'click', () => onCategoryChange(cat));
     container.appendChild(btn);
