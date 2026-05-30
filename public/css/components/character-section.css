@@ -51,3 +51,67 @@ textarea.field-input {
   min-height: 60px;
   font-family: inherit;
 }
+
+/* Equipment Grid */
+.equip-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.equip-slot {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.equip-slot-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.equip-slot-val {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.equip-slot.has-item {
+  border-color: var(--gold);
+}
+
+.equip-slot.has-item .equip-slot-val {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.equip-slot-stats {
+  font-size: 10px;
+  color: var(--green);
+  margin-top: 4px;
+}
+
+.equip-unequip-btn {
+  font-size: 9px;
+  color: var(--red);
+  background: none;
+  border: 1px solid var(--red);
+  border-radius: 3px;
+  padding: 2px 6px;
+  margin-top: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.equip-unequip-btn:hover {
+  opacity: 1;
+  background: rgba(224, 48, 48, 0.1);
+}

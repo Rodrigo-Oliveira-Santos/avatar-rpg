@@ -20,42 +20,47 @@ FASE 1 (MVP) → FASE 2 (Economia) → FASE 3 (Grupo) → FASE 4 (Admin) → FUT
 **Objetivo:** Sistema funcional mínimo para um jogador gerir o seu personagem.
 
 ### 1.1 Sistema de Autenticação (Crítico)
-- [ ] Login simples por username (sem password)
-- [ ] Sessão básica (localStorage + Supabase Auth mínimo)
-- [ ] Redirecionamento automático para ficha do personagem
+- [x] Login simples por username (sem password)
+- [x] Sessão básica (localStorage + Supabase Auth mínimo)
+- [x] Redirecionamento automático para ficha do personagem
 
 **Porquê primeiro:** Sem autenticação não há personagens, não há jogo.
 
 ### 1.2 Ficha de Personagem (Crítico)
-- [ ] Atributos editáveis (FOR, AGI, CHI, PER, RES, ESP)
-- [ ] Stats derivados calculados em tempo real (Vida, Chi, Espírito, Defesa, Esquiva)
-- [ ] Sistema de distribuição de pontos (3 por nível)
-- [ ] Nível máximo: 40
-- [ ] Visualização clara de XP e progresso
+- [x] Atributos editáveis (FOR, AGI, CHI, PER, RES, ESP)
+- [x] Stats derivados calculados em tempo real (Vida, Chi, Espírito, Defesa, Esquiva)
+- [x] Sistema de distribuição de pontos (3 por nível)
+- [x] Nível máximo: 40
+- [x] Visualização clara de XP e progresso
+- [x] Controlos de HP/SP/CP (+1/-1/+5/-5)
+- [x] Secção de equipamento (arma, armadura, acessório com stats)
+- [x] Nome e elemento exibidos no header
 
 **Dependência:** 1.1 Autenticação
 
 ### 1.3 Árvore de Habilidades Visual (Crítico)
-- [ ] Estrutura visual da skill tree (categorias + tiers)
-- [ ] Dados mock/exemplo (não precisa de todos os elementos completos)
-- [ ] Sistema de desbloqueio básico (requisitos de atributos)
-- [ ] Separação clara: Ataques vs Habilidades Passivas
+- [x] Estrutura visual da skill tree (categorias + tiers)
+- [x] Dados mock/exemplo (5 elementos com skills)
+- [x] Sistema de desbloqueio básico (requisitos de atributos + prerrequisitos)
+- [x] Separação clara: Ataques vs Habilidades Passivas
+- [x] Pesquisa por nome/descrição
+- [x] Validação de requisitos ao ativar skill
 
 **Nota:** Elementos completos vêm na Fase 2 via JSON.
 
 ### 1.4 Página de Loja (Visual Mock)
-- [ ] Layout da loja implementado
-- [ ] Dados de exemplo (hardcoded)
-- [ ] Search bar funcional (sobre dados mock)
-- [ ] Filtros básicos de categoria
+- [x] Layout da loja implementado
+- [x] Dados de exemplo (hardcoded)
+- [x] Search bar funcional (sobre dados mock)
+- [x] Filtros básicos de categoria
 
 **Porquê mock:** Economia real só na Fase 2.
 
 ### 1.5 Hub de Jogadores (Mock)
-- [ ] Layout da página de perfis
-- [ ] Dados de exemplo (3-5 personagens fictícios)
-- [ ] Cards com: nome, nível, elemento, vida atual/máx
-- [ ] **NOTA:** Sem dados reais nesta fase — apenas visual
+- [x] Layout da página de perfis
+- [x] Dados de exemplo (5 personagens fictícios)
+- [x] Cards com: nome, nível, elemento, vida atual/máx
+- **NOTA:** Sem dados reais nesta fase — apenas visual
 
 **Dependência futura:** Liga-se à BD na Fase 3.
 
@@ -233,12 +238,12 @@ public/
 ## Critérios de "Pronto" por Fase
 
 ### Fase 1 (MVP) — Pronto quando:
-- [ ] Utilizador faz login com username
-- [ ] Vê e edita atributos do personagem
-- [ ] Stats derivados atualizam em tempo real
-- [ ] Vê skill tree visual (mesmo com dados mock)
-- [ ] Vê loja com layout funcional (dados mock)
-- [ ] Hub mostra exemplos de personagens
+- [x] Utilizador faz login com username
+- [x] Vê e edita atributos do personagem
+- [x] Stats derivados atualizam em tempo real
+- [x] Vê skill tree visual (com dados mock)
+- [x] Vê loja com layout funcional (dados mock)
+- [x] Hub mostra exemplos de personagens
 
 ### Fase 2 (Economia) — Pronto quando:
 - [ ] GM importa habilidades via JSON
@@ -306,4 +311,5 @@ public/
 
 | Data | Alteração |
 |------|-----------|
+| 2026-05-31 | Fase 1 concluída — todos os critérios de pronto cumpridos |
 | 2026-04-20 | Documento inicial criado com prioridades e fases |

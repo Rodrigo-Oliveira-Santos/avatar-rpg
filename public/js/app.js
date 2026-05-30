@@ -9,6 +9,7 @@ import { createElement, on, $, $$ } from './utils/dom.js';
 import { ATTRIBUTES } from './utils/constants.js';
 import { SkillTree } from './skills/index.js';
 import { ItemList } from './items/index.js';
+import { unequipItem } from './items/inventory.js';
 import { ShopPage } from './shop/index.js';
 import { HubPage } from './hub/index.js';
 import { AuthManager } from './auth/index.js';
@@ -226,6 +227,42 @@ export class App {
       });
     });
 
+    // SP (Spirit) controls
+    const spDeltas = [
+      { id: 'sp-dec-5', delta: -5 },
+      { id: 'sp-dec-1', delta: -1 },
+      { id: 'sp-inc-1', delta: +1 },
+      { id: 'sp-inc-5', delta: +5 },
+    ];
+
+    spDeltas.forEach(({ id, delta }) => {
+      const btn = $(`#${id}`);
+      if (!btn) return;
+      on(btn, 'click', () => {
+        const max = this.character.getStats().maxSP;
+        this.currentSp = Math.max(0, Math.min(max, this.currentSp + delta));
+        this.updateCombatBars();
+      });
+    });
+
+    // CP (Chi) controls
+    const cpDeltas = [
+      { id: 'cp-dec-5', delta: -5 },
+      { id: 'cp-dec-1', delta: -1 },
+      { id: 'cp-inc-1', delta: +1 },
+      { id: 'cp-inc-5', delta: +5 },
+    ];
+
+    cpDeltas.forEach(({ id, delta }) => {
+      const btn = $(`#${id}`);
+      if (!btn) return;
+      on(btn, 'click', () => {
+        const max = this.character.getStats().maxCP;
+        this.currentCp = Math.max(0, Math.min(max, this.currentCp + delta));
+        this.updateCombatBars();
+      });
+    });
+
     const maxBtn = $('#hp-max');
     if (maxBtn) {
       on(maxBtn, 'click', () => {
@@ -352,6 +389,13 @@ export class App {
   updateUI(data) {
     const stats = this.character.getStats();
 
+    // Character identity header
+    const ELEMENT_NAMES = { fire: 'Fogo', water: 'Água', earth: 'Terra', air: 'Ar', none: 'Sem Dobra' };
+    const nameEl = $('#char-display-name');
+    if (nameEl) nameEl.textContent = data.identidade.nome || 'Sem Nome';
+    const elemEl = $('#char-display-element');
+    if (elemEl) elemEl.textContent = ELEMENT_NAMES[data.identidade.elemento] || '';
+
     // Level and available points
     const levelEl = $('#char-level');
     if (levelEl) levelEl.textContent = data.identidade.nivel;
@@ -404,6 +448,9 @@ export class App {
     // Active skills
     this.updateActiveSkills(data);
 
+    // Equipment
+    this.updateEquipment(data);
+
     // Refresh skill trees
     Object.values(this.skillTrees).forEach(tree => tree.refresh());
   }
@@ -444,7 +491,60 @@ export class App {
       container.innerHTML = '<p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade ativa selecionada.</p>';
       return;
     }
-    container.innerHTML = active.map(([id]) => `<span class="skill-chip">${id}</span>`).join('');
+
+    // Lookup skill names from loaded skill trees
+    container.innerHTML = active.map(([id]) => {
+      let name = id;
+      for (const tree of Object.values(this.skillTrees)) {
+        const skill = tree.skills?.find(s => s.id === id);
+        if (skill) { name = skill.name; break; }
+      }
+      return `<span class="skill-chip">${name}</span>`;
+    }).join('');
+  }
+
+  updateEquipment(data) {
+    const equipamentos = data.equipamentos || {};
+    const slots = ['arma', 'armadura', 'acessorio'];
+
+    slots.forEach(slot => {
+      const el = $(`#equip-${slot}`);
+      if (!el) return;
+
+      const item = equipamentos[slot];
+      if (item) {
+        el.classList.add('has-item');
+        const icon = slot === 'arma' ? '⚔' : slot === 'armadura' ? '🛡' : '💍';
+        const label = slot === 'arma' ? 'Arma' : slot === 'armadura' ? 'Armadura' : 'Acessório';
+        let statsText = '';
+        if (item.damage) statsText += `DMG: ${item.damage} `;
+        if (item.defense_bonus) statsText += `DEF: +${item.defense_bonus} `;
+        if (item.dodge_penalty) statsText += `ESQ: -${item.dodge_penalty} `;
+        if (item.effect) statsText += item.effect;
+
+        el.innerHTML = `
+          <div class="equip-slot-lbl">${icon} ${label}</div>
+          <div class="equip-slot-val">${item.name}</div>
+          ${statsText ? `<div class="equip-slot-stats">${statsText.trim()}</div>` : ''}
+          <button class="equip-unequip-btn" data-slot="${slot}">Desequipar</button>
+        `;
+
+        const btn = el.querySelector('.equip-unequip-btn');
+        if (btn) {
+          btn.addEventListener('click', () => {
+            unequipItem(this.character, slot);
+          });
+        }
+      } else {
+        el.classList.remove('has-item');
+        const icon = slot === 'arma' ? '⚔' : slot === 'armadura' ? '🛡' : '💍';
+        const label = slot === 'arma' ? 'Arma' : slot === 'armadura' ? 'Armadura' : 'Acessório';
+        el.innerHTML = `
+          <div class="equip-slot-lbl">${icon} ${label}</div>
+          <div class="equip-slot-val">— Vazio —</div>
+        `;
+      }
+    });
   }
 
   getCharacter() {

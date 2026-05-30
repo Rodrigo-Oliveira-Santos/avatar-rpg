@@ -158,6 +158,9 @@ export class ItemList {
   render() {
     this.container.innerHTML = '';
 
+    // Render inventory section first
+    this.renderInventorySection();
+
     // Category tabs
     const tabs = createCategoryTabs(this.activeCategory, (cat) => {
       this.activeCategory = cat;
@@ -171,34 +174,85 @@ export class ItemList {
       filtered = this.items.filter(item => item.type === this.activeCategory);
     }
 
-    // Get inventory IDs
-    const inventoryIds = new Set(
-      (this.character.getData().inventario || []).map(i => i.id)
-    );
+    // Get inventory IDs and quantities
+    const inventory = this.character.getData().inventario || [];
+    const inventoryMap = new Map(inventory.map(i => [i.id, i.quantity || 1]));
 
     if (filtered.length === 0) {
       this.container.appendChild(createElement('p', {
         style: 'color: var(--text2); padding: 20px;',
-        textContent: 'No items in this category.',
+        textContent: 'Nenhum item nesta categoria.',
       }));
       return;
     }
+
+    // Catalogue header
+    this.container.appendChild(createElement('div', {
+      style: 'font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin: 12px 0 8px;',
+      textContent: '📦 Catálogo de Itens',
+    }));
 
     // Grid
     const grid = createElement('div', { class: 'items-grid' });
 
     filtered.forEach(item => {
-      const inInventory = inventoryIds.has(item.id);
+      const inInventory = inventoryMap.has(item.id);
       const card = createItemCard(
         item,
         inInventory,
         (i) => this.addItem(i),
         (i) => this.equipItem(i)
       );
+      // Add inventory badge
+      if (inInventory) {
+        const qty = inventoryMap.get(item.id);
+        const badge = createElement('div', {
+          style: 'position: absolute; top: 4px; right: 4px; background: var(--gold); color: #000; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;',
+          textContent: qty > 1 ? `×${qty}` : '✓',
+        });
+        card.style.position = 'relative';
+        card.appendChild(badge);
+      }
       grid.appendChild(card);
     });
 
     this.container.appendChild(grid);
+  }
+
+  /**
+   * Render player's current inventory
+   */
+  renderInventorySection() {
+    const inventory = this.character.getData().inventario || [];
+    if (inventory.length === 0) return;
+
+    const section = createElement('div', {
+      style: 'background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px;',
+    });
+
+    section.appendChild(createElement('div', {
+      style: 'font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px;',
+      textContent: `🎒 Meu Inventário (${inventory.length} item${inventory.length !== 1 ? 'ns' : ''})`,
+    }));
+
+    const grid = createElement('div', { style: 'display: flex; flex-wrap: wrap; gap: 6px;' });
+
+    inventory.forEach(item => {
+      const chip = createElement('div', {
+        style: 'background: var(--bg3); border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; font-size: 11px; color: var(--text); cursor: pointer;',
+        textContent: `${item.name}${(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}`,
+        title: item.description || '',
+      });
+      on(chip, 'click', () => {
+        if (confirm(`Equipar "${item.name}"?`)) {
+          this.equipItem(item);
+        }
+      });
+      grid.appendChild(chip);
+    });
+
+    section.appendChild(grid);
+    this.container.appendChild(section);
   }
 
   /**

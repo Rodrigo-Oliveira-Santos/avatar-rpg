@@ -317,29 +317,34 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 | Feature | Status | Prioridade | Notas |
 |---------|--------|------------|-------|
-| Autenticação (username, sem password) | 🚧 | Crítica | Login simples |
-| Ficha de personagem (atributos + stats) | 🚧 | Crítica | Edição em tempo real |
-| Árvore de habilidades (estrutura visual) | 🚧 | Crítica | Dados mock |
-| Loja (layout + mock) | 🚧 | Alta | Dados hardcoded |
-| Hub de Jogadores (mock) | 🚧 | Alta | Dados de exemplo |
-| Estrutura de pastas reorganizada | 📋 | Alta | Separar avatar-rpg/ |
+| Autenticação (username, sem password) | ✅ | Crítica | Login simples, bypass para dev local |
+| Ficha de personagem (atributos + stats) | ✅ | Crítica | Edição em tempo real, XP, level-up |
+| Árvore de habilidades (estrutura visual) | ✅ | Crítica | Dados mock (5 elementos), validação de requisitos |
+| Loja (layout + mock) | ✅ | Alta | 12 itens hardcoded, filtros, pesquisa |
+| Hub de Jogadores (mock) | ✅ | Alta | 5 jogadores de exemplo |
+| Equipamento com stats | ✅ | Alta | Arma/Armadura/Acessório, bónus defesa/esquiva |
+| Controlos SP/CP | ✅ | Alta | Botões +/-1/5 para Espírito e Chi |
+| Inventário integrado | ✅ | Alta | Página de itens com inventário pessoal |
+| Pesquisa de habilidades | ✅ | Média | Filtro por nome/descrição |
+| Import/Export JSON | ✅ | Média | Exportar e importar personagem completo |
+| Auto-save (localStorage) | ✅ | Média | Debounce 2s, fallback localStorage |
+| Estrutura de pastas reorganizada | 🚧 | Baixa | Separar avatar-rpg/ (futuro) |
 
 **Não incluído na Fase 1:**
-- ❌ Auto-save (debounce 2s) — Backlog
-- ❌ Importar/Exportar JSON — Fase 2
-- ❌ Elementos completos — Fase 2 (via JSON)
+- ❌ Backend real (Supabase/Netlify) — requer configuração
+- ❌ Elementos completos — Fase 2 (dados gerados por colega)
 
 ### Fase 2 — Sistema de Economia e Dados (📋 Próxima Prioridade)
 
 | Feature | Status | Prioridade |
 |---------|--------|------------|
 | Atributo de ouro no personagem | 📦 | Alta |
-| Inventário com quantidades | 📦 | Alta |
+| Inventário com quantidades | ✅ | Alta |
 | Importar JSON (habilidades, itens, ataques) | 📦 | Alta |
-| Exportar JSON (personagem) | 📦 | Alta |
+| Exportar JSON (personagem) | ✅ | Alta |
 | Loja funcional (dados da BD) | 📦 | Alta |
 | Raridade de itens (visual) | 📦 | Média |
-| Armaduras com bónus/penalidade | 📦 | Alta |
+| Armaduras com bónus/penalidade | ✅ | Alta |
 
 ### Fase 3 — Ferramentas de Grupo (📦 Backlog)
 
@@ -396,4 +401,5 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 | Data | Alteração |
 |------|-----------|
+| 2026-05-31 | Atualizar status Fase 1 (maioria ✅), adicionar features implementadas |
 | 2026-04-19 | Documento inicial criado com base em `New Features.txt` |

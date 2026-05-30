@@ -36,7 +36,7 @@ export function removeItem(character, itemId, quantity = 1) {
   const data = character.getData();
   const idx = data.inventario?.findIndex(i => i.id === itemId);
 
-  if (idx === -1) return false;
+  if (idx == null || idx === -1) return false;
 
   const item = data.inventario[idx];
   if ((item.quantity || 1) <= quantity) {

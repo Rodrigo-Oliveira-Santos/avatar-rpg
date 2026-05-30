@@ -57,18 +57,23 @@ export function calculateDodge(AGI, PER) {
 
 /**
  * Calculate all derived stats at once
- * @param {object} character - Character object with level and attributes
+ * @param {object} character - Character data with level, attributes, and equipment
  * @returns {object} Derived stats
  */
 export function calculateAllStats(character) {
   const { nivel } = character.identidade;
   const { FOR, AGI, CHI, PER, RES, ESP } = character.atributos;
 
+  // Armor bonuses from equipped items
+  const armor = character.equipamentos?.armadura;
+  const armorBonus = armor?.defense_bonus || 0;
+  const dodgePenalty = armor?.dodge_penalty || 0;
+
   return {
     maxHP: calculateMaxHP(nivel, FOR),
     maxSP: calculateMaxSP(nivel, ESP),
     maxCP: calculateMaxCP(nivel, CHI),
-    defense: calculateDefense(nivel, RES),
-    dodge: calculateDodge(AGI, PER),
+    defense: calculateDefense(nivel, RES) + armorBonus,
+    dodge: Math.max(0, calculateDodge(AGI, PER) - dodgePenalty),
   };
 }

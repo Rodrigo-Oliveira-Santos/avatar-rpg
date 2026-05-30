@@ -3,7 +3,7 @@
  * Renders individual skill cards
  */
 
-import { createElement, $$, on } from '../utils/dom.js';
+import { createElement } from '../utils/dom.js';
 import { TIERS, POSITIONS, ATTRIBUTES, STATUS_EFFECTS } from '../utils/constants.js';
 
 /**
@@ -153,7 +153,7 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
   if (skill.prerequisites && skill.prerequisites.length > 0) {
     card.appendChild(createElement('div', {
       class: 'req-line',
-      textContent: `Requires: ${skill.prerequisites.join(', ')}`,
+      textContent: `Requer: ${skill.prerequisites.join(', ')}`,
     }));
   }
 
@@ -162,7 +162,7 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
     const effSection = createElement('div', { class: 'eff-section' });
     effSection.appendChild(createElement('div', {
       class: 'sec-lbl',
-      textContent: 'Effect',
+      textContent: 'Efeito',
     }));
 
     if (skill.passive_effect.description) {
@@ -190,7 +190,7 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
     const atkSection = createElement('div', { class: 'atk-section' });
     atkSection.appendChild(createElement('div', {
       class: 'sec-lbl',
-      textContent: 'Attacks',
+      textContent: 'Ataques',
     }));
 
     skill.attacks.forEach(attack => {
