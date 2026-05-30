@@ -106,6 +106,7 @@ export class App {
 
   setupUI() {
     this.setupNavigation();
+    this.setupLogout();
     this.renderAttributeControls();
     this.bindIdentityFields();
     this.bindHPControls();
@@ -129,14 +130,25 @@ export class App {
   }
 
   setupNavigation() {
-    $$('.nav-btn').forEach(btn => {
+    $$('.nav-btn[data-page]').forEach(btn => {
       on(btn, 'click', () => this.switchTab(btn.dataset.page));
     });
     this.switchTab('character');
   }
 
+  setupLogout() {
+    const logoutBtn = $('#logout-btn');
+    if (logoutBtn) {
+      on(logoutBtn, 'click', () => {
+        if (confirm('Sair da sessão?')) {
+          this.authManager?.logout();
+        }
+      });
+    }
+  }
+
   switchTab(pageId) {
-    $$('.nav-btn').forEach(btn => btn.classList.toggle('on', btn.dataset.page === pageId));
+    $$('.nav-btn[data-page]').forEach(btn => btn.classList.toggle('on', btn.dataset.page === pageId));
     $$('.page').forEach(page => page.classList.toggle('on', page.id === `${pageId}-page`));
     this.activeTab = pageId;
   }
@@ -289,7 +301,21 @@ export class App {
         this.character.data.identidade.elemento = btn.dataset.element;
         this.character.notify();
         elemButtons.forEach(b => b.classList.toggle('on', b === btn));
+        this.updateElementTabs(btn.dataset.element);
       });
+    });
+    this.updateElementTabs(current);
+  }
+
+  updateElementTabs(element) {
+    const elementPages = ['fire', 'water', 'earth', 'air', 'none'];
+    elementPages.forEach(el => {
+      const tab = $(`.nav-btn.${el}`);
+      if (tab) {
+        // Show the selected element + "none" (sem dobra) always visible
+        const visible = (el === element || el === 'none');
+        tab.style.display = visible ? '' : 'none';
+      }
     });
   }
 
@@ -329,6 +355,9 @@ export class App {
     // Level and available points
     const levelEl = $('#char-level');
     if (levelEl) levelEl.textContent = data.identidade.nivel;
+
+    const milestoneEl = $('#char-milestone');
+    if (milestoneEl) milestoneEl.textContent = data.identidade.marco || '';
 
     const pointsEl = $('#avail-points');
     if (pointsEl) pointsEl.textContent = data.pontos_disponiveis;

@@ -62,16 +62,12 @@ export function on(el, event, handler, options = {}) {
 }
 
 /**
- * Query selector with error handling
+ * Query selector
  * @param {string} selector - CSS selector
  * @param {HTMLElement} parent - Parent element (default: document)
  */
 export function $(selector, parent = document) {
-  const el = parent.querySelector(selector);
-  if (!el) {
-    console.warn(`Element not found: ${selector}`);
-  }
-  return el;
+  return parent.querySelector(selector);
 }
 
 /**

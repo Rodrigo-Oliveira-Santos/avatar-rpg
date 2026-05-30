@@ -66,16 +66,23 @@ function groupByTier(skills) {
 /**
  * Create skill grid for a tier
  * @param {array} skills - Skills in this tier
+ * @param {array} allSkills - All skills in this element (for prereq lookup)
  * @param {object} characterSkills - Character's unlocked skills
  * @param {Function} onSkillToggle - Toggle callback
  * @returns {HTMLElement} Grid element
  */
-function createTierGrid(skills, characterSkills, onSkillToggle) {
+function createTierGrid(skills, allSkills, characterSkills, onSkillToggle) {
   const grid = createElement('div', { class: 'skills-grid' });
 
   skills.forEach(skill => {
-    const isUnlocked = !skill.prerequisites || skill.prerequisites.every(
-      prereq => characterSkills[prereq]?.active
+    // Check prerequisites: match by name → find corresponding id
+    const isUnlocked = !skill.prerequisites || skill.prerequisites.length === 0 || skill.prerequisites.every(
+      prereqName => {
+        // Find the skill with this name to get its id
+        const prereqSkill = allSkills.find(s => s.name === prereqName);
+        const prereqId = prereqSkill ? prereqSkill.id : prereqName;
+        return characterSkills[prereqId]?.active;
+      }
     );
 
     const isActive = characterSkills[skill.id]?.active || false;
@@ -167,7 +174,7 @@ export class SkillTree {
         });
         this.container.appendChild(tierLabel);
 
-        const grid = createTierGrid(byTier[tier], characterSkills, (skill) => {
+        const grid = createTierGrid(byTier[tier], this.skills, characterSkills, (skill) => {
           this.toggleSkill(skill);
         });
         this.container.appendChild(grid);

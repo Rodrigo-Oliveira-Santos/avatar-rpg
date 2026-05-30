@@ -58,16 +58,14 @@ export function calculateLevelFromXP(totalXP) {
 
 /**
  * Get XP progress info
- * @param {number} currentXP - Current XP
+ * Note: currentXP is relative (progress towards next level, reset on level-up)
+ * @param {number} currentXP - Current XP (relative to current level)
  * @param {number} level - Current level
  * @returns {object} { currentXP, nextLevelXP, percentage }
  */
 export function getXPProgress(currentXP, level) {
   const nextLevelXP = calculateXPForLevel(level + 1);
-  const prevLevelXP = calculateXPForLevel(level);
-  const range = nextLevelXP - prevLevelXP;
-  const progress = currentXP - prevLevelXP;
-  const percentage = range > 0 ? (progress / range) * 100 : 0;
+  const percentage = nextLevelXP > 0 ? (currentXP / nextLevelXP) * 100 : 0;
 
   return {
     currentXP,

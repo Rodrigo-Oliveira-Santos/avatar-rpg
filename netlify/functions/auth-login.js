@@ -1,6 +1,7 @@
 /**
  * POST /api/auth/login
- * Authenticate user and return JWT token
+ * Authenticate user by username (Phase 1: no password)
+ * Creates user in Supabase Auth if not exists
  */
 
 import { supabase } from './lib/supabase.js';
@@ -20,16 +21,55 @@ export const handler = async (event) => {
     return error('JSON inválido');
   }
 
-  const { username, password } = body;
-  if (!username || !password) return error('Utilizador e senha são obrigatórios');
+  const { username } = body;
+  if (!username) return error('Nome de utilizador é obrigatório');
 
   try {
-    // Authenticate with Supabase Auth (email = username@avatar-rpg.local convention)
     const email = `${username.toLowerCase()}@avatar-rpg.local`;
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    const defaultPassword = `avatar-rpg-${username.toLowerCase()}-phase1`;
 
-    if (authError || !data.session) {
-      return error('Credenciais inválidas', 401);
+    // Try to sign in first
+    let { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password: defaultPassword,
+    });
+
+    // If user doesn't exist, create them
+    if (authError && authError.message?.includes('Invalid login credentials')) {
+      const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
+        email,
+        password: defaultPassword,
+        email_confirm: true,
+      });
+
+      if (signUpError) {
+        return error('Erro ao criar utilizador: ' + signUpError.message, 500);
+      }
+
+      // Create entry in users table
+      await supabase.from('users').insert({
+        auth_id: signUpData.user.id,
+        username: username.toLowerCase(),
+        role: 'player',
+      });
+
+      // Sign in the newly created user
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password: defaultPassword,
+      });
+
+      if (loginError || !loginData.session) {
+        return error('Erro ao autenticar após criação', 500);
+      }
+
+      data = loginData;
+    } else if (authError) {
+      return error('Erro de autenticação', 401);
+    }
+
+    if (!data?.session) {
+      return error('Sessão não criada', 500);
     }
 
     // Get user role from users table

@@ -49,7 +49,7 @@ export function createItemCard(item, inInventory = false, onAdd = null, onEquip 
   if (item.price) {
     chips.appendChild(createElement('span', {
       class: 'item-chip ic-price',
-      textContent: `${item.price} gold`,
+      textContent: `${item.price} ouro`,
     }));
   }
 
@@ -73,14 +73,14 @@ export function createItemCard(item, inInventory = false, onAdd = null, onEquip 
   if (inInventory) {
     const equipBtn = createElement('button', {
       class: 'add-inv-btn',
-      textContent: 'Equip',
+      textContent: 'Equipar',
     });
     on(equipBtn, 'click', () => onEquip?.(item));
     card.appendChild(equipBtn);
   } else {
     const addBtn = createElement('button', {
       class: 'add-inv-btn',
-      textContent: 'Add to Inventory',
+      textContent: 'Adicionar ao Inventário',
     });
     on(addBtn, 'click', () => onAdd?.(item));
     card.appendChild(addBtn);
@@ -98,12 +98,12 @@ export function createItemCard(item, inInventory = false, onAdd = null, onEquip 
 function createCategoryTabs(activeCategory, onCategoryChange) {
   const categories = ['all', 'weapon', 'armor', 'accessory', 'consumable', 'other'];
   const labels = {
-    all: 'All',
-    weapon: 'Weapons',
-    armor: 'Armor',
-    accessory: 'Accessories',
-    consumable: 'Consumables',
-    other: 'Other',
+    all: 'Todos',
+    weapon: 'Armas',
+    armor: 'Armaduras',
+    accessory: 'Acessórios',
+    consumable: 'Consumíveis',
+    other: 'Outros',
   };
 
   const container = createElement('div', { class: 'items-nav' });

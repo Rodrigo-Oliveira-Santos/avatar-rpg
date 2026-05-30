@@ -80,3 +80,15 @@
   border-bottom-color: var(--spirit);
   color: var(--spirit);
 }
+
+.nav-btn.logout-btn {
+  margin-left: auto;
+  color: var(--text3);
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+.nav-btn.logout-btn:hover {
+  color: var(--red);
+  background: rgba(224, 48, 48, 0.1);
+}

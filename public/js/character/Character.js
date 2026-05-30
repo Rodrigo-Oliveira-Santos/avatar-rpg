@@ -5,7 +5,7 @@
 
 import { GAME } from '../utils/constants.js';
 import { calculateAllStats } from './stats.js';
-import { getMilestone, getXPProgress } from './xp.js';
+import { getMilestone, getXPProgress, calculateXPForLevel } from './xp.js';
 import { getAvailableSlots } from './slots.js';
 
 /**
@@ -83,7 +83,7 @@ export class Character {
     this.data.identidade.marco = getMilestone(nivel);
 
     // Update XP for next level
-    this.data.identidade.xp_proximo_nivel = this.data.identidade.xp_atual + 1;
+    this.data.identidade.xp_proximo_nivel = calculateXPForLevel(nivel + 1);
 
     // Recalculate available points
     this.recalculatePoints();
@@ -114,7 +114,7 @@ export class Character {
 
     // Check limits
     if (newValue < 1) return false;
-    if (this.data.pontos_disponiveis < -delta && delta > 0) return false;
+    if (delta > 0 && this.data.pontos_disponiveis <= 0) return false;
 
     this.data.atributos[attr] = newValue;
     this.recalculateAll();
@@ -155,11 +155,25 @@ export class Character {
   }
 
   /**
-   * Add XP
+   * Add XP and handle automatic level-ups
    * @param {number} amount - XP to add
    */
   addXP(amount) {
     this.data.identidade.xp_atual += amount;
+
+    // Check for level-ups
+    let nivel = this.data.identidade.nivel;
+    while (nivel < GAME.MAX_LEVEL) {
+      const xpNeeded = calculateXPForLevel(nivel + 1);
+      if (this.data.identidade.xp_atual >= xpNeeded) {
+        this.data.identidade.xp_atual -= xpNeeded;
+        nivel++;
+      } else {
+        break;
+      }
+    }
+    this.data.identidade.nivel = nivel;
+
     this.recalculateAll();
     this.notify();
   }

@@ -19,6 +19,26 @@ create table if not exists users (
 );
 
 -- ============================================================
+-- Items (before characters, since characters references items)
+-- ============================================================
+create table if not exists items (
+  id              uuid primary key default uuid_generate_v4(),
+  name            text unique not null,
+  description     text,
+  type            text not null default 'other' check (type in ('weapon','armor','accessory','consumable','other')),
+  rarity          text not null default 'common' check (rarity in ('common','rare','epic','legendary')),
+  price           int not null default 0,
+  weight_class    text,                        -- light, medium, heavy
+  defense_bonus   int default 0,
+  dodge_penalty   int default 0,
+  attributes      jsonb default '{}',          -- extra attribute bonuses
+  in_shop         boolean not null default false,
+  gm_notes        text,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+-- ============================================================
 -- Characters
 -- ============================================================
 create table if not exists characters (
@@ -78,26 +98,6 @@ create table if not exists skills (
   updated_at      timestamptz not null default now(),
 
   unique (element, name)
-);
-
--- ============================================================
--- Items
--- ============================================================
-create table if not exists items (
-  id              uuid primary key default uuid_generate_v4(),
-  name            text unique not null,
-  description     text,
-  type            text not null default 'other' check (type in ('weapon','armor','accessory','consumable','other')),
-  rarity          text not null default 'common' check (rarity in ('common','rare','epic','legendary')),
-  price           int not null default 0,
-  weight_class    text,                        -- light, medium, heavy
-  defense_bonus   int default 0,
-  dodge_penalty   int default 0,
-  attributes      jsonb default '{}',          -- extra attribute bonuses
-  in_shop         boolean not null default false,
-  gm_notes        text,
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
 );
 
 -- ============================================================

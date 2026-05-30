@@ -1,9 +1,10 @@
 /**
  * Skill Data Loader
- * Loads skills from API (/api/skills/:element)
+ * Loads skills from API or falls back to local mock data
  */
 
 import { getSkills } from '../api/skills.js';
+import { MOCK_SKILLS } from './mock-data.js';
 
 /**
  * Load skills for a specific element
@@ -18,11 +19,16 @@ export async function loadSkills(element) {
 
   try {
     const skills = await getSkills(element);
-    return { skills: Array.isArray(skills) ? skills : [] };
+    if (Array.isArray(skills) && skills.length > 0) {
+      return { skills };
+    }
   } catch (err) {
-    console.warn(`[Skills] Failed to load ${element} from API:`, err.message);
-    return { skills: [], error: err.message };
+    console.warn(`[Skills] API unavailable for ${element}:`, err.message);
   }
+
+  // Fallback to mock data
+  const mockSkills = MOCK_SKILLS[element] || [];
+  return { skills: mockSkills };
 }
 
 /**
