@@ -93,10 +93,20 @@ export class App {
       console.warn('[App] API unavailable, using localStorage:', err.message);
     }
 
-    // Fallback: localStorage
+    // Fallback: per-user localStorage
     try {
-      const saved = localStorage.getItem('avatar_rpg_character');
-      if (saved) this.character.load(JSON.parse(saved));
+      const saved = API.characters.loadLocal();
+      if (saved) {
+        this.character.load(saved);
+      } else {
+        // First login: check for preset
+        const user = this.authManager.getUser();
+        const preset = user ? API.characters.getPreset(user.username) : null;
+        if (preset) {
+          this.character.load(preset);
+          API.characters.saveLocal(this.character.serialize());
+        }
+      }
     } catch (e) {
       console.error('[App] localStorage load failed:', e);
     }
@@ -389,7 +399,7 @@ export class App {
   initHub() {
     const container = $('#hub-container');
     if (container) {
-      this.hubPage = new HubPage(container, this.character);
+      this.hubPage = new HubPage(container, this.character, this.authManager);
     }
   }
 
@@ -402,6 +412,17 @@ export class App {
     if (nameEl) nameEl.textContent = data.identidade.nome || 'Sem Nome';
     const elemEl = $('#char-display-element');
     if (elemEl) elemEl.textContent = ELEMENT_NAMES[data.identidade.elemento] || '';
+
+    // Role badge
+    const roleEl = $('#char-display-role');
+    if (roleEl) {
+      const user = this.authManager?.getUser();
+      const role = user?.role || 'player';
+      const ROLE_LABELS = { player: '', gm: '🎲 Game Master', admin: '⚙ Admin' };
+      const ROLE_COLORS = { player: '', gm: 'var(--gold)', admin: 'var(--red)' };
+      roleEl.textContent = ROLE_LABELS[role] || '';
+      roleEl.style.color = ROLE_COLORS[role] || '';
+    }
 
     // Level and available points
     const levelEl = $('#char-level');

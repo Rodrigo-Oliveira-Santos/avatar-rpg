@@ -22,10 +22,12 @@ export class HubPage {
   /**
    * @param {HTMLElement} container - DOM container for the hub
    * @param {object} character - Character instance
+   * @param {object} authManager - AuthManager instance
    */
-  constructor(container, character) {
+  constructor(container, character, authManager) {
     this.container = container;
     this.character = character;
+    this.authManager = authManager;
     this.render();
   }
 
@@ -43,8 +45,10 @@ export class HubPage {
     }));
     this.container.appendChild(header);
 
-    // GM Tools section
-    this.renderGMTools();
+    // GM Tools section (only for gm/admin)
+    if (this.authManager?.hasRole('gm')) {
+      this.renderGMTools();
+    }
 
     // Mock notice
     const notice = createElement('div', {

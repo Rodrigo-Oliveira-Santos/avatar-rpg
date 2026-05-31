@@ -6,11 +6,27 @@
 // import { post, get } from './client.js';
 
 /**
+ * Test profiles for local development
+ * Each has a preset role and element
+ */
+const TEST_PROFILES = {
+  admin: { id: 'user-admin', username: 'admin', role: 'admin' },
+  gm: { id: 'user-gm', username: 'gm', role: 'gm' },
+  zuko: { id: 'user-zuko', username: 'zuko', role: 'player' },
+  katara: { id: 'user-katara', username: 'katara', role: 'player' },
+  toph: { id: 'user-toph', username: 'toph', role: 'player' },
+  aang: { id: 'user-aang', username: 'aang', role: 'player' },
+  sokka: { id: 'user-sokka', username: 'sokka', role: 'player' },
+};
+
+/**
  * BYPASS TEMPORÁRIO: Login mock sem chamar backend
  * Reverter: descomentar função original no final do ficheiro e apagar esta
  */
 export function login(username) {
-  const user = { id: 'local-user', username, role: 'player' };
+  const key = username.toLowerCase();
+  const profile = TEST_PROFILES[key];
+  const user = profile || { id: `user-${key}`, username, role: 'player' };
   localStorage.setItem('avatar_rpg_user', JSON.stringify(user));
   return Promise.resolve({ token: 'bypass-token', user });
 }

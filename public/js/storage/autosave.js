@@ -129,12 +129,26 @@ export class AutoSave {
   }
 
   /**
+   * Get per-user storage key
+   */
+  getStorageKey() {
+    try {
+      const stored = localStorage.getItem('avatar_rpg_user');
+      if (stored) {
+        const user = JSON.parse(stored);
+        return `avatar_rpg_character_${user.username}`;
+      }
+    } catch {}
+    return 'avatar_rpg_character_default';
+  }
+
+  /**
    * Save to localStorage (fallback)
    * @param {object} payload - Character data
    */
   saveToLocal(payload) {
     try {
-      localStorage.setItem('avatar_rpg_character', JSON.stringify(payload));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(payload));
       localStorage.setItem('avatar_rpg_saved_at', new Date().toISOString());
     } catch (err) {
       log('error', 'localStorage save failed', err);
@@ -147,7 +161,7 @@ export class AutoSave {
    */
   loadFromLocal() {
     try {
-      const data = localStorage.getItem('avatar_rpg_character');
+      const data = localStorage.getItem(this.getStorageKey());
       const savedAt = localStorage.getItem('avatar_rpg_saved_at');
       if (data) {
         log('info', 'Loaded from localStorage', { savedAt });
@@ -165,19 +179,10 @@ export class AutoSave {
   bindBeforeUnload() {
     window.addEventListener('beforeunload', (e) => {
       if (this.hasChanges()) {
-        log('info', 'beforeunload: saving with sendBeacon');
+        log('info', 'beforeunload: saving');
 
         const payload = this.character.serialize();
-        const id = payload.id;
-        const url = id ? `/api/characters/${id}` : '/api/characters';
-        const blob = new Blob([JSON.stringify(payload)], {
-          type: 'application/json',
-        });
-
-        // sendBeacon survives page unload
-        navigator.sendBeacon(url, blob);
-
-        // Also save to localStorage as backup
+        // Save to localStorage as backup
         this.saveToLocal(payload);
       }
     });
