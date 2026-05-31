@@ -318,6 +318,7 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 | Feature | Status | Prioridade | Notas |
 |---------|--------|------------|-------|
 | Autenticação (username, sem password) | ✅ | Crítica | Login simples, bypass para dev local |
+| Perfis de teste (per-user localStorage) | ✅ | Crítica | 7 perfis pré-configurados, dados por username |
 | Ficha de personagem (atributos + stats) | ✅ | Crítica | Edição em tempo real, XP, level-up |
 | Árvore de habilidades (estrutura visual) | ✅ | Crítica | Dados mock (5 elementos), validação de requisitos |
 | Loja (layout + mock) | ✅ | Alta | 12 itens hardcoded, filtros, pesquisa |
@@ -333,6 +334,26 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 **Não incluído na Fase 1:**
 - ❌ Backend real (Supabase/Netlify) — requer configuração
 - ❌ Elementos completos — Fase 2 (dados gerados por colega)
+
+#### Perfis de Teste (Dev Local)
+
+Usernames disponíveis no login — cada um carrega um personagem pré-configurado com dados diferentes:
+
+| Username | Elemento | Role | Nível | Ouro | Notas |
+|----------|----------|------|-------|------|-------|
+| `zuko` | 🔥 Fogo | Player | 12 | 450 | Subclasse: Raio Azul |
+| `katara` | 🌊 Água | Player | 14 | 320 | Subclasse: Dobra de Sangue |
+| `toph` | 🪨 Terra | Player | 15 | 600 | Subclasse: Dobra de Metal |
+| `aang` | 🌀 Ar | Player | 18 | 150 | Subclasse: Avatar |
+| `sokka` | ⚔️ Sem Dobra | Player | 10 | 800 | Subclasse: Estrategista |
+| `gm` | 🔥 Fogo | GM | 30 | 50000 | Vê ferramentas GM no Hub |
+| `admin` | 🔥 Fogo | Admin | 40 | 99999 | Acesso total, todos os atributos a 20 |
+
+**Notas:**
+- Dados guardados por username no localStorage (trocar de perfil não perde dados)
+- Qualquer outro username cria um personagem vazio (nível 1, 0 ouro)
+- Ferramentas GM (dar ouro/XP) só visíveis para `gm` e `admin`
+- Badge de role aparece na ficha do personagem
 
 ### Fase 2 — Sistema de Economia e Dados (📋 Próxima Prioridade)
 
