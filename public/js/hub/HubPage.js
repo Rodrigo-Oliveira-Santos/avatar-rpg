@@ -9,6 +9,7 @@ import { getPlayers } from './data.js';
 import { CharacterModal } from './CharacterModal.js';
 import { LootDelivery } from './LootDelivery.js';
 import { GroupRewards } from './GroupRewards.js';
+import { GiftTransfer, GIFT_TRANSFER_UPDATED_EVENT } from './GiftTransfer.js';
 import { log } from '../admin/LogService.js';
 import { TradeManager, TradeModal, TRADE_UPDATED_EVENT, getTradeNotificationCount, updateTradeBadge } from '../trade/index.js';
 
@@ -54,6 +55,7 @@ export class HubPage {
     this.tradeModal = new TradeModal(this.tradeManager, this.getCurrentUsername());
     this.groupRewards = null;
     this.lootDelivery = null;
+    this.giftTransfer = null;
     this._refreshTimer = null;
 
     this.handleTradeUpdate = this.handleTradeUpdate.bind(this);
@@ -282,6 +284,26 @@ export class HubPage {
       this.lootDelivery.container = lootDeliveryContainer;
     }
     this.lootDelivery.render();
+
+    const giftContainer = createElement('div');
+    on(giftContainer, GIFT_TRANSFER_UPDATED_EVENT, (event) => {
+      const loggedUsername = this.getCurrentUsername();
+      const updatedPlayers = event.detail?.players || [];
+
+      if (loggedUsername && updatedPlayers.includes(loggedUsername)) {
+        this.syncCurrentCharacter(loggedUsername);
+      }
+
+      this.refresh();
+    });
+    section.appendChild(giftContainer);
+
+    if (!this.giftTransfer) {
+      this.giftTransfer = new GiftTransfer(giftContainer, this.authManager);
+    } else {
+      this.giftTransfer.container = giftContainer;
+    }
+    this.giftTransfer.render();
 
     this.container.appendChild(section);
   }
