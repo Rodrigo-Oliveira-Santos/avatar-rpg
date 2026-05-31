@@ -3,7 +3,7 @@
  * Renders individual skill cards
  */
 
-import { createElement } from '../utils/dom.js';
+import { createElement, on } from '../utils/dom.js';
 import { TIERS, POSITIONS, ATTRIBUTES, STATUS_EFFECTS } from '../utils/constants.js';
 
 /**
@@ -173,13 +173,12 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
     }
 
     if (skill.passive_effect.chi_cost) {
-      effSection.appendChild(createElement('div', {
-        class: 'atk-chips',
-        children: [createElement('span', {
-          class: 'achip ac-chi',
-          textContent: `Chi: ${skill.passive_effect.chi_cost}`,
-        })],
+      const chiChips = createElement('div', { class: 'atk-chips' });
+      chiChips.appendChild(createElement('span', {
+        class: 'achip ac-chi',
+        textContent: `Chi: ${skill.passive_effect.chi_cost}`,
       }));
+      effSection.appendChild(chiChips);
     }
 
     card.appendChild(effSection);
