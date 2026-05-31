@@ -5,6 +5,7 @@
 
 import { createElement, on } from '../utils/dom.js';
 import { CATEGORIES } from '../utils/constants.js';
+import { toast } from '../utils/toast.js';
 import { createSkillCard } from './SkillCard.js';
 import { loadSkills } from './data.js';
 
@@ -250,14 +251,14 @@ export class SkillTree {
       // Check slot availability
       const slots = this.character.getSlots();
       if (slots.available <= 0) {
-        alert('Sem slots de sub-habilidade disponíveis!');
+        toast('Sem slots de sub-habilidade disponíveis!', 'warning');
         return;
       }
 
       // Check attribute/level requirements
       const { met, reasons } = checkRequirements(skill, charData);
       if (!met) {
-        alert(`Requisitos não cumpridos:\n${reasons.join('\n')}`);
+        toast(`Requisitos não cumpridos: ${reasons.join(', ')}`, 'error');
         return;
       }
     }

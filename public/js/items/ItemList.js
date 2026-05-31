@@ -4,6 +4,7 @@
  */
 
 import { createElement, on } from '../utils/dom.js';
+import { toast, confirmDialog } from '../utils/toast.js';
 import { addItem, equipItem, getInventory } from './inventory.js';
 
 /**
@@ -243,8 +244,9 @@ export class ItemList {
         textContent: `${item.name}${(item.quantity || 1) > 1 ? ` ×${item.quantity}` : ''}`,
         title: item.description || '',
       });
-      on(chip, 'click', () => {
-        if (confirm(`Equipar "${item.name}"?`)) {
+      on(chip, 'click', async () => {
+        const confirmed = await confirmDialog(`Equipar "${item.name}"?`);
+        if (confirmed) {
           this.equipItem(item);
         }
       });
@@ -271,9 +273,10 @@ export class ItemList {
   equipItem(item) {
     const result = equipItem(this.character, item.id);
     if (result.success) {
+      toast(`"${item.name}" equipado!`, 'success');
       this.render();
     } else {
-      alert(result.error);
+      toast(result.error, 'error');
     }
   }
 

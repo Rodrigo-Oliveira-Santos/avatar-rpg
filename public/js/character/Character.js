@@ -47,6 +47,7 @@ function createDefaultCharacter() {
     },
     status_effects: [],
     inventario: [],
+    ouro: 0,
     scrolls: {},
     anotacoes: '',
   };
@@ -273,5 +274,38 @@ export class Character {
    */
   getStats() {
     return { ...this.data.stats_derived };
+  }
+
+  /**
+   * Get current gold
+   * @returns {number}
+   */
+  getGold() {
+    return this.data.ouro || 0;
+  }
+
+  /**
+   * Add gold to character
+   * @param {number} amount - Amount to add
+   * @returns {boolean} Success
+   */
+  addGold(amount) {
+    if (amount <= 0) return false;
+    this.data.ouro = (this.data.ouro || 0) + amount;
+    this.notify();
+    return true;
+  }
+
+  /**
+   * Spend gold
+   * @param {number} amount - Amount to spend
+   * @returns {boolean} Success (false if insufficient)
+   */
+  spendGold(amount) {
+    if (amount <= 0) return false;
+    if ((this.data.ouro || 0) < amount) return false;
+    this.data.ouro -= amount;
+    this.notify();
+    return true;
   }
 }

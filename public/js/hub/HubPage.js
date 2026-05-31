@@ -3,7 +3,8 @@
  * Displays player profile cards with simplified stats
  */
 
-import { createElement } from '../utils/dom.js';
+import { createElement, on } from '../utils/dom.js';
+import { toast, promptDialog } from '../utils/toast.js';
 import { getPlayers } from './data.js';
 
 const ELEMENT_LABELS = {
@@ -20,9 +21,11 @@ const ELEMENT_LABELS = {
 export class HubPage {
   /**
    * @param {HTMLElement} container - DOM container for the hub
+   * @param {object} character - Character instance
    */
-  constructor(container) {
+  constructor(container, character) {
     this.container = container;
+    this.character = character;
     this.render();
   }
 
@@ -39,6 +42,9 @@ export class HubPage {
       textContent: `${players.length} jogador${players.length !== 1 ? 'es' : ''}`,
     }));
     this.container.appendChild(header);
+
+    // GM Tools section
+    this.renderGMTools();
 
     // Mock notice
     const notice = createElement('div', {
@@ -63,6 +69,56 @@ export class HubPage {
     });
 
     this.container.appendChild(grid);
+  }
+
+  /**
+   * Render GM tools section
+   */
+  renderGMTools() {
+    const section = createElement('div', {
+      style: 'padding: 10px 12px; background: var(--bg2); border: 1px solid var(--gold); border-radius: 6px; margin-bottom: 14px;',
+    });
+
+    const title = createElement('div', {
+      style: 'font-size: 12px; font-weight: 600; color: var(--gold); margin-bottom: 8px;',
+      textContent: '⚔ Ferramentas GM (simulado)',
+    });
+    section.appendChild(title);
+
+    const btnRow = createElement('div', { style: 'display: flex; gap: 8px; flex-wrap: wrap;' });
+
+    // Add gold button
+    const addGoldBtn = createElement('button', {
+      style: 'padding: 5px 12px; border-radius: 5px; border: 1px solid var(--gold); background: transparent; color: var(--gold); cursor: pointer; font-size: 11px;',
+      textContent: '💰 Dar Ouro',
+    });
+    on(addGoldBtn, 'click', async () => {
+      const input = await promptDialog('Quanto ouro dar ao jogador?', { placeholder: 'Ex: 50' });
+      const amount = parseInt(input, 10);
+      if (!isNaN(amount) && amount > 0 && this.character) {
+        this.character.addGold(amount);
+        toast(`+${amount} 💰 ouro adicionado!`, 'success');
+      }
+    });
+    btnRow.appendChild(addGoldBtn);
+
+    // Add XP button
+    const addXpBtn = createElement('button', {
+      style: 'padding: 5px 12px; border-radius: 5px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; font-size: 11px;',
+      textContent: '✨ Dar XP',
+    });
+    on(addXpBtn, 'click', async () => {
+      const input = await promptDialog('Quanto XP dar ao jogador?', { placeholder: 'Ex: 200' });
+      const amount = parseInt(input, 10);
+      if (!isNaN(amount) && amount > 0 && this.character) {
+        this.character.addXP(amount);
+        toast(`+${amount} XP adicionado!`, 'success');
+      }
+    });
+    btnRow.appendChild(addXpBtn);
+
+    section.appendChild(btnRow);
+    this.container.appendChild(section);
   }
 
   /**

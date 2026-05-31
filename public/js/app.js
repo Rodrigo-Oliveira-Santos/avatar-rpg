@@ -7,6 +7,7 @@ import { Character } from './character/index.js';
 import { AutoSave, exportToJSON, createFileInput } from './storage/index.js';
 import { createElement, on, $, $$ } from './utils/dom.js';
 import { ATTRIBUTES } from './utils/constants.js';
+import { toast, confirmDialog, promptDialog } from './utils/toast.js';
 import { SkillTree } from './skills/index.js';
 import { ItemList } from './items/index.js';
 import { unequipItem } from './items/inventory.js';
@@ -140,8 +141,9 @@ export class App {
   setupLogout() {
     const logoutBtn = $('#logout-btn');
     if (logoutBtn) {
-      on(logoutBtn, 'click', () => {
-        if (confirm('Sair da sessão?')) {
+      on(logoutBtn, 'click', async () => {
+        const confirmed = await confirmDialog('Sair da sessão?');
+        if (confirmed) {
           this.authManager?.logout();
         }
       });
@@ -170,7 +172,7 @@ export class App {
       on(decBtn, 'click', () => this.character.updateAttribute(attr, -1));
       on(incBtn, 'click', () => {
         if (!this.character.updateAttribute(attr, 1)) {
-          alert('Sem pontos disponíveis!');
+          toast('Sem pontos disponíveis!', 'warning');
         }
       });
 
@@ -278,10 +280,13 @@ export class App {
   bindXPControls() {
     const addXpBtn = $('[data-action="add-xp"]');
     if (addXpBtn) {
-      on(addXpBtn, 'click', () => {
-        const input = prompt('Quanto XP adicionar?');
+      on(addXpBtn, 'click', async () => {
+        const input = await promptDialog('Quanto XP adicionar?', { placeholder: 'Ex: 100' });
         const amount = parseInt(input, 10);
-        if (!isNaN(amount) && amount > 0) this.character.addXP(amount);
+        if (!isNaN(amount) && amount > 0) {
+          this.character.addXP(amount);
+          toast(`+${amount} XP adicionado!`, 'success');
+        }
       });
     }
   }
@@ -299,7 +304,7 @@ export class App {
       on(importBtn, 'click', () => {
         createFileInput((err, data) => {
           if (err) {
-            alert(`Import falhou: ${err.message}`);
+            toast(`Import falhou: ${err.message}`, 'error');
           } else {
             this.character.load(data);
             const stats = this.character.getStats();
@@ -308,15 +313,16 @@ export class App {
             this.currentCp = stats.maxCP;
             this.renderAttributeControls();
             this.bindIdentityFields();
-            alert('Personagem importado!');
+            toast('Personagem importado com sucesso!', 'success');
           }
         });
       });
     }
 
     if (resetBtn) {
-      on(resetBtn, 'click', () => {
-        if (confirm('Resetar personagem? Esta ação não pode ser desfeita.')) {
+      on(resetBtn, 'click', async () => {
+        const confirmed = await confirmDialog('Resetar personagem? Esta ação não pode ser desfeita.');
+        if (confirmed) {
           this.character.reset();
           const stats = this.character.getStats();
           this.currentHp = stats.maxHP;
@@ -324,6 +330,7 @@ export class App {
           this.currentCp = stats.maxCP;
           this.renderAttributeControls();
           this.bindIdentityFields();
+          toast('Personagem resetado.', 'info');
         }
       });
     }
@@ -375,14 +382,14 @@ export class App {
   initShop() {
     const container = $('#shop-container');
     if (container) {
-      this.shopPage = new ShopPage(container);
+      this.shopPage = new ShopPage(container, this.character);
     }
   }
 
   initHub() {
     const container = $('#hub-container');
     if (container) {
-      this.hubPage = new HubPage(container);
+      this.hubPage = new HubPage(container, this.character);
     }
   }
 
@@ -405,6 +412,9 @@ export class App {
 
     const pointsEl = $('#avail-points');
     if (pointsEl) pointsEl.textContent = data.pontos_disponiveis;
+
+    const goldEl = $('#char-gold');
+    if (goldEl) goldEl.textContent = data.ouro || 0;
 
     // Sidebar stats
     const sideStats = {

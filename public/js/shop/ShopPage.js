@@ -4,6 +4,7 @@
  */
 
 import { createElement, on, $ } from '../utils/dom.js';
+import { toast, confirmDialog } from '../utils/toast.js';
 import { getShopItems } from './data.js';
 
 const CATEGORIES = [
@@ -27,9 +28,11 @@ const RARITY_LABELS = {
 export class ShopPage {
   /**
    * @param {HTMLElement} container - DOM container for the shop
+   * @param {object} character - Character instance
    */
-  constructor(container) {
+  constructor(container, character) {
     this.container = container;
+    this.character = character;
     this.activeCategory = 'all';
     this.searchQuery = '';
 
@@ -39,9 +42,10 @@ export class ShopPage {
   render() {
     this.container.innerHTML = '';
 
-    // Gold bar (mock)
+    // Gold bar
+    const gold = this.character ? this.character.getGold() : 0;
     const goldBar = createElement('div', { class: 'shop-gold-bar' });
-    goldBar.innerHTML = `💰 Ouro: <span class="shop-gold-val">—</span> <span style="color:var(--text3);font-size:11px;">(Fase 2)</span>`;
+    goldBar.innerHTML = `💰 Ouro: <span class="shop-gold-val">${gold}</span>`;
     this.container.appendChild(goldBar);
 
     // Search bar
@@ -111,7 +115,7 @@ export class ShopPage {
    * @returns {HTMLElement}
    */
   createShopCard(item) {
-    const card = createElement('div', { class: 'shop-card' });
+    const card = createElement('div', { class: `shop-card rarity-border-${item.rarity || 'common'}` });
 
     // Header (name + price)
     const header = createElement('div', { class: 'shop-card-header' });
@@ -160,15 +164,50 @@ export class ShopPage {
 
     card.appendChild(meta);
 
-    // Buy button (disabled — Phase 2)
+    // Buy button
     const buyBtn = createElement('button', {
       class: 'shop-buy-btn',
-      textContent: 'Comprar (Fase 2)',
+      textContent: `Comprar — ${item.price} 💰`,
     });
-    buyBtn.disabled = true;
+    on(buyBtn, 'click', () => this.handlePurchase(item));
     card.appendChild(buyBtn);
 
     return card;
+  }
+
+  /**
+   * Handle item purchase
+   */
+  async handlePurchase(item) {
+    if (!this.character) {
+      toast('Erro: personagem não carregado.', 'error');
+      return;
+    }
+
+    const gold = this.character.getGold();
+    if (gold < item.price) {
+      toast(`Ouro insuficiente! Precisas de ${item.price} 💰 (tens ${gold}).`, 'warning');
+      return;
+    }
+
+    const confirmed = await confirmDialog(`Comprar "${item.name}" por ${item.price} 💰?`);
+    if (!confirmed) return;
+
+    this.character.spendGold(item.price);
+
+    // Add to inventory
+    const inv = this.character.data.inventario || [];
+    const existing = inv.find(i => i.id === item.id);
+    if (existing) {
+      existing.quantity = (existing.quantity || 1) + 1;
+    } else {
+      inv.push({ ...item, quantity: 1 });
+    }
+    this.character.data.inventario = inv;
+    this.character.notify();
+
+    toast(`Compraste "${item.name}"!`, 'success');
+    this.render();
   }
 
   getTypeLabel(type) {
@@ -183,6 +222,6 @@ export class ShopPage {
   }
 
   refresh() {
-    this.renderItems();
+    this.render();
   }
 }

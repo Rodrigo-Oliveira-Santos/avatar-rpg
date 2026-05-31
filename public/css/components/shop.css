@@ -144,6 +144,24 @@
   color: #e0a020;
 }
 
+/* Rarity card borders */
+.rarity-border-common {
+  border-left: 3px solid #8090a0;
+}
+
+.rarity-border-rare {
+  border-left: 3px solid #4090e0;
+}
+
+.rarity-border-epic {
+  border-left: 3px solid #a050e0;
+}
+
+.rarity-border-legendary {
+  border-left: 3px solid #e0a020;
+  box-shadow: 0 0 6px rgba(224, 160, 32, 0.15);
+}
+
 /* Shop Buy Button */
 .shop-buy-btn {
   width: 100%;
