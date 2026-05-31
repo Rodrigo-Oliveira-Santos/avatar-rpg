@@ -377,6 +377,7 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 | Data | Alteração |
 |------|-----------|
+| 2026-05-31 | Adicionada Fase 6 (Features Avançadas) completa; backlog reduzido a companheiros + Supabase |
 | 2026-05-31 | Adicionada Fase 5 (Testes e Melhorias) com todas as correções documentadas |
 | 2026-05-31 | Documento atualizado para refletir Fases 1-4 como implementadas; legenda simplificada; backlog consolidado |
 | 2026-04-19 | Documento inicial criado com base em `New Features.txt` |
@@ -397,24 +398,36 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 ---
 
-## 🔮 Backlog (Futuro)
+## ✅ Fase 6 — Features Avançadas
 
-### Economia Avançada
-- Moedas por nação (Fogo, Água, Terra, Ar)
-- Distinção e restrições por nação
+**Objetivo:** Implementar features do backlog para economia avançada, progressão e ferramentas de GM.
+
+### Economia e Moedas
+- ✅ **Moedas por nação** — Moeda secundária por elemento (Fogo, Água, Terra, Ar, Universal). Ouro continua universal. Loja aceita pagamento em moeda nacional. GM distribui via GroupRewards.
 
 ### Habilidades e Progressão
-- Subclasses desbloqueáveis
-- Limites de habilidades por categoria/nível
-- Pergaminhos para melhorar habilidades
-- Slots de sub-habilidades
+- ✅ **Subclasses desbloqueáveis** — 3 subclasses por elemento com requisitos de nível e atributos. Bónus permanente aos stats. UI no character sheet com picker.
+- ✅ **Limites de habilidades** — Barra visual de slots usados/total na skill tree. Indicador de "slots cheios" nos cards bloqueados.
+- ✅ **Pergaminhos** — Item consumível que adiciona +slots a uma skill ou a marca como "Dominada". Compra na loja, uso no inventário com seleção de skill alvo.
+- ✅ **Sub-skill slots UI** — Interface com checkboxes para ativar/desativar sub-habilidades dentro de skills desbloqueadas. Validação de custo e limites.
+
+### Inventário e Itens
+- ✅ **Página dedicada de inventário** — Grid visual com equipamento separado, filtros por tipo/raridade, pesquisa, painel de detalhes, equip/unequip.
+- ✅ **Raridade mecânica** — Raridade afeta stats reais: multiplicador de dano/defesa + bónus flat. Visualização do boost efetivo no inventário.
+
+### Ferramentas GM
+- ✅ **Transferências forçadas (Gifts)** — GM pode transferir ouro, moedas nacionais ou itens entre jogadores sem aceitação. Origem "Nenhum" para criação direta.
+
+---
+
+## 🔮 Backlog (Futuro)
 
 ### Companheiros
 - Página individual com stats próprios
 - Progressão de nível
 - Slots de armadura
 
-### Features Avançadas
-- Sistema de "gifts" / trocas forçadas (GM)
-- Página dedicada de inventário
-- Raridade com implicações mecânicas
+### Integração Backend
+- Supabase (PostgreSQL + Auth)
+- Migração de localStorage para BD
+- Multi-dispositivo

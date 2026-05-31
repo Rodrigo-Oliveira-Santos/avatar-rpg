@@ -8,26 +8,26 @@
 - Current mode: localStorage bypass (no Supabase active)
 - Hosting: Netlify free tier
 
-## Status: Phases 1-4 Complete
+## Status: Phases 1-6 Complete
 
-All core features implemented. Remaining work is "Futuro" backlog.
+All core features implemented. Remaining: companions system + Supabase integration.
 
 ## Modules
 
 | Module | Path | Purpose |
 |--------|------|---------|
 | auth | js/auth/ | AuthManager, login, roles (player/gm/admin) |
-| character | js/character/ | Character class, stats, XP, level-up |
-| skills | js/skills/ | Skill tree, cards, data loader (API → imported → mock) |
-| items | js/items/ | Inventory, equip/unequip |
-| shop | js/shop/ | Shop page, data (mock + imported merged) |
-| hub | js/hub/ | Player hub, CharacterModal, GroupRewards, LootDelivery |
+| character | js/character/ | Character class, stats, XP, level-up, subclasses, slots |
+| skills | js/skills/ | Skill tree, cards, sub-skills UI, slot limits display |
+| items | js/items/ | InventoryPage, equip/unequip, scrolls |
+| shop | js/shop/ | Shop page, data (mock + imported), dual-currency pricing |
+| hub | js/hub/ | Player hub, CharacterModal, GroupRewards, LootDelivery, GiftTransfer |
 | import | js/import/ | GM JSON import (validators, storage, ImportPage) |
 | trade | js/trade/ | TradeManager, TradeModal, notifications |
 | admin | js/admin/ | AdminPanel, BackupRestore, LogService, LogViewer |
 | storage | js/storage/ | AutoSave, export/import character JSON |
 | api | js/api/ | HTTP client, auth, characters, skills, items endpoints |
-| utils | js/utils/ | DOM helpers, constants, toast/confirm/prompt dialogs |
+| utils | js/utils/ | DOM helpers, constants (NATION_CURRENCIES, RARITY_BONUSES), toast |
 | combat | js/combat/ | Dice, resolver, status effects |
 
 ## Key Patterns
@@ -92,9 +92,5 @@ After implementing a new phase/feature set:
 
 ## Futuro (Backlog)
 
-- Moedas por nação
-- Subclasses desbloqueáveis
-- Companheiros com stats
-- Página dedicada de inventário
-- Raridade com mecânicas
-- Gifts/trocas forçadas
+- Companheiros com stats próprios e progressão
+- Integração Supabase (migração localStorage → BD)

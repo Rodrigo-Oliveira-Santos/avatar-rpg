@@ -117,7 +117,8 @@ Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura 
 | **Fase 3** | Grupo (hub funcional, recompensas, loot, trocas) | ✅ Completo |
 | **Fase 4** | Admin (gestão de utilizadores, backup/restore, logs) | ✅ Completo |
 | **Fase 5** | Testes e Melhorias (memory leaks, debounce, cleanup) | ✅ Completo |
-| **Futuro** | Moedas por nação, subclasses, companheiros e extras | ⚪ Backlog |
+| **Fase 6** | Features Avançadas (moedas, subclasses, inventário, raridade, gifts) | ✅ Completo |
+| **Futuro** | Companheiros com stats, integração Supabase | ⚪ Backlog |
 
 ### Implementado
 
@@ -157,6 +158,16 @@ Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura 
 - ✅ Cleanup de event listeners (método `destroy()` no HubPage)
 - ✅ Consolidação de exports no módulo trade
 - ✅ Cleanup automático ao re-inicializar Hub (cenário login/logout/re-login)
+
+**Fase 6 — Features Avançadas**
+- ✅ Moedas por nação (secundárias por elemento, ouro continua universal)
+- ✅ Subclasses desbloqueáveis (3 por elemento, requisitos + bónus permanente)
+- ✅ Limites de habilidades visuais (barra de slots, lock quando cheio)
+- ✅ Pergaminhos consumíveis (expandir slots ou marcar skill como dominada)
+- ✅ Sub-skill slots UI (checkboxes com custo e validação)
+- ✅ Página dedicada de inventário (equip/unequip, filtros, detalhes)
+- ✅ Raridade mecânica (multiplicador + bónus flat nos stats)
+- ✅ Transferências forçadas GM (ouro/moedas/itens entre jogadores)
 
 ---
 
@@ -238,7 +249,7 @@ avatar-rpg/
 
 - **Flexibilidade > Perfeição:** Priorize funcional sobre bem arquitetado
 - **APIs em bypass:** Para dev local sem Supabase, as APIs retornam mocks (ver `public/js/api/`)
-- **Estado atual:** Fases 1-5 completas. Próximos passos são features de Futuro/Backlog.
+- **Estado atual:** Fases 1-6 completas. Próximos passos: Companheiros e integração Supabase.
 
 ---
 
