@@ -3,15 +3,13 @@
 ## Pré-requisitos
 
 - [Node.js](https://nodejs.org/) v18+ instalado
-- Conta no [Supabase](https://supabase.com/) (gratuita)
-- Conta no [Netlify](https://netlify.com/) (necessária para as Netlify Functions com API)
 
 ---
 
-## Opção A — Frontend Apenas (sem API/backend)
+## Modo Atual — Frontend com localStorage
 
-A forma mais rápida de ver o frontend a funcionar.  
-Não precisas de Supabase nem Netlify. Os dados são guardados no `localStorage` do browser.
+A aplicação corre inteiramente no browser. Não precisa de backend, Supabase ou Netlify.  
+Todos os dados são guardados no `localStorage` do browser.
 
 ```bash
 # 1. Instalar dependências
@@ -23,80 +21,35 @@ npm run dev
 
 Abre o browser em **http://localhost:3000**
 
-> ⚠️ Sem backend, o login não vai funcionar.  
-> O app faz fallback automático para `localStorage` se a API não responder.
+### Login
+
+O sistema usa autenticação simples por username (sem password). Utilizadores pré-definidos:
+
+| Username | Role | Elemento |
+|----------|------|----------|
+| `zuko` | player | Fogo |
+| `katara` | player | Água |
+| `toph` | player | Terra |
+| `aang` | player | Ar |
+| `sokka` | player | Non-Bending |
+| `gm` | gm | — |
+| `admin` | admin | — |
+
+Podes também escrever qualquer username novo — será criado como jogador.
 
 ---
 
-## Opção B — Com Backend Completo (Netlify Dev)
-
-Para testar o login, personagens guardados na base de dados, etc.
-
-### 1. Instalar a Netlify CLI
+## Testes
 
 ```bash
-npm install -g netlify-cli
+# Correr todos os testes (101+ testes unitários)
+npm test
+
+# Modo watch (re-corre ao guardar ficheiros)
+npm run test:watch
 ```
 
-### 2. Configurar as variáveis de ambiente
-
-```bash
-# Copia o ficheiro de exemplo
-cp .env.example .env
-```
-
-Edita o `.env` com as tuas chaves do Supabase:
-
-```
-SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1...
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1...
-```
-
-Podes encontrar as chaves em:  
-**Supabase → Projeto → Settings → API**
-
-### 3. Inicializar a base de dados no Supabase
-
-No painel do Supabase, vai a **SQL Editor** e corre o conteúdo do ficheiro:
-
-```
-supabase/schema.sql
-```
-
-Isto cria todas as tabelas necessárias.
-
-### 4. Correr o servidor local com Netlify Dev
-
-```bash
-netlify dev
-```
-
-Abre o browser em **http://localhost:8888**
-
-O Netlify Dev emula automaticamente as funções serverless (pasta `netlify/functions/`) e as rotas de API definidas no `netlify.toml`.
-
----
-
-## Criar o primeiro utilizador (Admin)
-
-Com o Netlify Dev a correr, cria o primeiro utilizador admin através do painel do Supabase:
-
-1. Vai a **Supabase → Authentication → Users → Add User**
-2. Usa o formato de email: `username@avatar-rpg.local` (ex: `admin@avatar-rpg.local`)
-3. Define uma password
-4. Depois, no **SQL Editor**, corre:
-
-```sql
-INSERT INTO users (auth_id, username, role)
-VALUES (
-  '<UUID do utilizador criado>',
-  'admin',
-  'admin'
-);
-```
-
-A partir daí, podes fazer login com `admin` / `<password>` na aplicação.
+Os testes cobrem lógica de jogo: stats, XP, slots, inventário, moedas, scrolls, subclasses e trocas.
 
 ---
 
@@ -104,17 +57,21 @@ A partir daí, podes fazer login com `admin` / `<password>` na aplicação.
 
 ```
 avatar-rpg/
-├── public/          ← Frontend (HTML, CSS, JS)
-│   ├── index.html
-│   ├── css/
-│   └── js/
+├── public/            ← Frontend (HTML, CSS, JS)
+│   ├── index.html     ← Página principal (SPA)
+│   ├── css/           ← Estilos (main.css + components/)
+│   └── js/            ← Módulos ES6 (app.js, character/, skills/, etc.)
+├── tests/             ← Testes unitários (vitest)
 ├── netlify/
-│   └── functions/   ← API serverless
+│   └── functions/     ← API serverless (futuro — não ativo)
 ├── supabase/
-│   ├── schema.sql   ← Estrutura da base de dados
-│   └── seed.sql     ← (vazio — dados via importação JSON)
-├── .env.example     ← Template de variáveis de ambiente
-└── netlify.toml     ← Configuração de rotas da API
+│   ├── schema.sql     ← Estrutura da BD (futuro — não ativo)
+│   └── seed.sql       ← (vazio — dados via importação JSON)
+├── Initial Files/     ← JSONs de referência do protótipo
+├── package.json       ← Dependencies e scripts
+├── vitest.config.js   ← Configuração de testes
+├── netlify.toml       ← Config Netlify (futuro)
+└── .env.example       ← Template variáveis ambiente (futuro)
 ```
 
 ---
@@ -123,14 +80,27 @@ avatar-rpg/
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Frontend apenas (http://localhost:3000) |
-| `netlify dev` | Frontend + API completa (http://localhost:8888) |
+| `npm run dev` | Servidor local (http://localhost:3000) |
+| `npm test` | Correr testes unitários |
+| `npm run test:watch` | Testes em modo watch |
+| `npm run build` | (placeholder — sem bundler) |
+
+---
+
+## 🔮 Futuro — Backend com Netlify Dev + Supabase
+
+Quando a integração com Supabase for implementada, será necessário:
+
+1. Conta no [Supabase](https://supabase.com/) (gratuita)
+2. Instalar Netlify CLI: `npm install -g netlify-cli`
+3. Configurar `.env` com chaves do Supabase (ver `.env.example`)
+4. Correr `netlify dev` em vez de `npm run dev` (porta 8888)
 
 ---
 
 ## Notas
 
 - O ficheiro `.env` **nunca** deve ser commitado — já está no `.gitignore`
-- Na Fase 1, o app funciona sem backend (dados em `localStorage`)
-- Para testar a loja, hub de jogadores e skill tree, não precisas de backend — usam dados mock
-- O backend é necessário para: login persistente, guardar personagem na BD, e funcionalidades de GM
+- A aplicação funciona totalmente sem backend (dados em `localStorage`)
+- Para testar tudo (loja, hub, skill tree, admin, trocas) basta correr `npm run dev`
+- Abre múltiplos tabs/browsers para simular vários jogadores
