@@ -359,13 +359,15 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 | Feature | Status | Prioridade |
 |---------|--------|------------|
-| Atributo de ouro no personagem | 📦 | Alta |
+| Atributo de ouro no personagem | ✅ | Alta |
 | Inventário com quantidades | ✅ | Alta |
 | Importar JSON (habilidades, itens, ataques) | 📦 | Alta |
 | Exportar JSON (personagem) | ✅ | Alta |
-| Loja funcional (dados da BD) | 📦 | Alta |
-| Raridade de itens (visual) | 📦 | Média |
+| Loja funcional (compra com ouro) | ✅ | Alta |
+| Raridade de itens (visual) | ✅ | Média |
 | Armaduras com bónus/penalidade | ✅ | Alta |
+| Toast/Modal system (substituir alerts nativos) | ✅ | Média |
+| GM tools (dar ouro/XP) | ✅ | Alta |
 
 ### Fase 3 — Ferramentas de Grupo (📦 Backlog)
 
