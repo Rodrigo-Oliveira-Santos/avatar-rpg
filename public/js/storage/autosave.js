@@ -83,19 +83,11 @@ export class AutoSave {
   async save() {
     const payload = this.character.serialize();
 
-    try {
-      // Try API save first (will fail if backend not available)
-      await this.saveToAPI(payload);
-      this.lastSavedState = JSON.stringify(payload);
-      this.pendingChanges = false;
-      log('info', 'Saved successfully');
-    } catch (err) {
-      // Fallback to localStorage
-      log('warn', 'API save failed, using localStorage', err);
-      this.saveToLocal(payload);
-      this.lastSavedState = JSON.stringify(payload);
-      this.pendingChanges = false;
-    }
+    // BYPASS TEMPORÁRIO: save directly to localStorage (no backend)
+    this.saveToLocal(payload);
+    this.lastSavedState = JSON.stringify(payload);
+    this.pendingChanges = false;
+    log('info', 'Saved to localStorage');
   }
 
   /**

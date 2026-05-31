@@ -117,6 +117,15 @@ export class App {
   }
 
   setupUI() {
+    // Prevent duplicate setup (re-login scenario)
+    if (this._uiInitialized) {
+      // Just reload character data and refresh UI
+      this.updateUI(this.character.getData());
+      this.setupElementSelector();
+      return;
+    }
+    this._uiInitialized = true;
+
     this.setupNavigation();
     this.setupLogout();
     this.renderAttributeControls();
