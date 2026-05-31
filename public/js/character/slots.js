@@ -26,8 +26,14 @@ function getUsedSlotsForSkill(skillState = {}, skillDefinition = null) {
     ? skillState.activeSubSkills
     : [];
 
+  if (!activeSubSkills.length) return 0;
+
+  // Use stored costs if available (set when activating sub-skills)
+  const storedCosts = skillState.subSkillCosts || {};
+
   if (!skillDefinition?.sub_skills?.length) {
-    return activeSubSkills.length;
+    // Fall back to stored costs, default 1
+    return activeSubSkills.reduce((sum, id) => sum + (storedCosts[id] || 1), 0);
   }
 
   const subSkillLookup = skillDefinition.sub_skills.reduce((lookup, subSkill) => {
@@ -100,8 +106,8 @@ export function canActivateSubSkill(character, skillId) {
  */
 export function getAvailableSlots(character, skillDefinitions = []) {
   const level = character.identidade?.nivel || 1;
-  const scrolls = Object.values(character.scrolls || {}).reduce((a, b) => a + b, 0);
-  const total = calculateTotalSlots(level, scrolls);
+  // Scrolls only affect per-skill caps, not global pool
+  const total = calculateBaseSlots(level);
   const skillLookup = normalizeSkillDefinitions(skillDefinitions);
 
   // Count used slots

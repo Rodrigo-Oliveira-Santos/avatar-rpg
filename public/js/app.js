@@ -388,15 +388,33 @@ export class App {
   setupElementSelector() {
     const elemButtons = $$('.esbtn');
     const current = this.character.data.identidade.elemento;
+
+    // Only bind click handlers once
+    if (!this._elementSelectorBound) {
+      this._elementSelectorBound = true;
+      elemButtons.forEach(btn => {
+        on(btn, 'click', () => {
+          const newElement = btn.dataset.element;
+          const oldElement = this.character.data.identidade.elemento;
+
+          // Clear incompatible subclass when element changes
+          if (newElement !== oldElement && this.character.data.identidade.subclasse) {
+            this.character.data.identidade.subclasse = '';
+            this.character.data.subclass_bonus = {};
+          }
+
+          this.character.data.identidade.elemento = newElement;
+          this.subclassPickerOpen = false;
+          this.character.notify();
+          elemButtons.forEach(b => b.classList.toggle('on', b === btn));
+          this.updateElementTabs(newElement);
+        });
+      });
+    }
+
+    // Update visual state for current element
     elemButtons.forEach(btn => {
       btn.classList.toggle('on', btn.dataset.element === current);
-      on(btn, 'click', () => {
-        this.character.data.identidade.elemento = btn.dataset.element;
-        this.subclassPickerOpen = false;
-        this.character.notify();
-        elemButtons.forEach(b => b.classList.toggle('on', b === btn));
-        this.updateElementTabs(btn.dataset.element);
-      });
     });
     this.updateElementTabs(current);
   }

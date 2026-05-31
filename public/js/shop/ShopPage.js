@@ -7,6 +7,7 @@ import { createElement, on, $ } from '../utils/dom.js';
 import { toast, confirmDialog } from '../utils/toast.js';
 import { NATION_CURRENCIES } from '../utils/constants.js';
 import { getShopItems } from './data.js';
+import { addItem } from '../items/inventory.js';
 import { log } from '../admin/LogService.js';
 
 const CATEGORIES = [
@@ -316,15 +317,7 @@ export class ShopPage {
   }
 
   finishPurchase(item, payment) {
-    const inv = this.character.data.inventario || [];
-    const existing = inv.find(i => i.id === item.id);
-    if (existing) {
-      existing.quantity = (existing.quantity || 1) + 1;
-    } else {
-      inv.push({ ...item, quantity: 1 });
-    }
-    this.character.data.inventario = inv;
-    this.character.notify();
+    addItem(this.character, item);
 
     const username = this.authManager?.getUser()?.username || getStoredUsername();
     log('purchase', {

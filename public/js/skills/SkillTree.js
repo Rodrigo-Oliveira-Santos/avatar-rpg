@@ -350,9 +350,16 @@ export class SkillTree {
       }
 
       activeSubSkills.push(subSkill.id);
+      // Store cost for accurate slot calculation without definitions
+      charData.habilidades[skill.id].subSkillCosts ||= {};
+      charData.habilidades[skill.id].subSkillCosts[subSkill.id] = cost;
     } else {
       const nextSubSkills = activeSubSkills.filter(subSkillId => subSkillId !== subSkill.id);
       charData.habilidades[skill.id].activeSubSkills = nextSubSkills;
+      // Remove stored cost
+      if (charData.habilidades[skill.id].subSkillCosts) {
+        delete charData.habilidades[skill.id].subSkillCosts[subSkill.id];
+      }
       this.character.load(charData);
       this.render();
       return;
