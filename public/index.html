@@ -17,7 +17,11 @@
   <link rel="stylesheet" href="css/components/overlay.css">
   <link rel="stylesheet" href="css/components/shop.css">
   <link rel="stylesheet" href="css/components/hub.css">
+  <link rel="stylesheet" href="css/components/trade.css">
+  <link rel="stylesheet" href="css/components/character-modal.css">
   <link rel="stylesheet" href="css/components/toast.css">
+  <link rel="stylesheet" href="css/components/import.css">
+  <link rel="stylesheet" href="css/components/admin.css">
 </head>
 <body>
   <!-- App loader -->
@@ -58,7 +62,9 @@
       <button class="nav-btn none" data-page="none">Sem Dobra</button>
       <button class="nav-btn items-tab" data-page="items">Itens</button>
       <button class="nav-btn shop-tab" data-page="shop">Loja</button>
-      <button class="nav-btn hub-tab" data-page="hub">Jogadores</button>
+      <button class="nav-btn hub-tab" data-page="hub">Jogadores <span class="nav-badge" data-trade-badge hidden>0</span></button>
+      <button class="nav-btn import-tab" data-page="import" id="import-tab" style="display:none">Importar</button>
+      <button class="nav-btn admin-tab" data-page="admin" id="admin-tab" style="display:none">Admin</button>
       <button class="nav-btn logout-btn" id="logout-btn" title="Sair">⏻</button>
     </nav>
 
@@ -363,6 +369,15 @@
     <!-- Hub / Players Page -->
     <main id="hub-page" class="page" role="tabpanel">
       <div id="hub-container"></div>
+    </main>
+
+    <!-- Import Page (GM only) -->
+    <main id="import-page" class="page" role="tabpanel">
+      <div id="import-container"></div>
+    </main>
+
+    <main id="admin-page" class="page" role="tabpanel">
+      <div id="admin-container"></div>
     </main>
   </div>
 

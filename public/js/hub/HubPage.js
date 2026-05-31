@@ -6,6 +6,11 @@
 import { createElement, on } from '../utils/dom.js';
 import { toast, promptDialog } from '../utils/toast.js';
 import { getPlayers } from './data.js';
+import { CharacterModal } from './CharacterModal.js';
+import { LootDelivery } from './LootDelivery.js';
+import { GroupRewards } from './GroupRewards.js';
+import { log } from '../admin/LogService.js';
+import { TradeManager, TradeModal, TRADE_UPDATED_EVENT, getTradeNotificationCount, updateTradeBadge } from '../trade/index.js';
 
 const ELEMENT_LABELS = {
   fire: 'Fogo',
@@ -13,6 +18,22 @@ const ELEMENT_LABELS = {
   earth: 'Terra',
   air: 'Ar',
   none: 'Sem Dobra',
+};
+
+const sameUsername = (left, right) => String(left || '').trim().toLowerCase() === String(right || '').trim().toLowerCase();
+
+const tradeSummary = (side = {}) => {
+  const parts = [];
+
+  if (Array.isArray(side.items) && side.items.length > 0) {
+    parts.push(side.items.map((item) => `${item.name} x${item.quantity}`).join(', '));
+  }
+
+  if (side.gold > 0) {
+    parts.push(`${side.gold} ouro`);
+  }
+
+  return parts.join(' • ') || 'Nada';
 };
 
 /**
@@ -28,15 +49,66 @@ export class HubPage {
     this.container = container;
     this.character = character;
     this.authManager = authManager;
+    this.characterModal = new CharacterModal();
+    this.tradeManager = new TradeManager();
+    this.tradeModal = new TradeModal(this.tradeManager, this.getCurrentUsername());
+    this.groupRewards = null;
+    this.lootDelivery = null;
+    this._refreshTimer = null;
+
+    this.handleTradeUpdate = this.handleTradeUpdate.bind(this);
+    window.addEventListener(TRADE_UPDATED_EVENT, this.handleTradeUpdate);
     this.render();
   }
 
+  getCurrentUsername() {
+    return this.authManager?.getUser?.()?.username || null;
+  }
+
+  handleTradeUpdate(event) {
+    const trade = event.detail?.trade;
+    const type = event.detail?.type;
+    const currentUsername = this.getCurrentUsername();
+
+    this.tradeModal.currentUsername = currentUsername;
+    updateTradeBadge(currentUsername);
+
+    if (
+      type === 'accepted'
+      && currentUsername
+      && trade
+      && (sameUsername(trade.from, currentUsername) || sameUsername(trade.to, currentUsername))
+    ) {
+      this.syncCurrentCharacter(currentUsername);
+    }
+
+    this.refresh();
+  }
+
+  syncCurrentCharacter(username = this.getCurrentUsername()) {
+    if (!username || !this.character?.load) return;
+
+    try {
+      const stored = localStorage.getItem(`avatar_rpg_character_${username}`);
+      if (stored) {
+        this.character.load(JSON.parse(stored));
+      }
+    } catch {
+      toast('Não foi possível atualizar a tua ficha após a troca.', 'warning');
+    }
+  }
+
   render() {
+    this.characterModal.close();
+    this.tradeModal.currentUsername = this.getCurrentUsername();
     this.container.innerHTML = '';
 
+    const currentUsername = this.getCurrentUsername();
     const players = getPlayers();
+    const incomingTradeCount = getTradeNotificationCount(currentUsername);
 
-    // Header
+    updateTradeBadge(currentUsername);
+
     const header = createElement('div', { class: 'hub-header' });
     header.appendChild(createElement('div', { class: 'hub-title', textContent: 'Hub de Jogadores' }));
     header.appendChild(createElement('div', {
@@ -45,17 +117,13 @@ export class HubPage {
     }));
     this.container.appendChild(header);
 
-    // GM Tools section (only for gm/admin)
+    if (currentUsername) {
+      this.renderTradeSection(currentUsername, incomingTradeCount);
+    }
+
     if (this.authManager?.hasRole('gm')) {
       this.renderGMTools();
     }
-
-    // Mock notice
-    const notice = createElement('div', {
-      style: 'padding: 8px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px; font-size: 11px; color: var(--text3);',
-      textContent: '⚠ Dados de exemplo — dados reais na Fase 3',
-    });
-    this.container.appendChild(notice);
 
     if (players.length === 0) {
       this.container.appendChild(createElement('div', {
@@ -65,14 +133,76 @@ export class HubPage {
       return;
     }
 
-    // Grid
     const grid = createElement('div', { class: 'hub-grid' });
 
-    players.forEach(player => {
-      grid.appendChild(this.createPlayerCard(player));
+    players.forEach((player) => {
+      grid.appendChild(this.createPlayerCard(player, currentUsername));
     });
 
     this.container.appendChild(grid);
+  }
+
+  renderTradeSection(currentUsername, incomingTradeCount) {
+    const trades = this.tradeManager.getPendingTrades(currentUsername);
+    const incoming = trades.filter((trade) => sameUsername(trade.to, currentUsername));
+    const outgoing = trades.filter((trade) => sameUsername(trade.from, currentUsername));
+
+    const section = createElement('section', { class: 'hub-trade-section' });
+    const header = createElement('div', { class: 'hub-trade-section-header' });
+    header.appendChild(createElement('h2', { textContent: 'Trocas Pendentes' }));
+    header.appendChild(createElement('small', {
+      textContent: incomingTradeCount > 0 ? `${incomingTradeCount} proposta(s) recebida(s)` : 'Sem propostas recebidas',
+    }));
+    section.appendChild(header);
+
+    const columns = createElement('div', { class: 'hub-trade-columns' });
+    columns.appendChild(this.createTradeColumn('Recebidas', incoming, true));
+    columns.appendChild(this.createTradeColumn('Enviadas', outgoing, false));
+    section.appendChild(columns);
+
+    this.container.appendChild(section);
+  }
+
+  createTradeColumn(title, trades, isIncoming) {
+    const column = createElement('div', { class: 'hub-trade-column' });
+    column.appendChild(createElement('h3', { textContent: title }));
+
+    if (trades.length === 0) {
+      column.appendChild(createElement('p', {
+        class: 'trade-empty-state',
+        textContent: isIncoming ? 'Sem trocas recebidas.' : 'Sem trocas enviadas.',
+      }));
+      return column;
+    }
+
+    const list = createElement('div', { class: 'hub-trade-list' });
+
+    trades.forEach((trade) => {
+      const card = createElement('article', { class: 'hub-trade-card' });
+      const content = createElement('div', { class: 'hub-trade-card-content' });
+      const counterpart = isIncoming ? trade.from : trade.to;
+
+      content.appendChild(createElement('strong', { textContent: counterpart }));
+      content.appendChild(createElement('p', { textContent: `Oferece: ${tradeSummary(trade.offer)}` }));
+      content.appendChild(createElement('p', { textContent: `Pede: ${tradeSummary(trade.request)}` }));
+      content.appendChild(createElement('small', {
+        textContent: new Date(trade.created_at).toLocaleString('pt-PT'),
+      }));
+
+      const actions = createElement('div', { class: 'hub-trade-card-actions' });
+      const viewButton = createElement('button', {
+        type: 'button',
+        textContent: isIncoming ? 'Responder' : 'Ver',
+      });
+      on(viewButton, 'click', () => this.tradeModal.showPending(trade));
+      actions.appendChild(viewButton);
+
+      card.append(content, actions);
+      list.appendChild(card);
+    });
+
+    column.appendChild(list);
+    return column;
   }
 
   /**
@@ -91,7 +221,6 @@ export class HubPage {
 
     const btnRow = createElement('div', { style: 'display: flex; gap: 8px; flex-wrap: wrap;' });
 
-    // Add gold button
     const addGoldBtn = createElement('button', {
       style: 'padding: 5px 12px; border-radius: 5px; border: 1px solid var(--gold); background: transparent; color: var(--gold); cursor: pointer; font-size: 11px;',
       textContent: '💰 Dar Ouro',
@@ -101,12 +230,12 @@ export class HubPage {
       const amount = parseInt(input, 10);
       if (!isNaN(amount) && amount > 0 && this.character) {
         this.character.addGold(amount);
+        log('gm_reward', { type: 'gold', amount, target: 'self' }, 'gm');
         toast(`+${amount} 💰 ouro adicionado!`, 'success');
       }
     });
     btnRow.appendChild(addGoldBtn);
 
-    // Add XP button
     const addXpBtn = createElement('button', {
       style: 'padding: 5px 12px; border-radius: 5px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; font-size: 11px;',
       textContent: '✨ Dar XP',
@@ -116,37 +245,111 @@ export class HubPage {
       const amount = parseInt(input, 10);
       if (!isNaN(amount) && amount > 0 && this.character) {
         this.character.addXP(amount);
+        log('gm_reward', { type: 'xp', amount, target: 'self' }, 'gm');
         toast(`+${amount} XP adicionado!`, 'success');
       }
     });
     btnRow.appendChild(addXpBtn);
 
     section.appendChild(btnRow);
+
+    const groupRewardsContainer = createElement('div');
+    on(groupRewardsContainer, 'group-rewards:updated', (event) => {
+      const loggedUsername = this.getCurrentUsername();
+      const updatedPlayers = event.detail?.players || [];
+
+      if (loggedUsername && updatedPlayers.includes(loggedUsername)) {
+        this.syncCurrentCharacter(loggedUsername);
+      }
+
+      this.refresh();
+    });
+    section.appendChild(groupRewardsContainer);
+
+    if (!this.groupRewards) {
+      this.groupRewards = new GroupRewards(groupRewardsContainer, this.authManager);
+    } else {
+      this.groupRewards.container = groupRewardsContainer;
+    }
+    this.groupRewards.render();
+
+    const lootDeliveryContainer = createElement('div');
+    section.appendChild(lootDeliveryContainer);
+
+    if (!this.lootDelivery) {
+      this.lootDelivery = new LootDelivery(lootDeliveryContainer, this.authManager);
+    } else {
+      this.lootDelivery.container = lootDeliveryContainer;
+    }
+    this.lootDelivery.render();
+
     this.container.appendChild(section);
+  }
+
+  openCharacterModal(player) {
+    if (!this.authManager?.hasRole('gm')) return;
+
+    const username = player?.id;
+    if (!username || typeof localStorage === 'undefined') {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    const rawCharacter = localStorage.getItem(`avatar_rpg_character_${username}`);
+    if (!rawCharacter) {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    try {
+      const characterData = JSON.parse(rawCharacter);
+      this.characterModal.show(characterData, username);
+    } catch {
+      toast('Não foi possível carregar a ficha do jogador.', 'error');
+    }
+  }
+
+  openTradeModal(targetUsername) {
+    if (!this.getCurrentUsername()) {
+      toast('Tens de iniciar sessão para propor trocas.', 'warning');
+      return;
+    }
+
+    this.tradeModal.showCreate(targetUsername);
   }
 
   /**
    * Create a player profile card
    * @param {object} player
+   * @param {string|null} currentUsername
    * @returns {HTMLElement}
    */
-  createPlayerCard(player) {
-    const card = createElement('div', { class: 'player-card' });
+  createPlayerCard(player, currentUsername) {
+    const canViewCharacter = this.authManager?.hasRole('gm');
+    const playerUsername = player?.username || player?.id;
+    const isCurrentUser = currentUsername && sameUsername(playerUsername, currentUsername);
 
-    // Header: name + level
+    const card = createElement('div', {
+      class: 'player-card',
+      title: canViewCharacter ? `Ver ficha completa de ${player.name}` : '',
+    });
+
+    if (canViewCharacter) {
+      card.style.cursor = 'pointer';
+      on(card, 'click', () => this.openCharacterModal(player));
+    }
+
     const header = createElement('div', { class: 'player-card-header' });
     header.appendChild(createElement('div', { class: 'player-name', textContent: player.name }));
     header.appendChild(createElement('div', { class: 'player-level', textContent: `Nv. ${player.level}` }));
     card.appendChild(header);
 
-    // Element badge
     const elementBadge = createElement('div', {
       class: `player-element ${player.element}`,
       textContent: ELEMENT_LABELS[player.element] || player.element,
     });
     card.appendChild(elementBadge);
 
-    // Subclass (if any)
     if (player.subclass) {
       card.appendChild(createElement('div', {
         style: 'font-size: 10px; color: var(--text2); margin-bottom: 8px; font-style: italic;',
@@ -154,7 +357,6 @@ export class HubPage {
       }));
     }
 
-    // Stats row
     const stats = createElement('div', { class: 'player-stats' });
 
     const statItems = [
@@ -174,13 +376,11 @@ export class HubPage {
 
     card.appendChild(stats);
 
-    // HP bar
     const hpPercent = player.hpMax > 0 ? (player.hp / player.hpMax) * 100 : 0;
     const hpBar = createElement('div', { class: 'player-hp-bar' });
     const hpFill = createElement('div', { class: 'player-hp-fill' });
     hpFill.style.width = `${hpPercent}%`;
 
-    // Color based on HP percentage
     if (hpPercent <= 25) {
       hpFill.style.background = 'linear-gradient(90deg, #a01010, #c02020)';
     } else if (hpPercent <= 50) {
@@ -190,15 +390,14 @@ export class HubPage {
     hpBar.appendChild(hpFill);
     card.appendChild(hpBar);
 
-    // Buffs/Debuffs
     const allEffects = [
-      ...(player.buffs || []).map(b => ({ ...b, type: 'positive' })),
-      ...(player.debuffs || []).map(b => ({ ...b, type: 'negative' })),
+      ...(player.buffs || []).map((buff) => ({ ...buff, type: 'positive' })),
+      ...(player.debuffs || []).map((debuff) => ({ ...debuff, type: 'negative' })),
     ];
 
     if (allEffects.length > 0) {
       const buffsContainer = createElement('div', { class: 'player-buffs' });
-      allEffects.forEach(effect => {
+      allEffects.forEach((effect) => {
         buffsContainer.appendChild(createElement('span', {
           class: `player-buff ${effect.type}`,
           textContent: effect.name,
@@ -207,10 +406,41 @@ export class HubPage {
       card.appendChild(buffsContainer);
     }
 
+    if (currentUsername) {
+      const actionRow = createElement('div', { class: 'hub-player-actions' });
+      on(actionRow, 'click', (event) => event.stopPropagation());
+      const tradeButton = createElement('button', {
+        type: 'button',
+        textContent: isCurrentUser ? 'És tu' : 'Propor Troca',
+      });
+      tradeButton.disabled = Boolean(isCurrentUser) || !playerUsername;
+
+      on(tradeButton, 'click', (event) => {
+        event.stopPropagation();
+        if (!isCurrentUser && playerUsername) {
+          this.openTradeModal(playerUsername);
+        }
+      });
+
+      actionRow.appendChild(tradeButton);
+      card.appendChild(actionRow);
+    }
+
     return card;
   }
 
   refresh() {
-    this.render();
+    // Debounce: avoid multiple rapid re-renders from concurrent events
+    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    this._refreshTimer = setTimeout(() => {
+      this._refreshTimer = null;
+      this.render();
+    }, 50);
+  }
+
+  destroy() {
+    window.removeEventListener(TRADE_UPDATED_EVENT, this.handleTradeUpdate);
+    if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    this.characterModal.close();
   }
 }

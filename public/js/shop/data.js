@@ -1,7 +1,9 @@
 /**
  * Shop Mock Data
- * Hardcoded items for Phase 1 demo
+ * Hardcoded items for Phase 1 demo + imported items from localStorage
  */
+
+import { getImportedItems } from '../import/storage.js';
 
 export const MOCK_SHOP_ITEMS = [
   {
@@ -130,13 +132,19 @@ export const MOCK_SHOP_ITEMS = [
 ];
 
 /**
- * Get mock shop items, optionally filtered
+ * Get shop items: imported items (if any) merged with mock data
+ * Priority: imported items supplement mock items (both shown)
  * @param {string} [category] - Filter by type
  * @param {string} [search] - Search by name/description
  * @returns {object[]}
  */
 export function getShopItems(category = 'all', search = '') {
-  let items = [...MOCK_SHOP_ITEMS];
+  const imported = getImportedItems().filter(i => i.in_shop !== false);
+  // Merge: imported items override mock items with same name
+  const mockFiltered = MOCK_SHOP_ITEMS.filter(
+    mock => !imported.some(imp => imp.name === mock.name)
+  );
+  let items = [...imported, ...mockFiltered];
 
   if (category && category !== 'all') {
     items = items.filter(i => i.type === category);
@@ -146,7 +154,7 @@ export function getShopItems(category = 'all', search = '') {
     const q = search.toLowerCase();
     items = items.filter(i =>
       i.name.toLowerCase().includes(q) ||
-      i.description.toLowerCase().includes(q)
+      (i.description || '').toLowerCase().includes(q)
     );
   }
 

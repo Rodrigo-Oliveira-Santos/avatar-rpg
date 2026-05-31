@@ -1,0 +1,269 @@
+/* ===================================
+   Import Page — GM Import UI
+   =================================== */
+
+.import-page-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.import-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.import-header h2 {
+  color: var(--text);
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.import-header p {
+  color: var(--text2);
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Stats banner */
+.import-stats {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.import-stat {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  text-align: center;
+  min-width: 80px;
+}
+
+.import-stat .stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.import-stat .stat-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+
+/* Import sections */
+.import-section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.import-section h3 {
+  color: var(--text);
+  font-size: 14px;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.import-section h3 .section-icon {
+  font-size: 16px;
+}
+
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: var(--gold);
+  background: rgba(192, 160, 48, 0.05);
+}
+
+.drop-zone-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.drop-zone-text {
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.drop-zone-text strong {
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.drop-zone input[type="file"] {
+  display: none;
+}
+
+/* Preview area */
+.import-preview {
+  margin-top: 12px;
+  display: none;
+}
+
+.import-preview.visible {
+  display: block;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.preview-count {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.preview-count .valid {
+  color: var(--earth);
+}
+
+.preview-count .invalid {
+  color: var(--red);
+}
+
+/* Preview table */
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.preview-table th {
+  text-align: left;
+  color: var(--text2);
+  font-weight: 600;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.preview-table td {
+  padding: 5px 8px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-table tr:hover td {
+  background: var(--bg3);
+}
+
+.preview-more {
+  text-align: center;
+  padding: 8px;
+  color: var(--text3);
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* Errors list */
+.import-errors {
+  margin-top: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: rgba(224, 48, 48, 0.05);
+  border: 1px solid rgba(224, 48, 48, 0.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: none;
+}
+
+.import-errors.visible {
+  display: block;
+}
+
+.import-errors .error-title {
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.import-errors .error-item {
+  color: var(--text2);
+  font-size: 10px;
+  padding: 2px 0;
+  font-family: monospace;
+}
+
+/* Action buttons */
+.import-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.import-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.import-btn:hover {
+  opacity: 0.85;
+}
+
+.import-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.import-btn.primary {
+  background: var(--gold);
+  color: #000;
+}
+
+.import-btn.secondary {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.import-btn.danger {
+  background: var(--red);
+  color: #fff;
+}
+
+/* Clear section */
+.import-clear-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.import-clear-section h4 {
+  color: var(--text2);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+.clear-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -14,6 +14,8 @@ import { unequipItem } from './items/inventory.js';
 import { ShopPage } from './shop/index.js';
 import { HubPage } from './hub/index.js';
 import { AuthManager } from './auth/index.js';
+import { AdminPanel } from './admin/index.js';
+import { ImportPage } from './import/index.js';
 import * as API from './api/index.js';
 
 /**
@@ -27,6 +29,8 @@ export class App {
     this.itemList = null;
     this.shopPage = null;
     this.hubPage = null;
+    this.importPage = null;
+    this.adminPage = null;
     this.authManager = null;
     this.activeTab = 'character';
     this.currentHp = 0;
@@ -120,6 +124,8 @@ export class App {
     // Prevent duplicate setup (re-login scenario)
     if (this._uiInitialized) {
       // Just reload character data and refresh UI
+      this.initImport();
+      this.initAdmin();
       this.updateUI(this.character.getData());
       this.setupElementSelector();
       return;
@@ -138,6 +144,8 @@ export class App {
     this.initItemList();
     this.initShop();
     this.initHub();
+    this.initImport();
+    this.initAdmin();
 
     this.character.subscribe((data) => this.updateUI(data));
     this.updateUI(this.character.getData());
@@ -401,14 +409,57 @@ export class App {
   initShop() {
     const container = $('#shop-container');
     if (container) {
-      this.shopPage = new ShopPage(container, this.character);
+      this.shopPage = new ShopPage(container, this.character, this.authManager);
     }
   }
 
   initHub() {
     const container = $('#hub-container');
     if (container) {
+      if (this.hubPage) this.hubPage.destroy();
       this.hubPage = new HubPage(container, this.character, this.authManager);
+    }
+  }
+
+  initImport() {
+    const tab = $('#import-tab');
+    const container = $('#import-container');
+    const canAccess = this.authManager?.hasRole('gm');
+
+    if (tab) {
+      tab.style.display = canAccess ? '' : 'none';
+    }
+
+    if (!canAccess && this.activeTab === 'import') {
+      this.switchTab('character');
+    }
+
+    if (container && canAccess) {
+      this.importPage = new ImportPage(container, this.authManager);
+    } else {
+      this.importPage = null;
+      if (container) container.innerHTML = '';
+    }
+  }
+
+  initAdmin() {
+    const tab = $('#admin-tab');
+    const container = $('#admin-container');
+    const canAccess = this.authManager?.hasRole('admin');
+
+    if (tab) {
+      tab.style.display = canAccess ? '' : 'none';
+    }
+
+    if (!canAccess && this.activeTab === 'admin') {
+      this.switchTab('character');
+    }
+
+    if (container && canAccess) {
+      this.adminPage = new AdminPanel(container, this.authManager);
+    } else {
+      this.adminPage = null;
+      if (container) container.innerHTML = '';
     }
   }
 

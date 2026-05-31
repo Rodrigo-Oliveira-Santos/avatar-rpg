@@ -1,13 +1,15 @@
 /**
  * Skill Data Loader
- * Loads skills from API or falls back to local mock data
+ * Loads skills from API, imported data, or falls back to local mock data
  */
 
 import { getSkills } from '../api/skills.js';
 import { MOCK_SKILLS } from './mock-data.js';
+import { getImportedSkills } from '../import/storage.js';
 
 /**
  * Load skills for a specific element
+ * Priority: API > imported (localStorage) > mock data
  * @param {string} element - Element name
  * @returns {Promise<object>} Skill data { skills: [...] }
  */
@@ -24,6 +26,12 @@ export async function loadSkills(element) {
     }
   } catch (err) {
     console.warn(`[Skills] API unavailable for ${element}:`, err.message);
+  }
+
+  // Check for imported data in localStorage
+  const imported = getImportedSkills(element);
+  if (imported.length > 0) {
+    return { skills: imported };
   }
 
   // Fallback to mock data

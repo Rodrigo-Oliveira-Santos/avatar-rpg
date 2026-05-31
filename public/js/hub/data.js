@@ -1,11 +1,25 @@
 /**
- * Hub Mock Data
- * Mock player characters for Phase 1 demo
+ * Hub data source
+ * Uses localStorage character saves when available, with mock fallback.
  */
+
+import { calculateAllStats } from '../character/stats.js';
+
+const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
+const PRESET_USERNAMES = ['zuko', 'katara', 'toph', 'aang', 'sokka', 'gm', 'admin'];
+const DEFAULT_ATTRIBUTES = {
+  FOR: 8,
+  AGI: 8,
+  CHI: 8,
+  PER: 8,
+  RES: 8,
+  ESP: 8,
+};
 
 export const MOCK_PLAYERS = [
   {
     id: 'player-1',
+    username: 'kael',
     name: 'Kael',
     element: 'fire',
     level: 12,
@@ -25,6 +39,7 @@ export const MOCK_PLAYERS = [
   },
   {
     id: 'player-2',
+    username: 'yuki',
     name: 'Yuki',
     element: 'water',
     level: 10,
@@ -42,6 +57,7 @@ export const MOCK_PLAYERS = [
   },
   {
     id: 'player-3',
+    username: 'toph',
     name: 'Toph',
     element: 'earth',
     level: 15,
@@ -63,6 +79,7 @@ export const MOCK_PLAYERS = [
   },
   {
     id: 'player-4',
+    username: 'jinora',
     name: 'Jinora',
     element: 'air',
     level: 8,
@@ -80,6 +97,7 @@ export const MOCK_PLAYERS = [
   },
   {
     id: 'player-5',
+    username: 'sokka',
     name: 'Sokka',
     element: 'none',
     level: 11,
@@ -99,10 +117,163 @@ export const MOCK_PLAYERS = [
   },
 ];
 
+function hasLocalStorage() {
+  return typeof localStorage !== 'undefined';
+}
+
+function getCharacterStorageKey(username) {
+  return `${CHARACTER_STORAGE_PREFIX}${username}`;
+}
+
+function toNumber(value, fallback = 0) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : fallback;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function parseCharacter(raw) {
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getKnownCharacterUsernames() {
+  if (!hasLocalStorage()) return [];
+
+  const discovered = [];
+
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(CHARACTER_STORAGE_PREFIX)) {
+      discovered.push(key.slice(CHARACTER_STORAGE_PREFIX.length));
+    }
+  }
+
+  const extraUsernames = discovered
+    .filter(username => username && !PRESET_USERNAMES.includes(username))
+    .sort((left, right) => left.localeCompare(right));
+
+  return [...PRESET_USERNAMES, ...extraUsernames];
+}
+
+function resolveCurrentValue(character, candidates, maxValue) {
+  const sources = [
+    character,
+    character?.stats_derived,
+    character?.resources,
+    character?.combat,
+  ];
+
+  for (const source of sources) {
+    if (!source || typeof source !== 'object') continue;
+
+    for (const key of candidates) {
+      const value = source[key];
+      if (value !== undefined && value !== null && value !== '') {
+        return clamp(toNumber(value, maxValue), 0, maxValue);
+      }
+    }
+  }
+
+  return maxValue;
+}
+
+function getEffectName(effect) {
+  if (typeof effect === 'string') return effect;
+  if (!effect || typeof effect !== 'object') return null;
+  return effect.name || effect.nome || effect.label || effect.id || null;
+}
+
+function getEffectType(effect) {
+  if (!effect || typeof effect !== 'object') return null;
+
+  if (effect.positive === true || effect.isBuff === true) return 'positive';
+  if (effect.negative === true || effect.isDebuff === true) return 'negative';
+
+  const rawType = String(effect.type || effect.kind || effect.category || '').toLowerCase();
+
+  if (['positive', 'buff', 'boon', 'beneficial', 'positivo'].includes(rawType)) return 'positive';
+  if (['negative', 'debuff', 'penalty', 'harmful', 'negativo'].includes(rawType)) return 'negative';
+
+  return null;
+}
+
+function mapStatusEffects(statusEffects = []) {
+  const effects = Array.isArray(statusEffects) ? statusEffects : [];
+
+  return effects.reduce((accumulator, effect) => {
+    const name = getEffectName(effect);
+    const type = getEffectType(effect);
+
+    if (!name || !type) return accumulator;
+
+    accumulator[type === 'positive' ? 'buffs' : 'debuffs'].push({ name, type });
+    return accumulator;
+  }, { buffs: [], debuffs: [] });
+}
+
+function toHubPlayer(username, character) {
+  const identity = character?.identidade || {};
+  const attributes = { ...DEFAULT_ATTRIBUTES, ...(character?.atributos || {}) };
+  const level = Math.max(1, toNumber(identity.nivel, 1));
+  const derivedStats = calculateAllStats({
+    ...character,
+    identidade: { ...identity, nivel: level },
+    atributos: attributes,
+    equipamentos: character?.equipamentos || {},
+  });
+  const effects = mapStatusEffects(character?.status_effects);
+
+  return {
+    id: username,
+    username,
+    name: identity.nome || username,
+    element: String(identity.elemento || 'none').toLowerCase(),
+    level,
+    hp: resolveCurrentValue(character, ['hp', 'currentHp', 'currentHP', 'vida', 'vidaAtual'], derivedStats.maxHP),
+    hpMax: derivedStats.maxHP,
+    chi: resolveCurrentValue(character, ['chi', 'currentChi', 'currentCp', 'currentCP', 'cp', 'chiAtual'], derivedStats.maxCP),
+    chiMax: derivedStats.maxCP,
+    espiritu: resolveCurrentValue(character, ['espiritu', 'espirito', 'currentSp', 'currentSP', 'sp', 'espirituAtual', 'espiritoAtual'], derivedStats.maxSP),
+    espirituMax: derivedStats.maxSP,
+    defense: derivedStats.defense,
+    dodge: derivedStats.dodge,
+    subclass: identity.subclasse || null,
+    buffs: effects.buffs,
+    debuffs: effects.debuffs,
+  };
+}
+
+export function getPlayerUsernames() {
+  if (!hasLocalStorage()) return [];
+
+  return getKnownCharacterUsernames().filter(username => {
+    const character = parseCharacter(localStorage.getItem(getCharacterStorageKey(username)));
+    return Boolean(character);
+  });
+}
+
 /**
- * Get mock players
+ * Get hub players from saved character data, falling back to mocks.
  * @returns {object[]}
  */
 export function getPlayers() {
-  return [...MOCK_PLAYERS];
+  if (!hasLocalStorage()) return [...MOCK_PLAYERS];
+
+  const players = getPlayerUsernames()
+    .map(username => {
+      const character = parseCharacter(localStorage.getItem(getCharacterStorageKey(username)));
+      return character ? toHubPlayer(username, character) : null;
+    })
+    .filter(Boolean);
+
+  return players.length > 0 ? players : [...MOCK_PLAYERS];
 }

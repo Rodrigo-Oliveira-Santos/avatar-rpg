@@ -100,11 +100,11 @@ Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura 
 
 | Elemento | Status |
 |----------|--------|
-| Fogo | ✅ Completo (JSON) |
-| Água | ✅ Completo (JSON) |
-| Terra | ⚠️ Pendente |
-| Ar | ⚠️ Pendente |
-| Sem Dobra | ⚠️ Pendente |
+| Fogo | ✅ Mock disponível |
+| Água | ✅ Mock disponível |
+| Terra | ✅ Mock disponível |
+| Ar | ✅ Mock disponível |
+| Sem Dobra | ✅ Mock disponível |
 
 ---
 
@@ -112,23 +112,51 @@ Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura 
 
 | Fase | Descrição | Status |
 |------|-----------|--------|
-| **Fase 1** | MVP (Ficha, Skill Tree visual, Loja mock, Hub mock) | 🟡 Em desenvolvimento |
-| **Fase 2** | Economia e JSON (Ouro, Inventário, Import/Export, Loja funcional) | ⚪ Planeado |
-| **Fase 3** | Grupo (Hub funcional, Recompensas, Trocas) | ⚪ Planeado |
-| **Fase 4** | Admin (Gestão utilizadores, Backup/Restore) | ⚪ Backlog |
-| **Futuro** | Moedas por nação, Subclasses, Companheiros | ⚪ Backlog |
+| **Fase 1** | MVP (Auth, ficha, skill trees, loja mock, hub mock) | ✅ Completo |
+| **Fase 2** | Economia e JSON (ouro, loja funcional, importação validada) | ✅ Completo |
+| **Fase 3** | Grupo (hub funcional, recompensas, loot, trocas) | ✅ Completo |
+| **Fase 4** | Admin (gestão de utilizadores, backup/restore, logs) | ✅ Completo |
+| **Fase 5** | Testes e Melhorias (memory leaks, debounce, cleanup) | ✅ Completo |
+| **Futuro** | Moedas por nação, subclasses, companheiros e extras | ⚪ Backlog |
 
-### Implementado (Fase 1)
-- ✅ Estrutura modular frontend (HTML + CSS + JS ES6 modules)
-- ✅ Backend serverless (Netlify Functions + Supabase schema)
-- ✅ Login por username (sem password) — bypass local ativo
-- ✅ Ficha de personagem (atributos editáveis + stats derivados)
-- ✅ Sistema de XP com level-up automático
-- ✅ Skill tree visual (estrutura por categorias/tiers)
-- ✅ Loja com dados mock (search + filtros)
-- ✅ Hub de jogadores com dados mock
-- ✅ Auto-save (debounce + diff + beforeunload + fallback localStorage)
+### Implementado
+
+**Fase 1 — Base jogável**
+- ✅ Autenticação simples por username
+- ✅ Ficha de personagem com atributos editáveis, stats derivados e progressão por XP
+- ✅ Árvores de habilidades visuais por elemento/categoria/tier
+- ✅ Loja mock para navegação inicial da experiência
+- ✅ Hub mock de jogadores
+- ✅ Auto-save com persistência local
 - ✅ Import/Export JSON do personagem
+
+**Fase 2 — Economia e importação**
+- ✅ Sistema de ouro integrado à progressão e compras
+- ✅ Loja funcional com compra de itens
+- ✅ Badges de raridade nos itens
+- ✅ Ferramentas de GM para dar ouro e XP
+- ✅ Importação JSON de skills e items com validação e preview
+- ✅ Dados importados substituem os mocks quando disponíveis
+
+**Fase 3 — Funcionalidades de grupo**
+- ✅ Hub com dados reais persistidos em localStorage
+- ✅ Modal de visualização de personagem para GM (read-only)
+- ✅ Recompensas de grupo em ouro e XP
+- ✅ Entrega de loot a jogadores
+- ✅ Sistema de trocas entre jogadores com notificações
+
+**Fase 4 — Administração**
+- ✅ Painel de admin para gestão de utilizadores
+- ✅ Promoção e despromoção de roles
+- ✅ Backup/restore completo do estado via export/import de localStorage
+- ✅ Sistema de logs com serviço dedicado e viewer com filtros/paginação
+
+**Fase 5 — Testes e Melhorias**
+- ✅ Correção de memory leaks (reutilização de instâncias GroupRewards/LootDelivery)
+- ✅ Debounce de 50ms no refresh do Hub para evitar renders duplicados
+- ✅ Cleanup de event listeners (método `destroy()` no HubPage)
+- ✅ Consolidação de exports no módulo trade
+- ✅ Cleanup automático ao re-inicializar Hub (cenário login/logout/re-login)
 
 ---
 
@@ -141,18 +169,26 @@ avatar-rpg/
 │   ├── css/
 │   │   ├── main.css           ← Variables + base styles
 │   │   └── components/        ← CSS por componente
+│   │       ├── admin.css              ← Painel admin
+│   │       ├── character-modal.css    ← Modal read-only do GM
+│   │       ├── import.css             ← Fluxo de importação JSON
+│   │       ├── trade.css              ← UI de trocas e notificações
+│   │       └── ...                    ← Restantes estilos da app
 │   └── js/
 │       ├── main.js            ← Entry point (bootstrap)
 │       ├── app.js             ← App class (orchestrator)
+│       ├── admin/             ← Admin panel, LogService, LogViewer, BackupRestore
 │       ├── api/               ← API client + endpoints
 │       ├── auth/              ← AuthManager
 │       ├── character/         ← Character, stats, XP, slots
 │       ├── combat/            ← Dice, resolver, status effects
-│       ├── hub/               ← Hub page + mock data
+│       ├── hub/               ← Hub page + dados reais/mocks
+│       ├── import/            ← JSON import (validators, storage, ImportPage)
 │       ├── items/             ← Item list + inventory
-│       ├── shop/              ← Shop page + mock data
+│       ├── shop/              ← Shop page + compra de itens
 │       ├── skills/            ← Skill tree + cards + data loader
-│       ├── storage/           ← AutoSave, import, export
+│       ├── storage/           ← AutoSave, backup, import, export
+│       ├── trade/             ← Trade system (TradeManager, TradeModal, notifications)
 │       └── utils/             ← Constants, DOM helpers, validators
 ├── netlify/
 │   └── functions/             ← API serverless (Netlify Functions)
@@ -201,9 +237,8 @@ avatar-rpg/
 ## Notas de Desenvolvimento
 
 - **Flexibilidade > Perfeição:** Priorize funcional sobre bem arquitetado
-- **Import system é prioridade (Fase 2):** Conteúdo gerado por IA deve ser plug-and-play
-- **GM tools podem esperar:** Foque na experiência individual do jogador primeiro
 - **APIs em bypass:** Para dev local sem Supabase, as APIs retornam mocks (ver `public/js/api/`)
+- **Estado atual:** Fases 1-5 completas. Próximos passos são features de Futuro/Backlog.
 
 ---
 

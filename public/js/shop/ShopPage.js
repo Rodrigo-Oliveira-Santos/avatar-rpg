@@ -6,6 +6,7 @@
 import { createElement, on, $ } from '../utils/dom.js';
 import { toast, confirmDialog } from '../utils/toast.js';
 import { getShopItems } from './data.js';
+import { log } from '../admin/LogService.js';
 
 const CATEGORIES = [
   { id: 'all', label: 'Todos' },
@@ -22,6 +23,14 @@ const RARITY_LABELS = {
   legendary: 'Lendário',
 };
 
+function getStoredUsername() {
+  try {
+    return JSON.parse(localStorage.getItem('avatar_rpg_user') || 'null')?.username || 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
 /**
  * ShopPage Class
  */
@@ -30,9 +39,10 @@ export class ShopPage {
    * @param {HTMLElement} container - DOM container for the shop
    * @param {object} character - Character instance
    */
-  constructor(container, character) {
+  constructor(container, character, authManager = null) {
     this.container = container;
     this.character = character;
+    this.authManager = authManager;
     this.activeCategory = 'all';
     this.searchQuery = '';
 
@@ -205,6 +215,9 @@ export class ShopPage {
     }
     this.character.data.inventario = inv;
     this.character.notify();
+
+    const username = this.authManager?.getUser()?.username || getStoredUsername();
+    log('purchase', { item: item.name, price: item.price }, username);
 
     toast(`Compraste "${item.name}"!`, 'success');
     this.render();
