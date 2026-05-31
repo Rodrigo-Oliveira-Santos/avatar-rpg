@@ -11,7 +11,7 @@
 export function createElement(tag, attrs = {}, children = []) {
   const el = document.createElement(tag);
   Object.assign(el, attrs);
-  if (attrs.class) el.classList.add(...attrs.class.split(' '));
+  if (attrs.class) el.classList.add(...attrs.class.split(' ').filter(Boolean));
   if (attrs.html) el.innerHTML = attrs.html;
   children.forEach(child => {
     if (typeof child === 'string') {
