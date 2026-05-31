@@ -64,6 +64,69 @@
   display: block;
 }
 
+.slot-bar {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg2);
+  margin-bottom: 10px;
+}
+
+.slot-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  transition: width .15s ease;
+}
+
+.slot-bar-text {
+  position: relative;
+  z-index: 1;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.slot-bar.available {
+  border-color: var(--green);
+}
+
+.slot-bar.available .slot-bar-fill {
+  background: rgba(48, 192, 96, 0.18);
+}
+
+.slot-bar.available .slot-bar-text {
+  color: var(--green);
+}
+
+.slot-bar.warning {
+  border-color: var(--gold);
+}
+
+.slot-bar.warning .slot-bar-fill {
+  background: rgba(192, 160, 48, 0.18);
+}
+
+.slot-bar.warning .slot-bar-text {
+  color: var(--gold);
+}
+
+.slot-bar.full {
+  border-color: var(--red);
+}
+
+.slot-bar.full .slot-bar-fill {
+  background: rgba(224, 48, 48, 0.2);
+}
+
+.slot-bar.full .slot-bar-text {
+  color: var(--red);
+}
+
 .cat-desc {
   font-size: 11px;
   color: var(--text2);
@@ -76,12 +139,24 @@
 }
 
 .tier-lbl {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
   font-size: 10px;
   font-weight: 600;
   color: var(--text3);
   text-transform: uppercase;
   letter-spacing: .06em;
   margin: 10px 0 5px;
+}
+
+.tier-meta {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 /* Skills Grid */
@@ -111,6 +186,12 @@
 .sc.locked {
   opacity: .35;
   cursor: not-allowed;
+}
+
+.skill-card.slots-full,
+.sc.slots-full:not(.locked):not(.on) {
+  opacity: .6;
+  border-color: var(--red);
 }
 
 .sc.on {
@@ -158,6 +239,14 @@
 
 .sc.on .sdot {
   background: var(--agility);
+}
+
+.slot-lock {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 12px;
+  line-height: 1;
 }
 
 /* Skill Name & Description */
@@ -216,6 +305,16 @@
 .sb-leg {
   background: #1a1208;
   color: #c0a030;
+}
+
+.sb-scroll {
+  background: rgba(79, 140, 255, 0.14);
+  color: #a7cbff;
+}
+
+.sb-mastery {
+  background: rgba(212, 160, 23, 0.16);
+  color: #ffd76a;
 }
 
 /* Position Badge */
@@ -484,4 +583,95 @@
   border-color: var(--gold);
   color: var(--gold);
   background: #1a1408;
+}
+
+/* Sub-Skill Slots UI */
+.sub-skills-section {
+  margin-top: 7px;
+  border-top: 1px solid var(--border);
+  padding-top: 7px;
+}
+
+.sub-skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.sub-skills-header .sec-lbl {
+  margin-bottom: 0;
+}
+
+.sub-skill-counter {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+.sub-skill-row {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 8px;
+  align-items: start;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(58, 74, 101, 0.35);
+  cursor: pointer;
+}
+
+.sub-skill-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.sub-skill-row input {
+  margin: 1px 0 0;
+  accent-color: var(--gold);
+}
+
+.sub-skill-row.disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.sub-skill-row.disabled .sub-skill-cost {
+  border-color: var(--border);
+  color: var(--text3);
+}
+
+.sub-skill-content {
+  min-width: 0;
+}
+
+.sub-skill-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+}
+
+.sub-skill-name {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.sub-skill-desc {
+  margin-top: 2px;
+  font-size: 9px;
+  line-height: 1.35;
+  color: var(--text3);
+}
+
+.sub-skill-cost {
+  flex-shrink: 0;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--gold);
+  background: rgba(192, 160, 48, 0.12);
+  color: var(--gold);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
 }

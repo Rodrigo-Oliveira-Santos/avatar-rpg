@@ -1,0 +1,44 @@
+.currency-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.currency-chip {
+  --currency-color: var(--border2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--currency-color);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text2);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.currency-chip.primary {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px var(--currency-color);
+  color: var(--text);
+}
+
+.currency-icon {
+  font-size: 12px;
+}
+
+.currency-label {
+  font-weight: 600;
+}
+
+.currency-value {
+  color: var(--currency-color);
+  font-weight: 700;
+}
+
+.currency-chip.compact {
+  padding: 4px 7px;
+  font-size: 10px;
+}

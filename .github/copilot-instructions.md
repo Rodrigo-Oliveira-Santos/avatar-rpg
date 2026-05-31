@@ -76,6 +76,20 @@ supabase/ (schema.sql — not active in bypass mode)
 - DIAGRAMAS-TÉCNICOS.md — Architecture, DB schema, API specs, JSON import schemas
 - DEV-LOCAL.md — Local dev setup
 
+## Doc Update Rules
+
+After implementing a new phase/feature set:
+- Update FEATURES.md (status + details)
+- Update README.md (phases table + details)
+- Update this file + CLAUDE.md (keep concise, modules table, status line)
+- Delete docs that become redundant
+
+## Working Style
+
+- Ask clarifying questions before implementing when design decisions have multiple valid options
+- Prefer multiple choice questions for faster decisions
+- Don't assume — confirm scope, behavior, and edge cases when ambiguous
+
 ## Futuro (Backlog)
 
 - Moedas por nação

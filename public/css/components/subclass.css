@@ -1,0 +1,118 @@
+.subclass-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subclass-current,
+.subclass-picker,
+.subclass-empty {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.subclass-current-title,
+.subclass-option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.subclass-current h4,
+.subclass-option h4 {
+  margin: 0;
+}
+
+.subclass-current p,
+.subclass-option p,
+.subclass-empty p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.subclass-bonus,
+.subclass-requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.subclass-bonus span,
+.subclass-requirements span {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.subclass-bonus span {
+  background: rgba(255, 184, 77, 0.15);
+  border: 1px solid rgba(255, 184, 77, 0.35);
+  color: #ffd28f;
+}
+
+.subclass-requirements span {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.subclass-requirements .met {
+  color: #9ce9b0;
+  border-color: rgba(156, 233, 176, 0.35);
+  background: rgba(48, 145, 76, 0.18);
+}
+
+.subclass-requirements .unmet {
+  color: #ffb0b0;
+  border-color: rgba(255, 136, 136, 0.28);
+  background: rgba(147, 40, 40, 0.18);
+}
+
+.subclass-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subclass-option {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.subclass-option button,
+.subclass-section > button,
+.subclass-empty button {
+  align-self: flex-start;
+}
+
+.subclass-locked {
+  opacity: 0.65;
+  filter: grayscale(0.2);
+}
+
+.subclass-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.subclass-note {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+@media (max-width: 640px) {
+  .subclass-current-title,
+  .subclass-option-header {
+    flex-direction: column;
+  }
+}

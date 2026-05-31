@@ -14,6 +14,7 @@ const TYPE_LABELS = {
   armor: 'Armadura',
   accessory: 'Acessório',
   consumable: 'Consumível',
+  scroll: 'Pergaminho',
   other: 'Outro',
 };
 const RARITY_LABELS = {

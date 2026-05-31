@@ -4,7 +4,24 @@
  */
 
 import { createElement, on } from '../utils/dom.js';
-import { TIERS, POSITIONS, ATTRIBUTES, STATUS_EFFECTS } from '../utils/constants.js';
+import { GAME, TIERS, POSITIONS, STATUS_EFFECTS } from '../utils/constants.js';
+
+function getSubSkillCost(subSkill) {
+  const cost = Number(subSkill?.cost);
+  return Number.isFinite(cost) && cost > 0 ? cost : 1;
+}
+
+function normalizeCardOptions(options = {}) {
+  if (typeof options === 'boolean') {
+    return {
+      slotsAvailable: {
+        available: options ? Number.POSITIVE_INFINITY : 0,
+      },
+    };
+  }
+
+  return options || {};
+}
 
 /**
  * Create tier badge element
@@ -105,22 +122,121 @@ function createAttackRow(attack) {
   return row;
 }
 
+function createSubSkillsSection(skill, characterData, onSubSkillToggle, slotsAvailable) {
+  const section = createElement('div', { class: 'sub-skills-section' });
+  const skillState = characterData?.habilidades?.[skill.id] || {};
+  const activeSubSkills = Array.isArray(skillState.activeSubSkills)
+    ? skillState.activeSubSkills
+    : [];
+  const scrollBonus = characterData?.scrolls?.[skill.id] || 0;
+  const maxPerSkill = GAME.MAX_SUB_SKILLS_PER_SKILL + scrollBonus;
+  const remainingGlobalSlots = Number.isFinite(slotsAvailable?.available)
+    ? slotsAvailable.available
+    : Number.POSITIVE_INFINITY;
+
+  const header = createElement('div', { class: 'sub-skills-header' });
+  header.appendChild(createElement('div', {
+    class: 'sec-lbl',
+    textContent: 'Sub-habilidades',
+  }));
+  header.appendChild(createElement('span', {
+    class: 'sub-skill-counter',
+    textContent: `${activeSubSkills.length}/${maxPerSkill}`,
+  }));
+  section.appendChild(header);
+
+  skill.sub_skills.forEach(subSkill => {
+    const isChecked = activeSubSkills.includes(subSkill.id);
+    const cost = getSubSkillCost(subSkill);
+    const perSkillLimitReached = !isChecked && activeSubSkills.length >= maxPerSkill;
+    const globalLimitReached = !isChecked && remainingGlobalSlots < cost;
+    const disabled = !isChecked && (!onSubSkillToggle || perSkillLimitReached || globalLimitReached);
+    const row = createElement('label', {
+      class: `sub-skill-row ${disabled ? 'disabled' : ''}`,
+      title: subSkill.description || '',
+    });
+
+    const checkbox = createElement('input', {
+      type: 'checkbox',
+      checked: isChecked,
+      disabled,
+    });
+
+    const content = createElement('div', { class: 'sub-skill-content' });
+    const top = createElement('div', { class: 'sub-skill-top' });
+    top.appendChild(createElement('span', {
+      class: 'sub-skill-name',
+      textContent: subSkill.name,
+    }));
+    top.appendChild(createElement('span', {
+      class: 'sub-skill-cost',
+      textContent: `${cost} ${cost === 1 ? 'slot' : 'slots'}`,
+    }));
+    content.appendChild(top);
+
+    if (subSkill.description) {
+      content.appendChild(createElement('div', {
+        class: 'sub-skill-desc',
+        textContent: subSkill.description,
+      }));
+    }
+
+    row.appendChild(checkbox);
+    row.appendChild(content);
+    section.appendChild(row);
+
+    on(row, 'click', (event) => {
+      event.stopPropagation();
+    });
+
+    on(checkbox, 'click', (event) => {
+      event.stopPropagation();
+    });
+
+    if (onSubSkillToggle) {
+      on(checkbox, 'change', (event) => {
+        event.stopPropagation();
+        onSubSkillToggle(skill, subSkill, event.target.checked);
+      });
+    }
+  });
+
+  return section;
+}
+
 /**
  * Create skill card element
  * @param {object} skill - Skill data
  * @param {boolean} unlocked - Is skill unlocked
  * @param {boolean} active - Is skill active
  * @param {Function} onToggle - Toggle callback
+ * @param {object} options - Rendering options
  * @returns {HTMLElement} Skill card element
  */
-export function createSkillCard(skill, unlocked = false, active = false, onToggle = null) {
+export function createSkillCard(skill, unlocked = false, active = false, onToggle = null, options = {}) {
+  const {
+    characterData = null,
+    onSubSkillToggle = null,
+    slotsAvailable = null,
+    scrollSlots = 0,
+    mastered = false,
+  } = normalizeCardOptions(options);
+
+  const hasGlobalSlots = (slotsAvailable?.available ?? Number.POSITIVE_INFINITY) > 0;
+  const showSlotsFull = !hasGlobalSlots && !active;
   const card = createElement('div', {
-    class: `sc ${skill.category} ${skill.tier === 4 ? 'legend' : ''} ${active ? 'on' : ''} ${!unlocked ? 'locked' : ''}`,
+    class: `sc ${skill.category} ${skill.tier === 4 ? 'legend' : ''} ${active ? 'on' : ''} ${!unlocked ? 'locked' : ''} ${showSlotsFull ? 'slots-full' : ''}`,
   });
 
-  // Dot indicator
+  // Status indicator
   if (active) {
     card.appendChild(createElement('div', { class: 'sdot' }));
+  } else if (showSlotsFull) {
+    card.appendChild(createElement('div', {
+      class: 'slot-lock',
+      textContent: '🔒',
+      title: 'Slots cheios',
+    }));
   }
 
   // Name
@@ -139,6 +255,18 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
   const meta = createElement('div', { class: 'smeta' });
   meta.appendChild(createTierBadge(skill.tier));
   meta.appendChild(createPositionBadge(skill.position));
+  if (scrollSlots > 0) {
+    meta.appendChild(createElement('span', {
+      class: 'sbadge sb-scroll',
+      textContent: `📜 +${scrollSlots} slot${scrollSlots === 1 ? '' : 's'}`,
+    }));
+  }
+  if (mastered) {
+    meta.appendChild(createElement('span', {
+      class: 'sbadge sb-mastery',
+      textContent: '⭐ Dominada',
+    }));
+  }
   card.appendChild(meta);
 
   // Requirements
@@ -201,6 +329,10 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
     });
 
     card.appendChild(atkSection);
+  }
+
+  if (active && Array.isArray(skill.sub_skills) && skill.sub_skills.length > 0 && characterData) {
+    card.appendChild(createSubSkillsSection(skill, characterData, onSubSkillToggle, slotsAvailable));
   }
 
   // Click handler

@@ -3,6 +3,7 @@
  */
 
 import { createElement, on, $ } from '../utils/dom.js';
+import { calculateAllStats } from '../character/stats.js';
 
 const ELEMENT_LABELS = {
   fire: 'Fogo',
@@ -24,23 +25,20 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
-function getEquipmentBonus(item, key) {
-  if (!item || typeof item !== 'object') return 0;
-  return toNumber(item[key], 0);
-}
-
 function getCharacterStats(characterData) {
-  const identidade = characterData?.identidade || {};
-  const atributos = characterData?.atributos || {};
-  const nivel = Math.max(1, toNumber(identidade.nivel, 1));
-  const armor = characterData?.equipamentos?.armadura || null;
+  const derived = calculateAllStats({
+    identidade: characterData?.identidade || {},
+    atributos: characterData?.atributos || {},
+    subclass_bonus: characterData?.subclass_bonus || {},
+    equipamentos: characterData?.equipamentos || {},
+  });
 
   return {
-    hp: 10 + (nivel * 8) + (toNumber(atributos.FOR, 0) * 3),
-    chi: 6 + (nivel * 5) + (toNumber(atributos.CHI, 0) * 4),
-    spirit: 8 + (nivel * 6) + (toNumber(atributos.ESP, 0) * 3),
-    defense: (toNumber(atributos.RES, 0) * 2) + nivel + getEquipmentBonus(armor, 'defense_bonus'),
-    dodge: Math.max(0, Math.round(10 + ((toNumber(atributos.AGI, 0) * 2) + toNumber(atributos.PER, 0)) * 0.2 - getEquipmentBonus(armor, 'dodge_penalty'))),
+    hp: derived.maxHP,
+    chi: derived.maxCP,
+    spirit: derived.maxSP,
+    defense: derived.defense,
+    dodge: derived.dodge,
   };
 }
 
@@ -53,12 +51,15 @@ function formatEquipmentDetails(item) {
   if (!item || typeof item !== 'object') return '—';
 
   const details = [];
+  const defenseValue = item.defense ?? item.defense_bonus;
+  const dodgePenalty = item.penalty ?? item.dodge_penalty;
+
   if (item.damage) details.push(`DMG ${item.damage}`);
-  if (item.defense_bonus) {
-    details.push(item.defense_bonus > 0 ? `DEF +${item.defense_bonus}` : `DEF ${item.defense_bonus}`);
+  if (defenseValue) {
+    details.push(defenseValue > 0 ? `DEF +${defenseValue}` : `DEF ${defenseValue}`);
   }
-  if (item.dodge_penalty) {
-    details.push(item.dodge_penalty > 0 ? `ESQ -${item.dodge_penalty}` : `ESQ +${Math.abs(item.dodge_penalty)}`);
+  if (dodgePenalty) {
+    details.push(dodgePenalty > 0 ? `ESQ -${dodgePenalty}` : `ESQ +${Math.abs(dodgePenalty)}`);
   }
   if (item.effect) details.push(item.effect);
 

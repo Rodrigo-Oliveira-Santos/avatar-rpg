@@ -37,11 +37,26 @@ export const ATTRIBUTES = {
 
 export const ELEMENTS = ['fire', 'water', 'earth', 'air', 'none'];
 
+export const NATION_CURRENCIES = {
+  fire: { id: 'fire_coins', label: 'Moedas de Fogo', icon: '🔥', color: '#e74c3c' },
+  water: { id: 'water_coins', label: 'Moedas de Água', icon: '💧', color: '#3498db' },
+  earth: { id: 'earth_coins', label: 'Moedas de Terra', icon: '🪨', color: '#27ae60' },
+  air: { id: 'air_coins', label: 'Moedas do Ar', icon: '🌪', color: '#f39c12' },
+  none: { id: 'universal_coins', label: 'Moedas Universais', icon: '⭐', color: '#9b59b6' },
+};
+
 export const CATEGORIES = {
   spirit: 'Espiritualidade',
   agility: 'Agilidade',
   precise: 'Combate Preciso',
   brute: 'Combate Bruto',
+};
+
+export const RARITY_BONUSES = {
+  common: { multiplier: 1.0, extraStat: 0 },
+  rare: { multiplier: 1.15, extraStat: 1 },
+  epic: { multiplier: 1.3, extraStat: 2 },
+  legendary: { multiplier: 1.5, extraStat: 3 },
 };
 
 export const TIERS = {

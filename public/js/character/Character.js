@@ -3,14 +3,22 @@
  * Main character state management with reactive updates
  */
 
-import { GAME } from '../utils/constants.js';
+import { GAME, NATION_CURRENCIES } from '../utils/constants.js';
 import { calculateAllStats } from './stats.js';
 import { getMilestone, getXPProgress, calculateXPForLevel } from './xp.js';
 import { getAvailableSlots } from './slots.js';
+import { findSubclassDefinition, getSubclassesForElement } from './subclasses.js';
 
 /**
  * Create default character structure
  */
+function createDefaultNationCoins() {
+  return Object.values(NATION_CURRENCIES).reduce((coins, currency) => {
+    coins[currency.id] = 0;
+    return coins;
+  }, {});
+}
+
 function createDefaultCharacter() {
   return {
     id: null,
@@ -48,9 +56,62 @@ function createDefaultCharacter() {
     status_effects: [],
     inventario: [],
     ouro: 0,
+    moedas: createDefaultNationCoins(),
     scrolls: {},
     anotacoes: '',
+    subclass_bonus: {},
   };
+}
+
+function normalizeCharacterData(data = {}) {
+  const defaults = createDefaultCharacter();
+  const normalized = {
+    ...defaults,
+    ...data,
+    identidade: {
+      ...defaults.identidade,
+      ...(data.identidade || {}),
+    },
+    atributos: {
+      ...defaults.atributos,
+      ...(data.atributos || {}),
+    },
+    stats_derived: {
+      ...defaults.stats_derived,
+      ...(data.stats_derived || {}),
+    },
+    habilidades: data.habilidades || defaults.habilidades,
+    itens: data.itens || defaults.itens,
+    equipamentos: {
+      ...defaults.equipamentos,
+      ...(data.equipamentos || {}),
+    },
+    status_effects: data.status_effects || defaults.status_effects,
+    inventario: data.inventario || defaults.inventario,
+    moedas: {
+      ...defaults.moedas,
+      ...(data.moedas || {}),
+    },
+    scrolls: data.scrolls || defaults.scrolls,
+    subclass_bonus: {
+      ...defaults.subclass_bonus,
+      ...(data.subclass_bonus || {}),
+    },
+  };
+
+  const subclass = findSubclassDefinition(
+    normalized.identidade.subclasse,
+    normalized.identidade.elemento
+  );
+
+  if (subclass) {
+    normalized.identidade.subclasse = subclass.name;
+    normalized.subclass_bonus = { ...subclass.bonus };
+  } else if (!normalized.identidade.subclasse) {
+    normalized.subclass_bonus = {};
+  }
+
+  return normalized;
 }
 
 /**
@@ -195,6 +256,68 @@ export class Character {
     this.notify();
   }
 
+  getCurrentSubclassDefinition() {
+    return findSubclassDefinition(
+      this.data.identidade.subclasse,
+      this.data.identidade.elemento
+    );
+  }
+
+  getSubclassBonus() {
+    const currentSubclass = this.getCurrentSubclassDefinition();
+    if (currentSubclass) {
+      return { ...currentSubclass.bonus };
+    }
+
+    return { ...(this.data.subclass_bonus || {}) };
+  }
+
+  getTotalAttributes() {
+    const subclassBonus = this.getSubclassBonus();
+    return Object.keys(this.data.atributos).reduce((totals, attr) => {
+      totals[attr] = (this.data.atributos[attr] || 0) + (subclassBonus[attr] || 0);
+      return totals;
+    }, {});
+  }
+
+  canUnlockSubclass(subclass) {
+    const subclassDef = typeof subclass === 'string'
+      ? findSubclassDefinition(subclass, this.data.identidade.elemento)
+      : subclass;
+
+    if (!subclassDef || this.data.identidade.subclasse) return false;
+
+    const totalAttributes = this.getTotalAttributes();
+
+    return Object.entries(subclassDef.requirements || {}).every(([key, requiredValue]) => {
+      if (key === 'nivel') {
+        return (this.data.identidade.nivel || 0) >= requiredValue;
+      }
+
+      return (totalAttributes[key] || 0) >= requiredValue;
+    });
+  }
+
+  getAvailableSubclasses() {
+    return getSubclassesForElement(this.data.identidade.elemento)
+      .filter(subclass => this.canUnlockSubclass(subclass));
+  }
+
+  unlockSubclass(subclassId) {
+    if (this.data.identidade.subclasse) return false;
+
+    const subclass = getSubclassesForElement(this.data.identidade.elemento)
+      .find(option => option.id === subclassId);
+
+    if (!subclass || !this.canUnlockSubclass(subclass)) return false;
+
+    this.data.identidade.subclasse = subclass.name;
+    this.data.subclass_bonus = { ...subclass.bonus };
+    this.recalculateAll();
+    this.notify();
+    return true;
+  }
+
   /**
    * Get full character data
    * @returns {object} Character data
@@ -216,7 +339,7 @@ export class Character {
    * @param {object} data - Character data
    */
   load(data) {
-    this.data = { ...createDefaultCharacter(), ...data };
+    this.data = normalizeCharacterData(data);
     this.recalculateAll();
     this.notify();
   }
@@ -305,6 +428,46 @@ export class Character {
     if (amount <= 0) return false;
     if ((this.data.ouro || 0) < amount) return false;
     this.data.ouro -= amount;
+    this.notify();
+    return true;
+  }
+
+  /**
+   * Get nation currency balances
+   * @returns {object}
+   */
+  getNationCoins() {
+    const defaults = createDefaultNationCoins();
+    return { ...defaults, ...(this.data.moedas || {}) };
+  }
+
+  /**
+   * Add national currency to character
+   * @param {string} currencyId - Currency identifier
+   * @param {number} amount - Amount to add
+   * @returns {boolean} Success
+   */
+  addNationCoins(currencyId, amount) {
+    if (!Object.values(NATION_CURRENCIES).some(currency => currency.id === currencyId)) return false;
+    if (amount <= 0) return false;
+    this.data.moedas = this.getNationCoins();
+    this.data.moedas[currencyId] += amount;
+    this.notify();
+    return true;
+  }
+
+  /**
+   * Spend national currency
+   * @param {string} currencyId - Currency identifier
+   * @param {number} amount - Amount to spend
+   * @returns {boolean} Success
+   */
+  spendNationCoins(currencyId, amount) {
+    if (!Object.values(NATION_CURRENCIES).some(currency => currency.id === currencyId)) return false;
+    if (amount <= 0) return false;
+    this.data.moedas = this.getNationCoins();
+    if ((this.data.moedas[currencyId] || 0) < amount) return false;
+    this.data.moedas[currencyId] -= amount;
     this.notify();
     return true;
   }

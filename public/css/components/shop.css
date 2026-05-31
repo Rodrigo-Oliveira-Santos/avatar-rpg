@@ -93,11 +93,22 @@
   color: var(--text);
 }
 
+.shop-card-prices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
 .shop-card-price {
   font-size: 12px;
   font-weight: 600;
   color: var(--gold);
   white-space: nowrap;
+}
+
+.shop-card-price-nation {
+  color: var(--currency-color, var(--text2));
 }
 
 .shop-card-desc {
@@ -162,6 +173,11 @@
   box-shadow: 0 0 6px rgba(224, 160, 32, 0.15);
 }
 
+.shop-buy-actions {
+  display: grid;
+  gap: 6px;
+}
+
 /* Shop Buy Button */
 .shop-buy-btn {
   width: 100%;
@@ -178,6 +194,15 @@
 
 .shop-buy-btn:hover {
   background: #1a1208;
+}
+
+.shop-buy-btn.nation {
+  border-color: var(--currency-color, var(--border2));
+  color: var(--currency-color, var(--text));
+}
+
+.shop-buy-btn.nation:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .shop-buy-btn:disabled {
@@ -197,7 +222,9 @@
 .shop-gold-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   padding: 8px 12px;
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -207,8 +234,14 @@
   color: var(--text2);
 }
 
-.shop-gold-val {
+.shop-gold-summary {
   font-weight: 600;
   color: var(--gold);
   font-size: 14px;
+}
+
+.shop-balance-currencies {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }

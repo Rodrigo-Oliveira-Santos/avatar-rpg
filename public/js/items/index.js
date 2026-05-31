@@ -2,7 +2,7 @@
  * Items Module Exports
  */
 
-export { ItemList } from './ItemList.js';
+export { InventoryPage, ItemList } from './ItemList.js';
 export {
   addItem,
   removeItem,
@@ -11,3 +11,4 @@ export {
   getInventory,
   getEquipped,
 } from './inventory.js';
+export { applyScroll, getEligibleSkills } from './scrolls.js';

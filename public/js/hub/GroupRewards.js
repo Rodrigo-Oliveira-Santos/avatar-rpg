@@ -8,9 +8,10 @@ import { toast, confirmDialog } from '../utils/toast.js';
 import { getPlayers, getPlayerUsernames } from './data.js';
 import { log } from '../admin/LogService.js';
 import { calculateXPForLevel, getMilestone } from '../character/xp.js';
-import { GAME } from '../utils/constants.js';
+import { GAME, NATION_CURRENCIES } from '../utils/constants.js';
 
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
+const CURRENCY_OPTIONS = Object.values(NATION_CURRENCIES);
 
 function getCharacterStorageKey(username) {
   return `${CHARACTER_STORAGE_PREFIX}${username}`;
@@ -50,6 +51,16 @@ function ensureIdentity(character) {
   if (!Number.isFinite(character.pontos_disponiveis)) {
     character.pontos_disponiveis = toNumber(character.pontos_disponiveis, 0);
   }
+}
+
+function ensureNationCoins(character) {
+  if (!character.moedas || typeof character.moedas !== 'object') {
+    character.moedas = {};
+  }
+
+  CURRENCY_OPTIONS.forEach(currency => {
+    character.moedas[currency.id] = Math.max(0, toNumber(character.moedas[currency.id], 0));
+  });
 }
 
 function addXPToCharacter(character, amount) {
@@ -102,6 +113,8 @@ export class GroupRewards {
     this.players = [];
     this.goldInput = null;
     this.xpInput = null;
+    this.nationCoinsInput = null;
+    this.currencySelect = null;
     this.previewEl = null;
     this.distributeBtn = null;
   }
@@ -127,28 +140,37 @@ export class GroupRewards {
       textContent: '💰 Recompensas em Grupo',
     }));
 
-    const description = createElement('div', {
+    section.appendChild(createElement('div', {
       style: 'font-size: 11px; color: var(--text2); margin-bottom: 10px; line-height: 1.4;',
-      textContent: 'Divide o ouro total igualmente pelos jogadores selecionados e aplica XP opcional a cada um.',
-    });
-    section.appendChild(description);
+      textContent: 'Divide o ouro total igualmente pelos jogadores selecionados e aplica XP/moedas nacionais opcionais por jogador.',
+    }));
 
     const inputGrid = createElement('div', {
       style: 'display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 10px;',
     });
 
-    const goldField = this.createNumberField('Ouro total', 'Ex: 120', '1');
+    const goldField = this.createNumberField('Ouro total', 'Ex: 120', '0');
     this.goldInput = goldField.input;
-    this.goldInput.min = '1';
-    this.goldInput.value = '1';
+    this.goldInput.min = '0';
+    this.goldInput.value = '0';
 
     const xpField = this.createNumberField('XP por jogador', 'Ex: 50', '0');
     this.xpInput = xpField.input;
     this.xpInput.min = '0';
     this.xpInput.value = '0';
 
+    const nationCoinsField = this.createNumberField('Moedas por jogador', 'Ex: 20', '0');
+    this.nationCoinsInput = nationCoinsField.input;
+    this.nationCoinsInput.min = '0';
+    this.nationCoinsInput.value = '0';
+
+    const currencyField = this.createSelectField('Tipo de moeda', CURRENCY_OPTIONS);
+    this.currencySelect = currencyField.select;
+
     inputGrid.appendChild(goldField.wrapper);
     inputGrid.appendChild(xpField.wrapper);
+    inputGrid.appendChild(nationCoinsField.wrapper);
+    inputGrid.appendChild(currencyField.wrapper);
     section.appendChild(inputGrid);
 
     const toolsRow = createElement('div', {
@@ -226,7 +248,7 @@ export class GroupRewards {
 
     this.previewEl = createElement('div', {
       style: 'font-size: 11px; color: var(--text2);',
-      textContent: '0 ouro cada (0 jogadores selecionados)',
+      textContent: 'Sem recompensas configuradas.',
     });
 
     this.distributeBtn = createElement('button', {
@@ -236,8 +258,10 @@ export class GroupRewards {
       disabled: this.players.length === 0,
     });
 
-    on(this.goldInput, 'input', () => this.updatePreview());
-    on(this.xpInput, 'input', () => this.updatePreview());
+    [this.goldInput, this.xpInput, this.nationCoinsInput, this.currencySelect].forEach(input => {
+      on(input, 'input', () => this.updatePreview());
+      on(input, 'change', () => this.updatePreview());
+    });
     on(this.distributeBtn, 'click', async () => {
       await this.handleDistribute();
     });
@@ -268,6 +292,28 @@ export class GroupRewards {
     return { wrapper, input };
   }
 
+  createSelectField(labelText, options) {
+    const wrapper = createElement('label', {
+      style: 'display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text2);',
+    });
+
+    const select = createElement('select', {
+      style: 'padding: 7px 9px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 12px;',
+    });
+
+    options.forEach(currency => {
+      select.appendChild(createElement('option', {
+        value: currency.id,
+        textContent: `${currency.icon} ${currency.label}`,
+      }));
+    });
+
+    wrapper.appendChild(createElement('span', { textContent: labelText }));
+    wrapper.appendChild(select);
+
+    return { wrapper, select };
+  }
+
   createActionButton(label) {
     return createElement('button', {
       type: 'button',
@@ -294,24 +340,35 @@ export class GroupRewards {
     if (!this.previewEl) return;
 
     const totalGold = Math.max(0, toNumber(this.goldInput?.value, 0));
+    const xpEach = Math.max(0, toNumber(this.xpInput?.value, 0));
+    const nationCoinsEach = Math.max(0, toNumber(this.nationCoinsInput?.value, 0));
     const selectedCount = this.selectedPlayers.size;
     const goldEach = selectedCount > 0 ? Math.floor(totalGold / selectedCount) : 0;
+    const selectedCurrency = CURRENCY_OPTIONS.find(currency => currency.id === this.currencySelect?.value) || CURRENCY_OPTIONS[0];
 
-    this.previewEl.textContent = `${goldEach} ouro cada (${selectedCount} jogador${selectedCount !== 1 ? 'es' : ''} selecionado${selectedCount !== 1 ? 's' : ''})`;
+    const parts = [];
+    if (totalGold > 0) parts.push(`${goldEach} ouro cada`);
+    if (xpEach > 0) parts.push(`${xpEach} XP cada`);
+    if (nationCoinsEach > 0 && selectedCurrency) parts.push(`${nationCoinsEach} ${selectedCurrency.icon} cada`);
+
+    this.previewEl.textContent = `${parts.length > 0 ? parts.join(' • ') : 'Sem recompensas configuradas.'} (${selectedCount} jogador${selectedCount !== 1 ? 'es' : ''} selecionado${selectedCount !== 1 ? 's' : ''})`;
 
     if (this.distributeBtn) {
-      this.distributeBtn.disabled = selectedCount === 0 || totalGold < 1;
+      const hasRewards = totalGold > 0 || xpEach > 0 || nationCoinsEach > 0;
+      this.distributeBtn.disabled = selectedCount === 0 || !hasRewards;
       this.distributeBtn.style.opacity = this.distributeBtn.disabled ? '0.6' : '1';
       this.distributeBtn.style.cursor = this.distributeBtn.disabled ? 'not-allowed' : 'pointer';
     }
   }
 
   async handleDistribute() {
-    const totalGold = Number.parseInt(this.goldInput?.value || '', 10);
+    const totalGold = Number.parseInt(this.goldInput?.value || '0', 10);
     const xpEach = Number.parseInt(this.xpInput?.value || '0', 10);
+    const nationCoinsEach = Number.parseInt(this.nationCoinsInput?.value || '0', 10);
     const selectedPlayers = Array.from(this.selectedPlayers);
+    const selectedCurrency = CURRENCY_OPTIONS.find(currency => currency.id === this.currencySelect?.value) || null;
 
-    if (!Number.isInteger(totalGold) || totalGold < 1) {
+    if (!Number.isInteger(totalGold) || totalGold < 0) {
       toast('Indica um valor de ouro válido.', 'warning');
       return;
     }
@@ -321,14 +378,30 @@ export class GroupRewards {
       return;
     }
 
+    if (!Number.isInteger(nationCoinsEach) || nationCoinsEach < 0) {
+      toast('Indica um valor de moedas válido.', 'warning');
+      return;
+    }
+
+    if (totalGold === 0 && xpEach === 0 && nationCoinsEach === 0) {
+      toast('Configura pelo menos uma recompensa.', 'warning');
+      return;
+    }
+
     if (selectedPlayers.length === 0) {
       toast('Seleciona pelo menos um jogador.', 'warning');
       return;
     }
 
     const goldEach = Math.floor(totalGold / selectedPlayers.length);
+    const rewardSummary = [
+      totalGold > 0 ? `${totalGold} ouro (${goldEach} cada)` : null,
+      xpEach > 0 ? `${xpEach} XP por jogador` : null,
+      nationCoinsEach > 0 && selectedCurrency ? `${nationCoinsEach} ${selectedCurrency.icon} por jogador` : null,
+    ].filter(Boolean).join(' • ');
+
     const confirmed = await confirmDialog(
-      `Distribuir ${totalGold} ouro${xpEach > 0 ? ` (+ ${xpEach} XP)` : ''} por ${selectedPlayers.length} jogadores?`,
+      `Distribuir ${rewardSummary} por ${selectedPlayers.length} jogadores?`,
       { confirmText: 'Distribuir', cancelText: 'Cancelar' }
     );
 
@@ -342,10 +415,18 @@ export class GroupRewards {
       if (!character) return;
 
       ensureIdentity(character);
-      character.ouro = Math.max(0, toNumber(character.ouro, 0)) + goldEach;
+      ensureNationCoins(character);
+
+      if (goldEach > 0) {
+        character.ouro = Math.max(0, toNumber(character.ouro, 0)) + goldEach;
+      }
 
       if (xpEach > 0) {
         addXPToCharacter(character, xpEach);
+      }
+
+      if (nationCoinsEach > 0 && selectedCurrency) {
+        character.moedas[selectedCurrency.id] += nationCoinsEach;
       }
 
       localStorage.setItem(storageKey, JSON.stringify(character));
@@ -363,10 +444,12 @@ export class GroupRewards {
       gold_total: totalGold,
       gold_each: goldEach,
       xp_each: xpEach,
+      nation_currency: selectedCurrency?.id || null,
+      nation_coins_each: nationCoinsEach,
       players: updatedPlayers,
     }, actor);
 
-    toast(`${totalGold} ouro distribuído por ${updatedPlayers.length} jogador${updatedPlayers.length !== 1 ? 'es' : ''}!`, 'success');
+    toast(`Recompensas distribuídas por ${updatedPlayers.length} jogador${updatedPlayers.length !== 1 ? 'es' : ''}!`, 'success');
 
     this.container.dispatchEvent(new CustomEvent('group-rewards:updated', {
       bubbles: true,
@@ -375,6 +458,8 @@ export class GroupRewards {
         goldTotal: totalGold,
         goldEach,
         xpEach,
+        nationCurrency: selectedCurrency?.id || null,
+        nationCoinsEach,
       },
     }));
   }

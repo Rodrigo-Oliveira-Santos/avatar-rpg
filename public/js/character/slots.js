@@ -5,6 +5,41 @@
 
 import { GAME } from '../utils/constants.js';
 
+function normalizeSkillDefinitions(skillDefinitions = []) {
+  if (Array.isArray(skillDefinitions)) {
+    return skillDefinitions.reduce((lookup, skill) => {
+      if (skill?.id) lookup[skill.id] = skill;
+      return lookup;
+    }, {});
+  }
+
+  return skillDefinitions || {};
+}
+
+function getSubSkillCost(subSkill) {
+  const cost = Number(subSkill?.cost);
+  return Number.isFinite(cost) && cost > 0 ? cost : 1;
+}
+
+function getUsedSlotsForSkill(skillState = {}, skillDefinition = null) {
+  const activeSubSkills = Array.isArray(skillState.activeSubSkills)
+    ? skillState.activeSubSkills
+    : [];
+
+  if (!skillDefinition?.sub_skills?.length) {
+    return activeSubSkills.length;
+  }
+
+  const subSkillLookup = skillDefinition.sub_skills.reduce((lookup, subSkill) => {
+    if (subSkill?.id) lookup[subSkill.id] = subSkill;
+    return lookup;
+  }, {});
+
+  return activeSubSkills.reduce((sum, subSkillId) => {
+    return sum + getSubSkillCost(subSkillLookup[subSkillId]);
+  }, 0);
+}
+
 /**
  * Calculate base sub-skill slots for a level
  * @param {number} level - Character level
@@ -60,17 +95,19 @@ export function canActivateSubSkill(character, skillId) {
 /**
  * Get available slots info
  * @param {object} character - Character object
+ * @param {array|object} skillDefinitions - Optional skill definitions for cost-aware slot usage
  * @returns {object} { total, used, available }
  */
-export function getAvailableSlots(character) {
+export function getAvailableSlots(character, skillDefinitions = []) {
   const level = character.identidade?.nivel || 1;
   const scrolls = Object.values(character.scrolls || {}).reduce((a, b) => a + b, 0);
   const total = calculateTotalSlots(level, scrolls);
+  const skillLookup = normalizeSkillDefinitions(skillDefinitions);
 
   // Count used slots
   const habilidades = character.habilidades || {};
-  const used = Object.values(habilidades).reduce((sum, skill) => {
-    return sum + (skill.activeSubSkills?.length || 0);
+  const used = Object.entries(habilidades).reduce((sum, [skillId, skillState]) => {
+    return sum + getUsedSlotsForSkill(skillState, skillLookup[skillId]);
   }, 0);
 
   return {

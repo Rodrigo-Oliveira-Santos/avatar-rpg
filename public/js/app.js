@@ -3,13 +3,13 @@
  * Global state and initialization
  */
 
-import { Character } from './character/index.js';
+import { Character, getSubclassesForElement } from './character/index.js';
 import { AutoSave, exportToJSON, createFileInput } from './storage/index.js';
 import { createElement, on, $, $$ } from './utils/dom.js';
-import { ATTRIBUTES } from './utils/constants.js';
+import { ATTRIBUTES, NATION_CURRENCIES } from './utils/constants.js';
 import { toast, confirmDialog, promptDialog } from './utils/toast.js';
 import { SkillTree } from './skills/index.js';
-import { ItemList } from './items/index.js';
+import { InventoryPage } from './items/index.js';
 import { unequipItem } from './items/inventory.js';
 import { ShopPage } from './shop/index.js';
 import { HubPage } from './hub/index.js';
@@ -17,6 +17,24 @@ import { AuthManager } from './auth/index.js';
 import { AdminPanel } from './admin/index.js';
 import { ImportPage } from './import/index.js';
 import * as API from './api/index.js';
+
+const ELEMENT_NAMES = {
+  fire: 'Fogo',
+  water: 'Água',
+  earth: 'Terra',
+  air: 'Ar',
+  none: 'Sem Dobra',
+};
+
+const REQUIREMENT_LABELS = {
+  nivel: 'Nível',
+  FOR: 'FOR',
+  AGI: 'AGI',
+  CHI: 'CHI',
+  PER: 'PER',
+  RES: 'RES',
+  ESP: 'ESP',
+};
 
 /**
  * Application Class
@@ -26,7 +44,7 @@ export class App {
     this.character = new Character();
     this.autoSave = null;
     this.skillTrees = {};
-    this.itemList = null;
+    this.inventoryPage = null;
     this.shopPage = null;
     this.hubPage = null;
     this.importPage = null;
@@ -36,6 +54,7 @@ export class App {
     this.currentHp = 0;
     this.currentSp = 0;
     this.currentCp = 0;
+    this.subclassPickerOpen = false;
 
     this.init();
   }
@@ -141,7 +160,7 @@ export class App {
     this.bindImportExport();
     this.setupElementSelector();
     this.initSkillTrees();
-    this.initItemList();
+    this.initInventory();
     this.initShop();
     this.initHub();
     this.initImport();
@@ -181,6 +200,10 @@ export class App {
     $$('.nav-btn[data-page]').forEach(btn => btn.classList.toggle('on', btn.dataset.page === pageId));
     $$('.page').forEach(page => page.classList.toggle('on', page.id === `${pageId}-page`));
     this.activeTab = pageId;
+
+    if (pageId === 'shop') {
+      this.shopPage?.refresh();
+    }
   }
 
   renderAttributeControls() {
@@ -214,7 +237,6 @@ export class App {
   bindIdentityFields() {
     const fields = [
       { id: 'char-name', path: ['identidade', 'nome'] },
-      { id: 'char-subclass', path: ['identidade', 'subclasse'] },
       { id: 'char-age', path: ['identidade', 'idade'] },
       { id: 'char-gender', path: ['identidade', 'genero'] },
       { id: 'char-alignment', path: ['identidade', 'alinhamento'] },
@@ -370,6 +392,7 @@ export class App {
       btn.classList.toggle('on', btn.dataset.element === current);
       on(btn, 'click', () => {
         this.character.data.identidade.elemento = btn.dataset.element;
+        this.subclassPickerOpen = false;
         this.character.notify();
         elemButtons.forEach(b => b.classList.toggle('on', b === btn));
         this.updateElementTabs(btn.dataset.element);
@@ -390,6 +413,149 @@ export class App {
     });
   }
 
+  formatSubclassBonus(bonus = {}) {
+    return Object.entries(bonus).map(([attr, value]) => `${attr} +${value}`);
+  }
+
+  createRequirementChips(subclass, totalAttributes, level) {
+    return Object.entries(subclass.requirements || {}).map(([key, requiredValue]) => {
+      const currentValue = key === 'nivel' ? level : (totalAttributes[key] || 0);
+      const met = currentValue >= requiredValue;
+      return createElement('span', {
+        class: met ? 'met' : 'unmet',
+        textContent: `${REQUIREMENT_LABELS[key] || key}: ${requiredValue}`,
+      });
+    });
+  }
+
+  async promptSubclassUnlock(subclass) {
+    const confirmed = await confirmDialog(
+      `Desbloquear ${subclass.name}? Esta escolha é permanente.`,
+      { confirmText: 'Desbloquear' }
+    );
+
+    if (!confirmed) return;
+
+    if (this.character.unlockSubclass(subclass.id)) {
+      this.subclassPickerOpen = false;
+      toast(`${subclass.name} desbloqueada!`, 'success');
+      return;
+    }
+
+    toast('Não cumpres os requisitos para esta subclasse.', 'warning');
+  }
+
+  renderSubclassSection() {
+    const container = $('#char-subclass-section');
+    if (!container) return;
+
+    const data = this.character.getData();
+    const currentSubclass = data.identidade.subclasse?.trim();
+    const currentDefinition = this.character.getCurrentSubclassDefinition();
+    const bonus = this.character.getSubclassBonus();
+    const totalAttributes = this.character.getTotalAttributes();
+    const level = data.identidade.nivel || 0;
+    const element = data.identidade.elemento;
+    const allSubclasses = getSubclassesForElement(element);
+    const eligibleSubclasses = this.character.getAvailableSubclasses();
+
+    container.innerHTML = '';
+
+    if (currentSubclass) {
+      const currentCard = createElement('div', { class: 'subclass-current' });
+      const titleWrap = createElement('div', { class: 'subclass-current-title' }, [
+        createElement('div', {}, [
+          createElement('h4', { textContent: currentDefinition?.name || currentSubclass }),
+          createElement('p', { textContent: currentDefinition?.description || 'Subclasse legada importada. Sem bónus automático definido.' }),
+        ]),
+        createElement('span', { className: 'subclass-note', textContent: 'Escolha permanente' }),
+      ]);
+      currentCard.appendChild(titleWrap);
+
+      const bonusEntries = this.formatSubclassBonus(bonus);
+      if (bonusEntries.length) {
+        const bonusWrap = createElement('div', { class: 'subclass-bonus' });
+        bonusEntries.forEach(entry => bonusWrap.appendChild(createElement('span', { textContent: entry })));
+        currentCard.appendChild(bonusWrap);
+      }
+
+      container.appendChild(currentCard);
+      return;
+    }
+
+    const emptyState = createElement('div', { class: 'subclass-empty' }, [
+      createElement('p', { textContent: `Subclasses de ${ELEMENT_NAMES[element] || 'Personagem'} são desbloqueadas ao cumprir requisitos.` }),
+    ]);
+
+    if (!allSubclasses.length) {
+      emptyState.appendChild(createElement('p', { className: 'subclass-note', textContent: 'Ainda não existem subclasses disponíveis para este elemento.' }));
+      container.appendChild(emptyState);
+      return;
+    }
+
+    const toggleButton = createElement('button', {
+      className: 'xp-btn',
+      textContent: eligibleSubclasses.length ? 'Escolher Subclasse' : 'Ver Requisitos',
+    });
+    on(toggleButton, 'click', () => {
+      this.subclassPickerOpen = !this.subclassPickerOpen;
+      this.renderSubclassSection();
+    });
+    emptyState.appendChild(toggleButton);
+
+    if (!eligibleSubclasses.length) {
+      emptyState.appendChild(createElement('p', {
+        className: 'subclass-note',
+        textContent: 'Ainda não cumpres os requisitos para desbloquear uma subclasse.',
+      }));
+    }
+
+    container.appendChild(emptyState);
+
+    if (!this.subclassPickerOpen) return;
+
+    const picker = createElement('div', { class: 'subclass-picker' }, [
+      createElement('h4', { textContent: 'Subclasses disponíveis' }),
+    ]);
+
+    allSubclasses.forEach(subclass => {
+      const canUnlock = this.character.canUnlockSubclass(subclass);
+      const option = createElement('div', {
+        class: `subclass-option ${canUnlock ? '' : 'subclass-locked'}`.trim(),
+      });
+
+      option.appendChild(createElement('div', { class: 'subclass-option-header' }, [
+        createElement('div', {}, [
+          createElement('h4', { textContent: subclass.name }),
+          createElement('p', { textContent: subclass.description }),
+        ]),
+      ]));
+
+      const requirements = createElement('div', { class: 'subclass-requirements' });
+      this.createRequirementChips(subclass, totalAttributes, level)
+        .forEach(chip => requirements.appendChild(chip));
+      option.appendChild(requirements);
+
+      const bonusWrap = createElement('div', { class: 'subclass-bonus' });
+      this.formatSubclassBonus(subclass.bonus)
+        .forEach(entry => bonusWrap.appendChild(createElement('span', { textContent: entry })));
+      option.appendChild(bonusWrap);
+
+      if (canUnlock) {
+        const unlockButton = createElement('button', {
+          className: 'xp-btn',
+          textContent: 'Desbloquear',
+        });
+        on(unlockButton, 'click', () => this.promptSubclassUnlock(subclass));
+        option.appendChild(createElement('div', { class: 'subclass-actions' }, [unlockButton]));
+      }
+
+      picker.appendChild(option);
+    });
+
+    container.appendChild(picker);
+  }
+
   initSkillTrees() {
     ['fire', 'water', 'earth', 'air', 'none'].forEach(element => {
       const container = $(`#${element}-skills-container`);
@@ -399,10 +565,11 @@ export class App {
     });
   }
 
-  initItemList() {
+  initInventory() {
     const container = $('#items-container');
     if (container) {
-      this.itemList = new ItemList(this.character, container);
+      if (this.inventoryPage) this.inventoryPage.destroy();
+      this.inventoryPage = new InventoryPage(container, this.character);
     }
   }
 
@@ -463,11 +630,48 @@ export class App {
     }
   }
 
+  getVisibleCurrencies(data) {
+    const balances = data.moedas || {};
+    const nativeCurrency = NATION_CURRENCIES[data.identidade.elemento] || NATION_CURRENCIES.none;
+    const visible = [{ ...nativeCurrency, amount: balances[nativeCurrency.id] || 0, primary: true }];
+
+    const orderedExtras = [NATION_CURRENCIES.none, ...Object.values(NATION_CURRENCIES).filter(currency => currency.id !== nativeCurrency.id && currency.id !== NATION_CURRENCIES.none.id)];
+    orderedExtras.forEach(currency => {
+      if (!currency || currency.id === nativeCurrency.id) return;
+      const amount = balances[currency.id] || 0;
+      if (amount > 0) {
+        visible.push({ ...currency, amount, primary: false });
+      }
+    });
+
+    return visible;
+  }
+
+  renderCurrencyBar(data) {
+    const bar = $('#currency-bar');
+    if (!bar) return;
+
+    const currencies = this.getVisibleCurrencies(data);
+    bar.innerHTML = '';
+
+    currencies.forEach(currency => {
+      const chip = createElement('div', {
+        className: `currency-chip${currency.primary ? ' primary' : ''}`,
+      });
+      chip.style.setProperty('--currency-color', currency.color);
+      chip.append(
+        createElement('span', { className: 'currency-icon', textContent: currency.icon }),
+        createElement('span', { className: 'currency-label', textContent: currency.label }),
+        createElement('span', { className: 'currency-value', textContent: String(currency.amount) })
+      );
+      bar.appendChild(chip);
+    });
+  }
+
   updateUI(data) {
     const stats = this.character.getStats();
 
     // Character identity header
-    const ELEMENT_NAMES = { fire: 'Fogo', water: 'Água', earth: 'Terra', air: 'Ar', none: 'Sem Dobra' };
     const nameEl = $('#char-display-name');
     if (nameEl) nameEl.textContent = data.identidade.nome || 'Sem Nome';
     const elemEl = $('#char-display-element');
@@ -496,6 +700,12 @@ export class App {
 
     const goldEl = $('#char-gold');
     if (goldEl) goldEl.textContent = data.ouro || 0;
+    this.renderCurrencyBar(data);
+    if (this.activeTab === 'shop') {
+      this.shopPage?.refresh();
+    } else {
+      this.shopPage?.refreshBalance();
+    }
 
     // Sidebar stats
     const sideStats = {
@@ -515,6 +725,8 @@ export class App {
       const el = $(`#attr-val-${attr}`);
       if (el) el.textContent = data.atributos[attr];
     });
+
+    this.renderSubclassSection();
 
     // XP bar
     const xpProgress = this.character.getXPProgress();
@@ -541,6 +753,7 @@ export class App {
 
     // Equipment
     this.updateEquipment(data);
+    this.inventoryPage?.refresh();
 
     // Refresh skill trees
     Object.values(this.skillTrees).forEach(tree => tree.refresh());

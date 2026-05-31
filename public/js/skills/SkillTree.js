@@ -6,8 +6,14 @@
 import { createElement, on } from '../utils/dom.js';
 import { CATEGORIES } from '../utils/constants.js';
 import { toast } from '../utils/toast.js';
+import { canActivateSubSkill, getAvailableSlots } from '../character/slots.js';
 import { createSkillCard } from './SkillCard.js';
 import { loadSkills } from './data.js';
+
+function getSubSkillCost(subSkill) {
+  const cost = Number(subSkill?.cost);
+  return Number.isFinite(cost) && cost > 0 ? cost : 1;
+}
 
 /**
  * Create category tabs
@@ -48,6 +54,32 @@ function createCategoryDescription(category) {
     class: 'cat-desc',
     textContent: descriptions[category] || '',
   });
+}
+
+function createSlotBar(slots) {
+  const stateClass = slots.available <= 0 ? 'full' : slots.available < 2 ? 'warning' : 'available';
+  const bar = createElement('div', { class: `slot-bar ${stateClass}` });
+  const fill = createElement('div', { class: 'slot-bar-fill' });
+  const text = createElement('div', {
+    class: 'slot-bar-text',
+    textContent: `🎯 Slots: ${slots.used}/${slots.total} usados (${slots.available} livres)`,
+  });
+
+  fill.style.width = `${slots.total > 0 ? (slots.used / slots.total) * 100 : 0}%`;
+
+  bar.appendChild(fill);
+  bar.appendChild(text);
+  return bar;
+}
+
+function createTierLabel(tier, activeCount) {
+  const label = createElement('div', { class: 'tier-lbl' });
+  label.appendChild(createElement('span', { textContent: `Tier ${tier}` }));
+  label.appendChild(createElement('span', {
+    class: 'tier-meta',
+    textContent: `Ativas nesta categoria: ${activeCount}`,
+  }));
+  return label;
 }
 
 /**
@@ -99,9 +131,10 @@ function checkRequirements(skill, charData) {
  * @param {object} characterSkills - Character's unlocked skills
  * @param {object} charData - Full character data (for requirement checks)
  * @param {Function} onSkillToggle - Toggle callback
+ * @param {object} cardOptions - Extra card options
  * @returns {HTMLElement} Grid element
  */
-function createTierGrid(skills, allSkills, characterSkills, charData, onSkillToggle) {
+function createTierGrid(skills, allSkills, characterSkills, charData, onSkillToggle, cardOptions = {}) {
   const grid = createElement('div', { class: 'skills-grid' });
 
   skills.forEach(skill => {
@@ -118,9 +151,14 @@ function createTierGrid(skills, allSkills, characterSkills, charData, onSkillTog
     const { met: reqsMet } = checkRequirements(skill, charData);
 
     const isUnlocked = prereqsMet && reqsMet;
-    const isActive = characterSkills[skill.id]?.active || false;
+    const skillState = characterSkills[skill.id] || {};
+    const isActive = skillState.active || false;
 
-    const card = createSkillCard(skill, isUnlocked, isActive, onSkillToggle);
+    const card = createSkillCard(skill, isUnlocked, isActive, onSkillToggle, {
+      ...cardOptions,
+      scrollSlots: charData.scrolls?.[skill.id] || 0,
+      mastered: Boolean(skillState.mastered),
+    });
     grid.appendChild(card);
   });
 
@@ -185,6 +223,12 @@ export class SkillTree {
     });
     this.container.appendChild(searchInput);
 
+    // Get character's skill state
+    const charData = this.character.getData();
+    const characterSkills = charData.habilidades || {};
+    const slots = getAvailableSlots(charData, this.skills);
+    this.container.appendChild(createSlotBar(slots));
+
     // Category tabs
     const tabs = createCategoryTabs(this.activeCategory, (cat) => {
       this.activeCategory = cat;
@@ -216,23 +260,23 @@ export class SkillTree {
 
     // Group by tier
     const byTier = groupByTier(categorySkills);
-
-    // Get character's skill state
-    const charData = this.character.getData();
-    const characterSkills = charData.habilidades || {};
+    const activeCategoryCount = categorySkills.filter(skill => characterSkills[skill.id]?.active).length;
+    const cardOptions = {
+      characterData: charData,
+      onSubSkillToggle: (skill, subSkill, shouldActivate) => {
+        this.toggleSubSkill(skill, subSkill, shouldActivate);
+      },
+      slotsAvailable: slots,
+    };
 
     // Render each tier
     [1, 2, 3, 4].forEach(tier => {
       if (byTier[tier] && byTier[tier].length > 0) {
-        const tierLabel = createElement('div', {
-          class: 'tier-lbl',
-          textContent: `Tier ${tier}`,
-        });
-        this.container.appendChild(tierLabel);
+        this.container.appendChild(createTierLabel(tier, activeCategoryCount));
 
         const grid = createTierGrid(byTier[tier], this.skills, characterSkills, charData, (skill) => {
           this.toggleSkill(skill);
-        });
+        }, cardOptions);
         this.container.appendChild(grid);
       }
     });
@@ -249,7 +293,7 @@ export class SkillTree {
     // Only validate when activating
     if (!current) {
       // Check slot availability
-      const slots = this.character.getSlots();
+      const slots = getAvailableSlots(charData, this.skills);
       if (slots.available <= 0) {
         toast('Sem slots de sub-habilidade disponíveis!', 'warning');
         return;
@@ -264,6 +308,58 @@ export class SkillTree {
     }
 
     this.character.toggleSkill(skill.id, !current);
+    this.render();
+  }
+
+  /**
+   * Toggle sub-skill activation
+   * @param {object} skill - Parent skill data
+   * @param {object} subSkill - Sub-skill data
+   * @param {boolean} shouldActivate - Target activation state
+   */
+  toggleSubSkill(skill, subSkill, shouldActivate) {
+    const charData = this.character.serialize();
+    charData.habilidades ||= {};
+    charData.habilidades[skill.id] ||= { active: false, activeSubSkills: [] };
+
+    if (!charData.habilidades[skill.id].active) {
+      return;
+    }
+
+    const activeSubSkills = Array.isArray(charData.habilidades[skill.id].activeSubSkills)
+      ? [...charData.habilidades[skill.id].activeSubSkills]
+      : [];
+    const isActive = activeSubSkills.includes(subSkill.id);
+    const nextState = typeof shouldActivate === 'boolean' ? shouldActivate : !isActive;
+
+    if (nextState === isActive) {
+      return;
+    }
+
+    if (nextState) {
+      if (!canActivateSubSkill(charData, skill.id)) {
+        toast('Limite de sub-habilidades desta habilidade atingido.', 'warning');
+        return;
+      }
+
+      const cost = getSubSkillCost(subSkill);
+      const slots = getAvailableSlots(charData, this.skills);
+      if (slots.available < cost) {
+        toast(`Slots insuficientes para ativar ${subSkill.name}.`, 'warning');
+        return;
+      }
+
+      activeSubSkills.push(subSkill.id);
+    } else {
+      const nextSubSkills = activeSubSkills.filter(subSkillId => subSkillId !== subSkill.id);
+      charData.habilidades[skill.id].activeSubSkills = nextSubSkills;
+      this.character.load(charData);
+      this.render();
+      return;
+    }
+
+    charData.habilidades[skill.id].activeSubSkills = activeSubSkills;
+    this.character.load(charData);
     this.render();
   }
 

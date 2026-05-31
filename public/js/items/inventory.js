@@ -3,6 +3,29 @@
  * Manages character inventory and equipment
  */
 
+function getCharacterData(character) {
+  return character.serialize();
+}
+
+function normalizeQuantity(quantity = 1) {
+  const parsed = Number.parseInt(quantity, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function mergeInventoryItem(inventory, item, quantity = 1) {
+  const normalizedQuantity = normalizeQuantity(quantity);
+  const existing = inventory.find(entry => entry.id === item.id);
+
+  if (existing) {
+    existing.quantity = normalizeQuantity(existing.quantity) + normalizedQuantity;
+    return existing;
+  }
+
+  const nextItem = { ...item, quantity: normalizedQuantity };
+  inventory.push(nextItem);
+  return nextItem;
+}
+
 /**
  * Add item to inventory
  * @param {object} character - Character instance
@@ -10,17 +33,10 @@
  * @returns {boolean} Success
  */
 export function addItem(character, item) {
-  const data = character.getData();
+  const data = getCharacterData(character);
   if (!data.inventario) data.inventario = [];
 
-  // Check if item already exists (stackable?)
-  const existing = data.inventario.find(i => i.id === item.id);
-  if (existing) {
-    existing.quantity = (existing.quantity || 1) + 1;
-  } else {
-    data.inventario.push({ ...item, quantity: 1 });
-  }
-
+  mergeInventoryItem(data.inventario, item, item.quantity || 1);
   character.load(data);
   return true;
 }
@@ -33,16 +49,17 @@ export function addItem(character, item) {
  * @returns {boolean} Success
  */
 export function removeItem(character, itemId, quantity = 1) {
-  const data = character.getData();
+  const data = getCharacterData(character);
   const idx = data.inventario?.findIndex(i => i.id === itemId);
 
   if (idx == null || idx === -1) return false;
 
   const item = data.inventario[idx];
-  if ((item.quantity || 1) <= quantity) {
+  const normalizedQuantity = normalizeQuantity(quantity);
+  if (normalizeQuantity(item.quantity) <= normalizedQuantity) {
     data.inventario.splice(idx, 1);
   } else {
-    item.quantity -= quantity;
+    item.quantity = normalizeQuantity(item.quantity) - normalizedQuantity;
   }
 
   character.load(data);
@@ -56,23 +73,31 @@ export function removeItem(character, itemId, quantity = 1) {
  * @returns {object} { success, previousItem? }
  */
 export function equipItem(character, itemId) {
-  const data = character.getData();
-  const item = data.inventario?.find(i => i.id === itemId);
+  const data = getCharacterData(character);
+  const itemIndex = data.inventario?.findIndex(i => i.id === itemId);
 
-  if (!item) return { success: false, error: 'Item not found' };
+  if (itemIndex == null || itemIndex === -1) return { success: false, error: 'Item not found' };
 
-  // Determine slot
+  const item = data.inventario[itemIndex];
   const slot = getItemSlot(item.type);
   if (!slot) return { success: false, error: 'Invalid item type' };
 
   const previousItem = data.equipamentos?.[slot] || null;
 
-  // Equip new item
   if (!data.equipamentos) data.equipamentos = {};
-  data.equipamentos[slot] = { ...item };
+  if (!data.inventario) data.inventario = [];
 
-  // Remove from inventory (or decrement quantity)
-  removeItem(character, itemId, 1);
+  if (previousItem) {
+    mergeInventoryItem(data.inventario, previousItem, previousItem.quantity || 1);
+  }
+
+  data.equipamentos[slot] = { ...item, quantity: 1 };
+
+  if (normalizeQuantity(item.quantity) <= 1) {
+    data.inventario.splice(itemIndex, 1);
+  } else {
+    data.inventario[itemIndex].quantity = normalizeQuantity(item.quantity) - 1;
+  }
 
   character.load(data);
   return { success: true, previousItem };
@@ -85,14 +110,13 @@ export function equipItem(character, itemId) {
  * @returns {object} { success, item? }
  */
 export function unequipItem(character, slot) {
-  const data = character.getData();
+  const data = getCharacterData(character);
   const item = data.equipamentos?.[slot];
 
   if (!item) return { success: false, error: 'No item equipped' };
 
-  // Add back to inventory
   if (!data.inventario) data.inventario = [];
-  data.inventario.push(item);
+  mergeInventoryItem(data.inventario, item, item.quantity || 1);
 
   data.equipamentos[slot] = null;
   character.load(data);
