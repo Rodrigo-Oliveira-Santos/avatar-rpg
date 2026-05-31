@@ -39,6 +39,7 @@ All core features implemented. Remaining: companions system + Supabase integrati
 - Trades: `avatar_rpg_trades`
 - Logs: `avatar_rpg_system_logs`
 - Data priority: API > localStorage imported > mock
+- Tests: `npm test` (vitest, 101 unit tests on game logic)
 
 ## Formulas
 

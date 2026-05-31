@@ -215,9 +215,19 @@ avatar-rpg/
 │   └── seed.sql               ← (vazio — dados via JSON import)
 ├── Initial Files/             ← Ficheiros de referência do protótipo
 ├── netlify.toml               ← Config Netlify (routes, functions)
-├── package.json               ← Dependencies (serve, supabase-js)
+├── package.json               ← Dependencies (serve, supabase-js, vitest)
+├── vitest.config.js           ← Test configuration
+├── tests/                     ← Unit tests (101 tests, game logic only)
 ├── .env.example               ← Template variáveis ambiente
 └── DEV-LOCAL.md               ← Como correr localmente
+```
+
+### Comandos
+
+```bash
+npm run dev        # Servidor local (porta 3000)
+npm test           # Correr testes unitários
+npm run test:watch # Testes em modo watch
 ```
 
 ---

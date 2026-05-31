@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "npx serve public -l 3000",
-    "build": "echo 'Static build - no bundler needed'"
+    "build": "echo 'Static build - no bundler needed'",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "rpg",
@@ -16,7 +18,8 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "serve": "^14.2.0"
+    "serve": "^14.2.0",
+    "vitest": "^4.1.7"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0"
