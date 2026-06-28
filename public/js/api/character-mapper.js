@@ -37,6 +37,8 @@ export function characterToRow(userId, character = {}) {
     gender: identity.genero || null,
     alignment: identity.alinhamento || null,
     notes: character.anotacoes || null,
+    combat_path: character.combat_path || null,
+    non_bender_path: character.non_bender_path || null,
     ...toAttributeColumns(character.atributos),
     points_available: character.pontos_disponiveis || 0,
     skills_data: character.habilidades || {},
@@ -48,6 +50,7 @@ export function characterToRow(userId, character = {}) {
       status_effects: character.status_effects || [],
       subclass_bonus: character.subclass_bonus || {},
       itens: character.itens || [],
+      skill_uses: character.skill_uses || {},
     },
   };
 }
@@ -68,6 +71,8 @@ export function rowToCharacter(row = {}) {
     },
     atributos: fromAttributeColumns(row),
     pontos_disponiveis: row.points_available || 0,
+    combat_path: row.combat_path || null,
+    non_bender_path: row.non_bender_path || null,
     habilidades: row.skills_data || {},
     inventario: row.inventory_data || [],
     equipamentos: equipmentBlob.equipamentos || {},
@@ -76,6 +81,7 @@ export function rowToCharacter(row = {}) {
     status_effects: equipmentBlob.status_effects || [],
     subclass_bonus: equipmentBlob.subclass_bonus || {},
     itens: equipmentBlob.itens || [],
+    skill_uses: equipmentBlob.skill_uses || {},
     anotacoes: row.notes || '',
   };
 }
