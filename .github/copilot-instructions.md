@@ -27,7 +27,7 @@ Recent changes (2026-06-26 patch):
 |--------|------|---------|
 | auth | js/auth/ | AuthManager, login, roles (player/gm/admin) |
 | character | js/character/ | Character class, stats, XP, level-up, subclasses, slots |
-| skills | js/skills/ | Skill tree, cards, sub-skills UI, slot limits display |
+| skills | js/skills/ | Skill tree, cards, sub-skills UI, slot limits, mastery (M0-M3), 5 tiers, branches (sp/ag/cb/pr/br) |
 | items | js/items/ | InventoryPage, equip/unequip, scrolls |
 | shop | js/shop/ | Shop page, data (mock + imported), dual-currency pricing |
 | hub | js/hub/ | Player hub, CharacterModal, GroupRewards, LootDelivery, GiftTransfer |
@@ -59,6 +59,20 @@ Recent changes (2026-06-26 patch):
 - Dodge: 10 + ((AGI × 2) + PER) × 0.2 - armor_penalty
 - XP next: round(200 × (nivel-1)^1.55)
 - Points/level: 3, Max level: 40
+- Mastery thresholds: M1=15, M2=50, M3=150 uses (`MASTERY_THRESHOLDS`)
+
+## Skill system v2 (2026-06-29)
+
+Source of truth: `docs/*_skill_tree.html` → extracted to `data/skills/*.json` via `scripts/extract-skill-trees.mjs`.
+
+- **5 tiers** (1..5; 5 = Lendário). **5 branches** per element:
+  - `sp` Espírito, `ag` Agilidade — always available
+  - `cb` Combate (tiers 1-2 partilhados)
+  - `pr` Preciso, `br` Bruto — **mutually exclusive at tier 3+**; locked via `character.combat_path`
+- **`element='none'`** splits into two paths via `character.non_bender_path`: `chiblocker` or `weapons` (separate trees in `data/skills/none-{chiblocker,weapons}.json`)
+- **Mastery** automatically progresses from M0 to M3 based on uses. `character.recordSkillUse(id)` + `character.getMasteryLevel(id)`.
+- Persisted in `characters.combat_path` / `characters.non_bender_path` + `character_skills.uses`/`mastery_level` (Supabase migration `20260629100000_skill_system_v2.sql`).
+- Import JSON schema: `skill-import-v2` (see DIAGRAMAS-TÉCNICOS §9.1).
 
 ## Roles
 

@@ -93,22 +93,21 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 **Público:** Jogador
 
 **Funcionalidades implementadas:**
-- Estrutura visual organizada por categoria (Espiritualidade, Agilidade, Combate Preciso, Combate Bruto)
-- Tiers de 1-4 (Iniciante → Lendário)
-- Requisitos visíveis (atributos, nível, habilidades prévias)
-- Habilidades carregadas via JSON com dados reais
-- Importação JSON a alimentar a árvore com conteúdos dos 5 elementos
+- Estrutura visual organizada em 5 categorias: **Espiritualidade**, **Agilidade**, **Combate (N1-N2 partilhado)**, **Combate Preciso (N3+)**, **Combate Bruto (N3+)**
+- Tiers de 1 a **5** (N1 → N4 + **Lendário**), mapeados directamente aos ramos canónicos (`sp`, `ag`, `cb`, `pr`, `br`) dos ficheiros em `docs/*_skill_tree.html`
+- **Path lock**: a partir do tier 3 o jogador escolhe entre Preciso (`combat_path='precise'`) ou Bruto (`combat_path='brute'`); a árvore esconde/desativa skills do ramo oposto
+- **Sem Dobra (`element='none'`)** tem dois sub-paths: `chiblocker` (bloqueador de chi) e `weapons` (utilizador de armas), guardados em `non_bender_path`
+- **Sistema de maestria (M0–M3)**: cada skill com `mastery_levels` evolui automaticamente conforme o uso. Thresholds: 15, 50, 150 usos. Cada nível desbloqueia uma fórmula de dano/efeito diferente; o badge no card mostra `M? · uses/next`
+- Requisitos visíveis (atributos, nível, habilidades prévias, ramo)
+- Habilidades carregadas via JSON com dados reais; ficheiros canónicos em `data/skills/*.json` extraídos automaticamente de `docs/*_skill_tree.html` via `scripts/extract-skill-trees.mjs`
+- Importação JSON a alimentar a árvore com conteúdos dos 5 elementos (+ os 2 paths de Sem Dobra)
 
-**Futuro (🔮):**
-- Pergaminhos para melhorar habilidades
-- Limites de desbloqueio por categoria/nível
-- Slots de sub-habilidades
-
-**Regras previstas:**
-- Personagem só pode selecionar habilidades do seu elemento
+**Regras:**
+- Personagem só pode seleccionar habilidades do seu elemento (e do `non_bender_path` quando aplicável)
 - Subclasses escondidas até cumprir requisitos (nível + atributos + habilidade prévia)
+- Maestria registada por `character.recordSkillUse(skillId)` e exposta via `character.getMasteryLevel(skillId)`
 
-**Estado:** ✅ Implementado
+**Estado:** ✅ Implementado (UI cards), 🔮 vista canvas com árvore visual e linhas de dependência permanece como melhoria futura
 
 ---
 

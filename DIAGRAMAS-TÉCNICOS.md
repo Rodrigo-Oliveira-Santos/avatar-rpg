@@ -158,7 +158,7 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: character_skills (📋 Fase 2)                                    │
+│  TABELA: character_skills (📋 Fase 2 — actualizada em 2026-06-29)        │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
@@ -166,6 +166,8 @@
 │  unlocked_at     TIMESTAMP DEFAULT NOW()                                 │
 │  level           INT DEFAULT 1                                           │
 │  sub_skills      INT DEFAULT 0                                           │
+│  uses            INT DEFAULT 0       -- contagem para sistema de maestria│
+│  mastery_level   INT DEFAULT 0 CHECK (0..3)  -- M0..M3                   │
 │  UNIQUE(character_id, skill_id)                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 
@@ -183,20 +185,38 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: skills (📋 Fase 2 — Global, carregado via JSON)                 │
+│  TABELA: skills (📋 actualizada em 2026-06-29 — skill_system_v2)         │
 │──────────────────────────────────────────────────────────────────────────│
-│  id              UUID PRIMARY KEY                                        │
-│  name            VARCHAR(100) UNIQUE                                     │
-│  element         VARCHAR(20)                                             │
-│  category        VARCHAR(30)                                             │
-│  tier            INT CHECK (1-4)                                         │
-│  description     TEXT                                                    │
-│  requirements    JSONB  -- {FOR, AGI, CHI, PER, RES, ESP}                │
-│  prerequisites   JSONB  -- ["skill_name_1", "skill_name_2"]             │
-│  position        VARCHAR(10) CHECK (off, def, any, pass)                 │
-│  attacks         JSONB                                                   │
-│  passive_effect  JSONB                                                   │
-│  created_at      TIMESTAMP DEFAULT NOW()                                 │
+│  id                 UUID PRIMARY KEY                                     │
+│  name               VARCHAR(100)                                         │
+│  element            VARCHAR(20) IN (fire,water,earth,air,none)           │
+│  non_bender_path    VARCHAR(20) IN (chiblocker, weapons) -- só p/ 'none' │
+│  category           VARCHAR(30) IN (spirit, agility, combat,             │
+│                                     precise, brute)                      │
+│  branch             VARCHAR(2)  IN (sp, ag, cb, pr, br)                  │
+│  tier               INT CHECK (1..5)         -- 5 = Lendário             │
+│  tier_label         TEXT                     -- ex: 'Espírito N1'        │
+│  is_legendary       BOOLEAN DEFAULT FALSE                                │
+│  description        TEXT                                                 │
+│  damage_summary     TEXT                                                 │
+│  requirements_text  TEXT       -- texto livre dos pre-reqs               │
+│  requirements       JSONB      -- {FOR, AGI, CHI, PER, RES, ESP}         │
+│  prerequisites      JSONB      -- ["skill_id_1", "skill_id_2"]           │
+│  mastery_levels     JSONB      -- ["M0 desc", "M1 desc", "M2", "M3"]     │
+│  position_meta      JSONB      -- {column, y_offset}  (canvas layout)    │
+│  position           VARCHAR(10) CHECK (off, def, any, pass)              │
+│  attacks            JSONB                                                │
+│  passive_effect     JSONB                                                │
+│  created_at         TIMESTAMP DEFAULT NOW()                              │
+│                                                                          │
+│  UNIQUE INDEX (element, COALESCE(non_bender_path, ''), name)             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: characters — colunas adicionadas em skill_system_v2             │
+│──────────────────────────────────────────────────────────────────────────│
+│  combat_path        VARCHAR(10) IN (precise, brute)  -- escolha no T3    │
+│  non_bender_path    VARCHAR(20) IN (chiblocker, weapons) -- só p/ 'none' │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -733,26 +753,39 @@
 
 ## 9. Schema JSON para Importação
 
-### 9.1 Schema de Habilidade
+### 9.1 Schema de Habilidade (skill-import-v2)
+
+> **Nota:** este schema substitui o anterior v1 para reflectir a estrutura
+> canónica documentada em `docs/*_skill_tree.html`. Os ficheiros gerados
+> em `data/skills/*.json` por `scripts/extract-skill-trees.mjs` seguem
+> exactamente este formato.
 
 ```json
 {
-  "$schema": "skill-import-v1",
-  "element": "fogo|agua|terra|ar|non_bending",
-  "category": "spirit|agility|precise_combat|brute_combat",
-  "tier": 1|2|3|4,
+  "$schema": "skill-import-v2",
+  "element": "fire|water|earth|air|none",
+  "non_bender_path": "chiblocker|weapons",  // obrigatório quando element='none'
+  "category": "spirit|agility|combat|precise|brute",
+  "branch": "sp|ag|cb|pr|br",
+  "tier": 1|2|3|4|5,                         // 5 = Lendário
+  "is_legendary": false,
+  "tier_label": "Espírito N1",               // ex: 'Lendário — Bruto'
   "name": "Nome da Habilidade",
   "description": "Descrição curta da habilidade (1-2 frases)",
-  "requirements": {
-    "FOR": 0,
-    "AGI": 0,
-    "CHI": 0,
-    "PER": 0,
-    "RES": 0,
-    "ESP": 0
+  "damage_summary": "1d6 chi/turno",         // resumo do efeito principal
+  "requirements_text": "Resp. Dragão + Chama Med.",
+  "attribute_requirements": {
+    "FOR": 0, "AGI": 0, "CHI": 0, "PER": 0, "RES": 0, "ESP": 0
   },
-  "prerequisites": ["Nome Habilidade 1", "Nome Habilidade 2"],
+  "prerequisites": ["fire-sp1a", "fire-sp1b"],   // por id de skill
+  "mastery_levels": [                            // 4 strings ou null se lendária
+    "1d6 chi/turno",
+    "2d6 + Regeneração",
+    "3d6",
+    "5d6"
+  ],
   "position": "off|def|any|pass",
+  "position_meta": { "column": 0, "y_offset": 0 },
   "attacks": [
     {
       "name": "Nome do Ataque",
