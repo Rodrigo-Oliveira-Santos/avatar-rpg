@@ -9,6 +9,21 @@ import { toast } from '../utils/toast.js';
 import { canActivateSubSkill, getAvailableSlots } from '../character/slots.js';
 import { createSkillCard } from './SkillCard.js';
 import { loadSkills } from './data.js';
+import { askCombatPath, askNonBenderPath } from './PathPicker.js';
+
+/**
+ * Maintain a window-level registry so non-skill code (scrolls, hub
+ * tooltips, etc.) can resolve a skill by id without re-fetching JSON.
+ */
+function registerSkillDefinitions(skills) {
+  if (typeof window === 'undefined') return;
+  if (!(window.__SKILL_DEFINITIONS__ instanceof Map)) {
+    window.__SKILL_DEFINITIONS__ = new Map();
+  }
+  skills.forEach((s) => {
+    if (s?.id) window.__SKILL_DEFINITIONS__.set(s.id, s);
+  });
+}
 
 function getSubSkillCost(subSkill) {
   const cost = Number(subSkill?.cost);
@@ -191,15 +206,29 @@ export class SkillTree {
   }
 
   /**
-   * Load skills for this element
+   * Load skills for this element (with non-bender path support).
    */
   async loadSkills() {
     this.loading = true;
     this.container.innerHTML = '<p style="color: var(--text2); padding: 20px;">A carregar habilidades...</p>';
 
+    // For element='none' we need a non_bender_path before fetching anything.
+    if (this.element === 'none') {
+      const charData = this.character.getData();
+      let path = charData.non_bender_path;
+      if (!path) {
+        path = await askNonBenderPath();
+        this.character.setNonBenderPath(path);
+      }
+    }
+
     try {
-      const data = await loadSkills(this.element);
+      const charData = this.character.getData();
+      const data = await loadSkills(this.element, {
+        nonBenderPath: charData.non_bender_path || null,
+      });
       this.skills = data.skills || [];
+      registerSkillDefinitions(this.skills);
       this.loading = false;
       this.render();
     } catch (err) {
@@ -294,20 +323,40 @@ export class SkillTree {
    * Toggle skill activation
    * @param {object} skill - Skill data
    */
-  toggleSkill(skill) {
+  async toggleSkill(skill) {
     const charData = this.character.getData();
     const current = charData.habilidades?.[skill.id]?.active || false;
 
     // Only validate when activating
     if (!current) {
-      // Check slot availability
+      // 1) Combat-path gating: tier 3+ on pr/br requires combat_path.
+      if (skill.tier >= 3 && (skill.branch === 'pr' || skill.branch === 'br')) {
+        const required = skill.branch === 'pr' ? 'precise' : 'brute';
+        const charPath = charData.combat_path;
+        if (charPath && charPath !== required) {
+          toast(`Esta habilidade pertence ao caminho ${required === 'precise' ? 'Preciso' : 'Bruto'}; já escolheste ${charPath === 'precise' ? 'Preciso' : 'Bruto'}.`, 'error');
+          return;
+        }
+        if (!charPath) {
+          const chosen = await askCombatPath();
+          if (!chosen) return;
+          this.character.setCombatPath(chosen);
+          if (chosen !== required) {
+            toast(`Escolheste ${chosen === 'precise' ? 'Preciso' : 'Bruto'}; esta habilidade é do outro ramo.`, 'warning');
+            this.render();
+            return;
+          }
+        }
+      }
+
+      // 2) Slot availability
       const slots = getAvailableSlots(charData, this.skills);
       if (slots.available <= 0) {
         toast('Sem slots de sub-habilidade disponíveis!', 'warning');
         return;
       }
 
-      // Check attribute/level requirements
+      // 3) Attribute/level requirements
       const { met, reasons } = checkRequirements(skill, charData);
       if (!met) {
         toast(`Requisitos não cumpridos: ${reasons.join(', ')}`, 'error');

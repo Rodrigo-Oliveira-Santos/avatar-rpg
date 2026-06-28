@@ -1,0 +1,115 @@
+/* ============================================================
+   Path Picker — modal for irreversible skill-tree path choices
+   ============================================================ */
+
+.path-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 24px;
+}
+
+.path-picker-modal {
+  background: var(--bg2, #15151a);
+  border: 1px solid var(--border, #2a2a35);
+  border-radius: 10px;
+  padding: 28px;
+  max-width: 640px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  color: var(--text, #e8e6e0);
+}
+
+.path-picker-title {
+  font-size: 20px;
+  margin: 0 0 8px;
+  color: var(--text, #e8e6e0);
+}
+
+.path-picker-subtitle {
+  font-size: 13px;
+  color: var(--text2, #9a9890);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+.path-picker-warning {
+  font-size: 12px;
+  color: #EF9F27;
+  background: rgba(239, 159, 39, 0.10);
+  border: 1px solid rgba(239, 159, 39, 0.30);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 12px 0 18px;
+}
+
+.path-picker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.path-picker-card {
+  background: var(--bg, #0d0d0f);
+  border: 1px solid var(--border, #2a2a35);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text, #e8e6e0);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+}
+
+.path-picker-card:hover {
+  border-color: var(--accent, #f97316);
+  transform: translateY(-1px);
+  background: var(--bg3, #1a1a22);
+}
+
+.path-picker-card h3 {
+  font-size: 15px;
+  margin: 0;
+  color: var(--accent, #f97316);
+}
+
+.path-picker-card p {
+  font-size: 12px;
+  color: var(--text2, #9a9890);
+  line-height: 1.5;
+  margin: 0;
+  flex: 1;
+}
+
+.path-picker-cta {
+  align-self: flex-end;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2, #9a9890);
+}
+
+.path-picker-cancel {
+  margin-top: 18px;
+  background: transparent;
+  border: 1px solid var(--border, #2a2a35);
+  color: var(--text2, #9a9890);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.path-picker-cancel:hover {
+  color: var(--text, #e8e6e0);
+}
+
+@media (max-width: 540px) {
+  .path-picker-grid { grid-template-columns: 1fr; }
+}
