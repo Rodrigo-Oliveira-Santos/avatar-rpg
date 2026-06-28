@@ -103,6 +103,7 @@
 
 /* ---------- Back-to-landing widget (inside each game) ---------- */
 .game-back-widget {
+  --game-accent: var(--accent, #f97316);
   position: fixed;
   top: 10px;
   left: 12px;
@@ -110,26 +111,27 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 4px;
   pointer-events: none;
 }
 
 .game-back-btn {
   pointer-events: auto;
-  background: var(--bg2, #1a1a1a);
-  color: var(--text, #eee);
-  border: 1px solid var(--border, #333);
+  background: var(--game-accent);
+  color: #fff;
+  border: none;
   border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  opacity: 0.9;
-  transition: opacity 0.15s, background 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: filter 0.15s, transform 0.15s;
 }
 
 .game-back-btn:hover {
-  opacity: 1;
-  background: var(--bg3, #232323);
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
 .game-back-label {

@@ -13,13 +13,14 @@ import { router } from '../router.js';
 
 const WIDGET_ID = (gameId) => `game-back-${gameId}`;
 
-export function mountBackWidget(rootEl, gameId, gameLabel) {
+export function mountBackWidget(rootEl, gameId, gameLabel, accent) {
   if (!rootEl) return;
   if (document.getElementById(WIDGET_ID(gameId))) return;
 
   const wrap = document.createElement('div');
   wrap.id = WIDGET_ID(gameId);
   wrap.className = 'game-back-widget';
+  if (accent) wrap.style.setProperty('--game-accent', accent);
 
   const btn = document.createElement('button');
   btn.type = 'button';

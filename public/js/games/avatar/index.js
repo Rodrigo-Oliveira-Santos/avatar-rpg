@@ -12,6 +12,7 @@ import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 const ROOT_SELECTOR = '[data-game-root="avatar"]';
 const GAME_ID = 'avatar';
 const GAME_LABEL = 'Avatar RPG';
+const GAME_ACCENT = '#f97316';
 
 function root() {
   return document.querySelector(ROOT_SELECTOR);
@@ -25,7 +26,7 @@ export const avatarGame = {
     const el = root();
     if (!el) return;
     el.classList.add('on');
-    mountBackWidget(el, GAME_ID, GAME_LABEL);
+    mountBackWidget(el, GAME_ID, GAME_LABEL, GAME_ACCENT);
 
     if (!window.app) {
       window.app = new App();

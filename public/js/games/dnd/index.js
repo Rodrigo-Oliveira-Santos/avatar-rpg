@@ -13,6 +13,7 @@ import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 const ROOT_SELECTOR = '[data-game-root="dnd"]';
 const GAME_ID = 'dnd';
 const GAME_LABEL = 'D&D 5e';
+const GAME_ACCENT = '#dc2626';
 
 function root() {
   return document.querySelector(ROOT_SELECTOR);
@@ -27,7 +28,7 @@ export const dndGame = {
     if (!el) return;
     el.classList.add('on');
     el.innerHTML = '';
-    mountBackWidget(el, GAME_ID, GAME_LABEL);
+    mountBackWidget(el, GAME_ID, GAME_LABEL, GAME_ACCENT);
 
     const page = route?.page || 'characters';
     switch (page) {
