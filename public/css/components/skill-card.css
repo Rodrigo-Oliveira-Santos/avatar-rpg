@@ -302,6 +302,12 @@
   color: #e05a2a;
 }
 
+.sb-t5 {
+  background: #1a1208;
+  color: #c0a030;
+  text-shadow: 0 0 4px rgba(192, 160, 48, 0.6);
+}
+
 .sb-leg {
   background: #1a1208;
   color: #c0a030;
@@ -315,6 +321,17 @@
 .sb-mastery {
   background: rgba(212, 160, 23, 0.16);
   color: #ffd76a;
+}
+
+.sb-m0 { background: rgba(120, 120, 120, 0.15); color: #b0b0b0; }
+.sb-m1 { background: rgba(93, 202, 165, 0.18); color: #5DCAA5; }
+.sb-m2 { background: rgba(175, 169, 236, 0.18); color: #AFA9EC; }
+.sb-m3 { background: rgba(239, 159, 39, 0.20); color: #EF9F27; }
+
+.sb-branch {
+  background: rgba(112, 112, 128, 0.16);
+  color: #b8b8c8;
+  font-style: italic;
 }
 
 /* Position Badge */

@@ -158,6 +158,10 @@ function createTierGrid(skills, allSkills, characterSkills, charData, onSkillTog
       ...cardOptions,
       scrollSlots: charData.scrolls?.[skill.id] || 0,
       mastered: Boolean(skillState.mastered),
+      skillUses: charData.skill_uses?.[skill.id] || 0,
+      masteryLevel: typeof cardOptions.getMasteryLevel === 'function'
+        ? cardOptions.getMasteryLevel(skill.id)
+        : 0,
     });
     grid.appendChild(card);
   });
@@ -267,10 +271,14 @@ export class SkillTree {
         this.toggleSubSkill(skill, subSkill, shouldActivate);
       },
       slotsAvailable: slots,
+      getMasteryLevel: (skillId) =>
+        typeof this.character?.getMasteryLevel === 'function'
+          ? this.character.getMasteryLevel(skillId)
+          : 0,
     };
 
     // Render each tier
-    [1, 2, 3, 4].forEach(tier => {
+    [1, 2, 3, 4, 5].forEach(tier => {
       if (byTier[tier] && byTier[tier].length > 0) {
         this.container.appendChild(createTierLabel(tier, activeCategoryCount));
 
