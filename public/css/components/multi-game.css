@@ -54,3 +54,99 @@
   color: var(--text, #eee);
   margin-bottom: 12px;
 }
+
+/* ---------- Landing (game selector) ---------- */
+.landing {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.landing-header h1 {
+  color: var(--text, #eee);
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.landing-subtitle {
+  color: var(--text2, #aaa);
+  font-size: 14px;
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.landing-card {
+  --card-accent: var(--accent, #f97316);
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-top: 3px solid var(--card-accent);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.landing-card h2 {
+  color: var(--text, #eee);
+  font-size: 18px;
+  margin: 0;
+}
+
+.landing-card p {
+  color: var(--text2, #aaa);
+  font-size: 13px;
+  line-height: 1.5;
+  flex: 1;
+  margin: 0;
+}
+
+.landing-card-meta {
+  font-size: 11px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.landing-card-btn {
+  background: var(--card-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: filter 0.15s;
+}
+
+.landing-card-btn:hover { filter: brightness(1.1); }
+
+/* ---------- Back-to-hub button (inside each game) ---------- */
+.back-to-hub-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  background: var(--bg2, #1a1a1a);
+  color: var(--text, #eee);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.back-to-hub-btn:hover { opacity: 1; }

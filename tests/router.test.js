@@ -29,12 +29,15 @@ beforeEach(() => {
 });
 
 describe('router', () => {
-  it('mounts the default game when no hash is present', async () => {
+  it('mounts the default game (landing) when no hash is present', async () => {
     const { router } = await import('../public/js/router.js');
+    const landing = mockModule();
     const avatar = mockModule();
+    router.register('landing', landing);
     router.register('avatar', avatar);
     router.start();
-    expect(avatar.mount).toHaveBeenCalledTimes(1);
+    expect(landing.mount).toHaveBeenCalledTimes(1);
+    expect(avatar.mount).not.toHaveBeenCalled();
   });
 
   it('dispatches to the correct game from the hash', async () => {

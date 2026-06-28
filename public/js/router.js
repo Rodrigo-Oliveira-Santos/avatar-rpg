@@ -15,7 +15,7 @@
  * switching to another game so they can release listeners/DOM.
  */
 
-const DEFAULT_GAME = 'avatar';
+const DEFAULT_GAME = 'landing';
 
 function parseHash(hash) {
   const cleaned = (hash || '').replace(/^#\/?/, '').trim();

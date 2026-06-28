@@ -16,19 +16,35 @@ Extend the site to host three independent "apps" sharing the same user/auth laye
 
 ## Top-level navigation
 
-A **game switcher** is added to the header (`#game-switcher`). Picking a game
-updates the URL hash and asks the router to load the matching module.
+The site opens on a **landing page** (game selector). Picking a card
+navigates to that game; the router unmounts the previous module (full
+teardown) before mounting the next one. Switching games is therefore
+equivalent to switching apps — each game owns its own session.
 
 ```
-#/avatar            → Avatar RPG (current SPA)
-#/avatar/hub        → Avatar Hub
-#/dnd               → D&D index (character list)
-#/dnd/sheet/:id     → D&D character sheet
-#/minecraft         → Minecraft builds gallery
-#/minecraft/build/:id → individual build page
+#/                    → Landing (game selector, public, no auth)
+#/avatar              → Avatar RPG SPA (own login overlay)
+#/avatar/hub          → Avatar Hub
+#/dnd                 → D&D index
+#/minecraft           → Minecraft builds gallery
 ```
+
+Inside any game, a fixed `← Hub` button (top-left) navigates back to the
+landing — which triggers `unmount()` of that game.
 
 The router is a small hash dispatcher (`public/js/router.js`); no framework.
+
+## Session isolation
+
+- The **landing page is public** — no auth required.
+- Each game decides whether it requires login.
+- When a game's `unmount()` runs, it does a **full teardown**:
+  - Flushes any pending autosave to localStorage (and Supabase if enabled);
+  - Destroys per-user pages, listeners and timers;
+  - Clears the game's auth keys (silent logout) so re-entering shows the
+    login overlay again.
+- Auth keys are **namespaced per game** (`avatar_rpg_user`, future
+  `dnd_user`, etc.) — leaving one game cannot leak credentials to another.
 
 ## Folder layout
 

@@ -58,13 +58,17 @@
   <div class="app">
     <!-- Multi-game switcher (scaffolding — see docs/MULTI-GAME-DESIGN.md) -->
     <nav class="game-switcher" id="game-switcher" role="tablist" aria-label="Jogos">
-      <button class="game-switcher-btn on" data-game="avatar" type="button">Avatar RPG</button>
-      <button class="game-switcher-btn"    data-game="dnd"    type="button">D&amp;D 5e</button>
-      <button class="game-switcher-btn"    data-game="minecraft" type="button">Minecraft Builds</button>
+      <button class="game-switcher-btn" data-game="landing"   type="button">← Início</button>
+      <button class="game-switcher-btn" data-game="avatar"    type="button">Avatar RPG</button>
+      <button class="game-switcher-btn" data-game="dnd"       type="button">D&amp;D 5e</button>
+      <button class="game-switcher-btn" data-game="minecraft" type="button">Minecraft Builds</button>
     </nav>
 
+    <!-- ===== Landing (game selector) ===== -->
+    <div class="game-root" data-game-root="landing"></div>
+
     <!-- ===== Avatar RPG game root (existing app) ===== -->
-    <div class="game-root on" data-game-root="avatar">
+    <div class="game-root" data-game-root="avatar">
     <!-- Navigation Tabs -->
     <nav class="nav" role="tablist">
       <button class="nav-btn char on" data-page="character">Personagem</button>
@@ -414,6 +418,5 @@
        localStorage mode — main.js still boots normally. -->
   <script src="config.js" onerror="void 0"></script>
   <script type="module" src="js/main.js"></script>
-  <script type="module" src="js/games-bootstrap.js"></script>
 </body>
 </html>
