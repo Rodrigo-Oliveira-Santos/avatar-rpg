@@ -92,16 +92,19 @@ async function extractFile(srcFile, element, nonBenderPath) {
 
 async function main() {
   await mkdir('data/skills', { recursive: true });
+  await mkdir('public/data/skills', { recursive: true });
   const summary = [];
   for (const src of SOURCES) {
     const out = await extractFile(src.file, src.element, src.path);
-    const fname = src.path
-      ? `data/skills/${src.element}-${src.path}.json`
-      : `data/skills/${src.element}.json`;
-    await writeFile(fname, JSON.stringify(out, null, 2));
-    summary.push({ file: fname, count: out.skills.length });
+    const fnameBase = src.path
+      ? `skills/${src.element}-${src.path}.json`
+      : `skills/${src.element}.json`;
+    const json = JSON.stringify(out, null, 2);
+    await writeFile(path.join('data', fnameBase), json);
+    await writeFile(path.join('public/data', fnameBase), json);
+    summary.push({ file: fnameBase, count: out.skills.length });
   }
-  console.log('Extracted:');
+  console.log('Extracted (data/ + public/data/):');
   summary.forEach((s) => console.log(`  ${s.file}: ${s.count} skills`));
 }
 
