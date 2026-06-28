@@ -334,6 +334,41 @@
   font-style: italic;
 }
 
+/* ---------- Canvas tree view ---------- */
+.skill-view-toggle {
+  display: inline-flex;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.skill-view-toggle button {
+  background: transparent;
+  border: 1px solid var(--border, #2a2a35);
+  color: var(--text2, #9a9890);
+  border-radius: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.skill-view-toggle button.on {
+  background: var(--accent, #f97316);
+  border-color: var(--accent, #f97316);
+  color: #fff;
+}
+
+.skill-canvas-wrap {
+  width: 100%;
+  overflow: auto;
+  background: #0d0d0f;
+  border: 1px solid var(--border, #2a2a35);
+  border-radius: 6px;
+}
+
+.skill-canvas-wrap canvas {
+  display: block;
+}
+
 /* Position Badge */
 .pos-badge {
   font-size: 9px;

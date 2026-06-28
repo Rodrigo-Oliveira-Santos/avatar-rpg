@@ -10,6 +10,7 @@ import { canActivateSubSkill, getAvailableSlots } from '../character/slots.js';
 import { createSkillCard } from './SkillCard.js';
 import { loadSkills } from './data.js';
 import { askCombatPath, askNonBenderPath } from './PathPicker.js';
+import { mountCanvasTree } from './CanvasTreeView.js';
 
 /**
  * Maintain a window-level registry so non-skill code (scrolls, hub
@@ -201,6 +202,8 @@ export class SkillTree {
     this.activeCategory = 'spirit';
     this.searchQuery = '';
     this.loading = true;
+    this.viewMode = 'tree';   // 'tree' (canvas) | 'cards'
+    this._canvas = null;
 
     this.loadSkills();
   }
@@ -240,8 +243,54 @@ export class SkillTree {
    * Render the skill tree
    */
   render() {
+    if (this._canvas) {
+      this._canvas.destroy();
+      this._canvas = null;
+    }
     this.container.innerHTML = '';
 
+    // View toggle (Tree | Cards)
+    const toggleWrap = createElement('div', { class: 'skill-view-toggle' });
+    ['tree', 'cards'].forEach((mode) => {
+      const btn = createElement('button', {
+        type: 'button',
+        textContent: mode === 'tree' ? '🌳 Árvore' : '🗂 Cartas',
+      });
+      if (this.viewMode === mode) btn.classList.add('on');
+      btn.addEventListener('click', () => {
+        this.viewMode = mode;
+        this.render();
+      });
+      toggleWrap.appendChild(btn);
+    });
+    this.container.appendChild(toggleWrap);
+
+    if (this.viewMode === 'tree') {
+      this.renderCanvas();
+      return;
+    }
+    this.renderCards();
+  }
+
+  renderCanvas() {
+    if (!this.skills.length) {
+      this.container.appendChild(createElement('p', {
+        class: 'cat-desc',
+        textContent: 'Nenhuma habilidade disponível.',
+      }));
+      return;
+    }
+    const host = createElement('div');
+    this.container.appendChild(host);
+    this._canvas = mountCanvasTree({
+      container: host,
+      skills: this.skills,
+      character: this.character,
+      onNodeClick: (node) => this.toggleSkill(node),
+    });
+  }
+
+  renderCards() {
     // Search bar
     const searchInput = createElement('input', {
       class: 'field-input',
@@ -252,7 +301,7 @@ export class SkillTree {
     searchInput.style.fontSize = '12px';
     searchInput.addEventListener('input', (e) => {
       this.searchQuery = e.target.value;
-      this.render();
+      this.renderCards();
     });
     this.container.appendChild(searchInput);
 
@@ -265,7 +314,7 @@ export class SkillTree {
     // Category tabs
     const tabs = createCategoryTabs(this.activeCategory, (cat) => {
       this.activeCategory = cat;
-      this.render();
+      this.renderCards();
     });
     this.container.appendChild(tabs);
 
