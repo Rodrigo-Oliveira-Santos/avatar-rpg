@@ -1,0 +1,1620 @@
+{
+  "element": "none",
+  "non_bender_path": "chiblocker",
+  "skills": [
+    {
+      "id": "none-chiblocker-sp1a",
+      "raw_id": "sp1a",
+      "name": "Leitura de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Percebe o fluxo de energia dos inimigos antes de agirem.",
+      "damage_summary": "Intuição CD 11 — vê intenção de dobra",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2,
+        "ESP": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp1b",
+      "raw_id": "sp1b",
+      "name": "Equilíbrio Interno",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Estabiliza o próprio chi, resistindo a bloqueio externo.",
+      "damage_summary": "Vantagem saves bloqueio chi externo",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "RES": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp2a",
+      "raw_id": "sp2a",
+      "name": "Silêncio Interior",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Elimina a presença, tornando-se invisível para chi.",
+      "damage_summary": "Furtividade CD 13 vant. vs detetores chi",
+      "requirements_text": "Leitura de Chi",
+      "attribute_requirements": {
+        "ESP": 6,
+        "PER": 4
+      },
+      "prerequisites": [
+        "none-chiblocker-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp2b",
+      "raw_id": "sp2b",
+      "name": "Mapeamento de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Identifica todos os pontos de chi de qualquer criatura.",
+      "damage_summary": "Medicina CD 13 — identifica pontos chi",
+      "requirements_text": "Leitura + Equilíbrio",
+      "attribute_requirements": {
+        "ESP": 5,
+        "PER": 5
+      },
+      "prerequisites": [
+        "none-chiblocker-sp1a",
+        "none-chiblocker-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp1a",
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp2c",
+      "raw_id": "sp2c",
+      "name": "Resist. de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Recupera pontos de chi bloqueados mais rapidamente.",
+      "damage_summary": "Recupera chi bloqueado 1d4t mais rápido",
+      "requirements_text": "Equilíbrio Interno",
+      "attribute_requirements": {
+        "ESP": 6,
+        "RES": 4
+      },
+      "prerequisites": [
+        "none-chiblocker-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp3a",
+      "raw_id": "sp3a",
+      "name": "Compreensão Espiritual",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Entende os padrões de chi de qualquer dobrador.",
+      "damage_summary": "Intuição CD 14 — entende padrão chi",
+      "requirements_text": "Silêncio + Mapeamento",
+      "attribute_requirements": {
+        "ESP": 13,
+        "PER": 8
+      },
+      "prerequisites": [
+        "none-chiblocker-sp2a",
+        "none-chiblocker-sp2b"
+      ],
+      "prerequisites_raw": [
+        "sp2a",
+        "sp2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp3b",
+      "raw_id": "sp3b",
+      "name": "Contra- Fluxo",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Redireciona o chi de um ataque inimigo.",
+      "damage_summary": "Reação — reduz dano dobra em 2d6",
+      "requirements_text": "Mapeamento + Resist.",
+      "attribute_requirements": {
+        "ESP": 11,
+        "PER": 7,
+        "RES": 6
+      },
+      "prerequisites": [
+        "none-chiblocker-sp2b",
+        "none-chiblocker-sp2c"
+      ],
+      "prerequisites_raw": [
+        "sp2b",
+        "sp2c"
+      ],
+      "mastery_levels": [
+        "Reação — reduz dano dobra 2d6",
+        "3d6",
+        "5d6",
+        "8d6"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp3c",
+      "raw_id": "sp3c",
+      "name": "Vazio de Presença",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Torna-se imperceptível por sentidos sobrenaturais incluindo chi.",
+      "damage_summary": "Furtividade CD 15 — imperceptível sobrenaturais",
+      "requirements_text": "Silêncio + Resist.",
+      "attribute_requirements": {
+        "ESP": 12,
+        "AGI": 6,
+        "RES": 7
+      },
+      "prerequisites": [
+        "none-chiblocker-sp2a",
+        "none-chiblocker-sp2c"
+      ],
+      "prerequisites_raw": [
+        "sp2a",
+        "sp2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp4a",
+      "raw_id": "sp4a",
+      "name": "Anti- Aura",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Projeta perturbação de chi que desestabiliza dobras inimigas.",
+      "damage_summary": "Dobradores 3m têm desvant. em dobras",
+      "requirements_text": "Compreensão + Contra-Fluxo",
+      "attribute_requirements": {
+        "ESP": 20,
+        "PER": 13
+      },
+      "prerequisites": [
+        "none-chiblocker-sp3a",
+        "none-chiblocker-sp3b"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp4b",
+      "raw_id": "sp4b",
+      "name": "Leitura Preditiva",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Prevê os próximos movimentos de um dobrador pelo chi.",
+      "damage_summary": "Prevê próximas 3 ações de dobrador",
+      "requirements_text": "Compreensão + Vazio",
+      "attribute_requirements": {
+        "ESP": 19,
+        "PER": 14
+      },
+      "prerequisites": [
+        "none-chiblocker-sp3a",
+        "none-chiblocker-sp3c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp4c",
+      "raw_id": "sp4c",
+      "name": "Âncora de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Bloqueia completamente qualquer manipulação de chi externa.",
+      "damage_summary": "Imune a manipulação externa de chi",
+      "requirements_text": "Contra-Fluxo + Resist.",
+      "attribute_requirements": {
+        "ESP": 18,
+        "RES": 13
+      },
+      "prerequisites": [
+        "none-chiblocker-sp3b",
+        "none-chiblocker-sp2c"
+      ],
+      "prerequisites_raw": [
+        "sp3b",
+        "sp2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp5a",
+      "raw_id": "sp5a",
+      "name": "Negação Espiritual",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Cria uma zona onde nenhuma dobra pode ser executada.",
+      "damage_summary": "Zona 6m — nenhuma dobra funciona",
+      "requirements_text": "Anti-Aura + Âncora de Chi",
+      "attribute_requirements": {
+        "ESP": 27,
+        "PER": 16,
+        "RES": 15
+      },
+      "prerequisites": [
+        "none-chiblocker-sp4a",
+        "none-chiblocker-sp4c"
+      ],
+      "prerequisites_raw": [
+        "sp4a",
+        "sp4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-sp5b",
+      "raw_id": "sp5b",
+      "name": "Olho do Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Perceção total de todos os fluxos de chi num campo inteiro.",
+      "damage_summary": "Perceção total fluxos chi — 30m",
+      "requirements_text": "Leit. Preditiva + Vazio",
+      "attribute_requirements": {
+        "ESP": 28,
+        "PER": 18
+      },
+      "prerequisites": [
+        "none-chiblocker-sp4b",
+        "none-chiblocker-sp3c"
+      ],
+      "prerequisites_raw": [
+        "sp4b",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag1a",
+      "raw_id": "ag1a",
+      "name": "Passos de Sombra",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Movimento silencioso e imperceptível.",
+      "damage_summary": "Furtividade CD 11 c/ vantagem",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 2,
+        "PER": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "Furtividade CD 11 c/ vantagem",
+        "CD 9",
+        "CD 7",
+        "CD 5"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag1b",
+      "raw_id": "ag1b",
+      "name": "Postura de Cobra",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Posição de combate de perfil mínimo.",
+      "damage_summary": "Ataques área têm desvant. contra si",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 1,
+        "PER": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag2a",
+      "raw_id": "ag2a",
+      "name": "Velocidade de Cobra",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Reage e atinge antes que o inimigo perceba.",
+      "damage_summary": "Iniciativa +5 — ataca antes reação",
+      "requirements_text": "Passos + Postura",
+      "attribute_requirements": {
+        "AGI": 6,
+        "PER": 5
+      },
+      "prerequisites": [
+        "none-chiblocker-ag1a",
+        "none-chiblocker-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1a",
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag2b",
+      "raw_id": "ag2b",
+      "name": "Passo Fantasma",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Deixa zero rastros físicos, impossível de rastrear.",
+      "damage_summary": "Furtividade CD 13 — zero rastros físicos",
+      "requirements_text": "Passos de Sombra",
+      "attribute_requirements": {
+        "AGI": 7,
+        "PER": 3
+      },
+      "prerequisites": [
+        "none-chiblocker-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag2c",
+      "raw_id": "ag2c",
+      "name": "Esquiva Serpente",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Esquiva sinuosa que mantém o utilizador no ângulo morto.",
+      "damage_summary": "Reação — fica no ângulo morto inimigo",
+      "requirements_text": "Postura de Cobra",
+      "attribute_requirements": {
+        "AGI": 5,
+        "PER": 5
+      },
+      "prerequisites": [
+        "none-chiblocker-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag3a",
+      "raw_id": "ag3a",
+      "name": "Esquiva Intuitiva",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Esquiva automaticamente de ataques de dobra baseado em chi.",
+      "damage_summary": "Reação auto — esquiva dobras 1×/turno",
+      "requirements_text": "Velocidade + Leit. Preditiva",
+      "attribute_requirements": {
+        "AGI": 13,
+        "PER": 13,
+        "ESP": 6
+      },
+      "prerequisites": [
+        "none-chiblocker-ag2a",
+        "none-chiblocker-sp4b"
+      ],
+      "prerequisites_raw": [
+        "ag2a",
+        "sp4b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag3b",
+      "raw_id": "ag3b",
+      "name": "Escalada de Mestre",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Sobe superfícies verticais usando tensão muscular extrema.",
+      "damage_summary": "Atletismo CD 12 — superfícies verticais",
+      "requirements_text": "Passo Fantasma + Velocidade",
+      "attribute_requirements": {
+        "AGI": 12,
+        "FOR": 6
+      },
+      "prerequisites": [
+        "none-chiblocker-ag2b",
+        "none-chiblocker-ag2a"
+      ],
+      "prerequisites_raw": [
+        "ag2b",
+        "ag2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag3c",
+      "raw_id": "ag3c",
+      "name": "Fluxo Contínuo",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Nunca para durante o combate, mantendo sempre o fluxo.",
+      "damage_summary": "Sem ataques oportunidade — sempre em mov.",
+      "requirements_text": "Esquiva Serpente + Postura",
+      "attribute_requirements": {
+        "AGI": 11,
+        "PER": 7
+      },
+      "prerequisites": [
+        "none-chiblocker-ag2c",
+        "none-chiblocker-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag2c",
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag4a",
+      "raw_id": "ag4a",
+      "name": "Sombra Viva",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Torna-se invisível ao mover-se em condições de baixa luz.",
+      "damage_summary": "Furtividade CD 16 — invisível baixa luz",
+      "requirements_text": "Passo Fantasma + Vazio Presença",
+      "attribute_requirements": {
+        "AGI": 19,
+        "PER": 11,
+        "ESP": 11
+      },
+      "prerequisites": [
+        "none-chiblocker-ag2b",
+        "none-chiblocker-sp3c"
+      ],
+      "prerequisites_raw": [
+        "ag2b",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag4b",
+      "raw_id": "ag4b",
+      "name": "Toque de Fada",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Move-se sem causar qualquer perturbação no ambiente.",
+      "damage_summary": "Sem vibr. solo — imperceptível visão sísmica",
+      "requirements_text": "Escalada + Fluxo Contínuo",
+      "attribute_requirements": {
+        "AGI": 20,
+        "PER": 11
+      },
+      "prerequisites": [
+        "none-chiblocker-ag3b",
+        "none-chiblocker-ag3c"
+      ],
+      "prerequisites_raw": [
+        "ag3b",
+        "ag3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag4c",
+      "raw_id": "ag4c",
+      "name": "Dança da Morte",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Combina esquivas com bloqueios de chi num fluxo mortal.",
+      "damage_summary": "2 ações/turno — esquivas + bloqueios chi",
+      "requirements_text": "Fluxo + Esquiva Intuitiva",
+      "attribute_requirements": {
+        "AGI": 18,
+        "PER": 13,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "none-chiblocker-ag3c",
+        "none-chiblocker-ag3a"
+      ],
+      "prerequisites_raw": [
+        "ag3c",
+        "ag3a"
+      ],
+      "mastery_levels": [
+        "2 ações/turno — esquivas+bloq. chi",
+        "2 ações +",
+        "2 ações ++",
+        "2 ações +++"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag5a",
+      "raw_id": "ag5a",
+      "name": "Fantasma Absoluto",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Imperceptível por todos os sentidos, incluindo visão sísmica e chi.",
+      "damage_summary": "Furtividade CD 19 — imperceptível TODOS sentidos",
+      "requirements_text": "Sombra Viva + Toque de Fada",
+      "attribute_requirements": {
+        "AGI": 27,
+        "PER": 16,
+        "ESP": 15
+      },
+      "prerequisites": [
+        "none-chiblocker-ag4a",
+        "none-chiblocker-ag4b"
+      ],
+      "prerequisites_raw": [
+        "ag4a",
+        "ag4b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-ag5b",
+      "raw_id": "ag5b",
+      "name": "Dança do Vazio",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Move-se entre todos os inimigos bloqueando chi em massa.",
+      "damage_summary": "Bloqueia chi 1d4 alvos/turno em movimento",
+      "requirements_text": "Dança da Morte + Olho Chi",
+      "attribute_requirements": {
+        "AGI": 28,
+        "PER": 18,
+        "ESP": 17
+      },
+      "prerequisites": [
+        "none-chiblocker-ag4c",
+        "none-chiblocker-sp5b"
+      ],
+      "prerequisites_raw": [
+        "ag4c",
+        "sp5b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb1a",
+      "raw_id": "cb1a",
+      "name": "Bloqueio Chi Básico",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Bloqueia um ponto de chi, impedindo dobra temporariamente.",
+      "damage_summary": "1d4 + bloqueia 1 ponto de chi",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2,
+        "AGI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d4 + bloqueia 1 ponto de chi",
+        "2d4",
+        "3d4",
+        "5d4"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb1b",
+      "raw_id": "cb1b",
+      "name": "Golpe nos Nervos",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Paralisa um membro específico sem bloquear chi.",
+      "damage_summary": "1d4 + paralisa membro (Sal. Con CD 12)",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 1,
+        "AGI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d4 + paralisa membro (Sal. Con CD12)",
+        "2d4",
+        "3d4",
+        "5d4"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2a",
+      "raw_id": "cb2a",
+      "name": "Bloqueio Sequência",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Atinge múltiplos pontos de chi em rápida sucessão.",
+      "damage_summary": "×2 turnos — bloqueia 1d2 chi adicionais",
+      "requirements_text": "Bloqueio Chi Básico",
+      "attribute_requirements": {
+        "PER": 6,
+        "AGI": 5
+      },
+      "prerequisites": [
+        "none-chiblocker-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "×2 — bloqueia 1d2 chi adicionais",
+        "×2 (2d2)",
+        "×2 (3d2)",
+        "×3 (4d2)"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2b",
+      "raw_id": "cb2b",
+      "name": "Golpe Paralisante",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Paralisa completamente um membro por período prolongado.",
+      "damage_summary": "Paralisa membro 1d4t + Atordoado+Lentidão",
+      "requirements_text": "Golpe Nervos + Bloqueio",
+      "attribute_requirements": {
+        "PER": 5,
+        "AGI": 6
+      },
+      "prerequisites": [
+        "none-chiblocker-cb1b",
+        "none-chiblocker-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1b",
+        "cb1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2c",
+      "raw_id": "cb2c",
+      "name": "Toque Disruptivo",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2 ★",
+      "description": "Interrompe uma dobra em curso causando dano de recuo.",
+      "damage_summary": "Reação — interrompe dobra, 1d6 recuo",
+      "requirements_text": "Bloqueio Chi Básico",
+      "attribute_requirements": {
+        "PER": 6,
+        "AGI": 3,
+        "ESP": 3
+      },
+      "prerequisites": [
+        "none-chiblocker-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "Reação — interrompe dobra, 1d6 recuo",
+        "2d6",
+        "3d6",
+        "5d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2d",
+      "raw_id": "cb2d",
+      "name": "Golpe Punho Aberto",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Ataque físico focado em desequilíbrio.",
+      "damage_summary": "1d6+FOR + Desequilibrado (Sal. Des CD 12)",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 2,
+        "AGI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d6+FOR + Desequilibrado",
+        "2d6",
+        "3d6",
+        "5d6"
+      ],
+      "position": {
+        "column": 3,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2e",
+      "raw_id": "cb2e",
+      "name": "Varredura de Pernas",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Derruba inimigos independentemente do seu tamanho.",
+      "damage_summary": "Sal. Des CD 12 — Derrubado (sem dano)",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 1,
+        "AGI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 4,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-cb2f",
+      "raw_id": "cb2f",
+      "name": "Quebra de Guarda",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Golpe que rompe defesas e desequilibra a postura inimiga.",
+      "damage_summary": "Sal. For CD 13 — perde reação 1 turno",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 6,
+        "PER": 3
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 5,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr3a",
+      "raw_id": "pr3a",
+      "name": "Bloqueio 2 Pontos",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Bloqueia dois canais de chi simultâneos.",
+      "damage_summary": "2 canais chi simultâneos — dobra impossível",
+      "requirements_text": "Bloqueio Seq. + Mapeamento",
+      "attribute_requirements": {
+        "PER": 13,
+        "AGI": 8,
+        "ESP": 6
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2a",
+        "none-chiblocker-sp2b"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "sp2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr3b",
+      "raw_id": "pr3b",
+      "name": "Colapso Nervos",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Atinge múltiplos nervos causando colapso muscular parcial.",
+      "damage_summary": "Colapso muscular — velocidade reduzida metade",
+      "requirements_text": "Golpe Paralis. + Golpe Nervos",
+      "attribute_requirements": {
+        "PER": 12,
+        "AGI": 8
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2b",
+        "none-chiblocker-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb2b",
+        "cb1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr3c",
+      "raw_id": "pr3c",
+      "name": "Retorno de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Redireciona o chi de um dobrador contra si próprio.",
+      "damage_summary": "2d6 dano interno + Atordoado+Sangramento",
+      "requirements_text": "Toque Disruptivo + Mapeamento",
+      "attribute_requirements": {
+        "PER": 11,
+        "AGI": 7,
+        "ESP": 8
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2c",
+        "none-chiblocker-sp2b"
+      ],
+      "prerequisites_raw": [
+        "cb2c",
+        "sp2b"
+      ],
+      "mastery_levels": [
+        "2d6 dano interno — Atord.+Sangramento",
+        "3d6",
+        "5d6",
+        "8d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr4a",
+      "raw_id": "pr4a",
+      "name": "Bloqueio Permanente",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Bloqueia a dobra de forma duradoura sem cura externa.",
+      "damage_summary": "Bloqueia dobra permanentemente (sem cura ext.)",
+      "requirements_text": "Bloqueio 2 Pts + Compreensão",
+      "attribute_requirements": {
+        "PER": 20,
+        "AGI": 14,
+        "ESP": 13
+      },
+      "prerequisites": [
+        "none-chiblocker-pr3a",
+        "none-chiblocker-sp3a"
+      ],
+      "prerequisites_raw": [
+        "pr3a",
+        "sp3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr4b",
+      "raw_id": "pr4b",
+      "name": "Sequência Colapso",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Sequência que desativa membros progressivamente.",
+      "damage_summary": "×4 — cada golpe desativa membro progressivo",
+      "requirements_text": "Colapso Nervos + Bloqueio Seq.",
+      "attribute_requirements": {
+        "PER": 19,
+        "AGI": 13
+      },
+      "prerequisites": [
+        "none-chiblocker-pr3b",
+        "none-chiblocker-cb2a"
+      ],
+      "prerequisites_raw": [
+        "pr3b",
+        "cb2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr4c",
+      "raw_id": "pr4c",
+      "name": "Toque do Vazio",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Canaliza o chi de um dobrador de volta como arma espiritual.",
+      "damage_summary": "3d8 espiritual + Silêncio+Atordoado+Sangramento",
+      "requirements_text": "Retorno Chi + Compreensão",
+      "attribute_requirements": {
+        "PER": 18,
+        "AGI": 11,
+        "ESP": 14
+      },
+      "prerequisites": [
+        "none-chiblocker-pr3c",
+        "none-chiblocker-sp3a"
+      ],
+      "prerequisites_raw": [
+        "pr3c",
+        "sp3a"
+      ],
+      "mastery_levels": [
+        "3d8 espiritual — Silêncio+Atord.+Sangr.",
+        "5d8",
+        "8d8",
+        "13d8"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr5a",
+      "raw_id": "pr5a",
+      "name": "Bloqueio Total",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Bloqueia todos os canais de chi com uma sequência de 20 toques.",
+      "damage_summary": "×20 toques — bloqueia TODOS canais chi",
+      "requirements_text": "Bloqueio Perm. + Seq. Colapso",
+      "attribute_requirements": {
+        "PER": 27,
+        "AGI": 18,
+        "ESP": 17
+      },
+      "prerequisites": [
+        "none-chiblocker-pr4a",
+        "none-chiblocker-pr4b"
+      ],
+      "prerequisites_raw": [
+        "pr4a",
+        "pr4b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-pr5b",
+      "raw_id": "pr5b",
+      "name": "Extinção de Chi ★",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso ★CONTROVERSA",
+      "description": "Elimina completamente o fluxo de chi de um alvo. Controversa.",
+      "damage_summary": "Sal. Con CD 19 — chi extinto permanentemente",
+      "requirements_text": "Toque Vazio + Negação Espiritual",
+      "attribute_requirements": {
+        "PER": 28,
+        "AGI": 16,
+        "ESP": 20
+      },
+      "prerequisites": [
+        "none-chiblocker-pr4c",
+        "none-chiblocker-sp5a"
+      ],
+      "prerequisites_raw": [
+        "pr4c",
+        "sp5a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br3a",
+      "raw_id": "br3a",
+      "name": "Dissolução Dobra",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Interrompe fisicamente uma dobra em curso com um golpe preciso.",
+      "damage_summary": "Interrompe dobra + 2d6 recuo — Atordoado",
+      "requirements_text": "Tempestade + Anti-Aura",
+      "attribute_requirements": {
+        "FOR": 12,
+        "AGI": 7,
+        "ESP": 8
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2d",
+        "none-chiblocker-sp4a"
+      ],
+      "prerequisites_raw": [
+        "cb2d",
+        "sp4a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br3b",
+      "raw_id": "br3b",
+      "name": "Arremesso de Judo",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Usa o momentum inimigo para arremessar com força multiplicada.",
+      "damage_summary": "2d8 usa momentum inimigo + Atordoado+Enraizado",
+      "requirements_text": "Projeção Quadril + Varredura",
+      "attribute_requirements": {
+        "FOR": 11,
+        "AGI": 8
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2e",
+        "none-chiblocker-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2e",
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "2d8 usa momentum — Atord.+Enraizado",
+        "3d8",
+        "5d8",
+        "8d8"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br3c",
+      "raw_id": "br3c",
+      "name": "Sequência Ruptura",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Quebra a guarda e segue com série de golpes imparáveis.",
+      "damage_summary": "×4 após quebrar guarda — 1d6 por golpe",
+      "requirements_text": "Quebra Guarda + Tempestade",
+      "attribute_requirements": {
+        "FOR": 13,
+        "AGI": 7
+      },
+      "prerequisites": [
+        "none-chiblocker-cb2f",
+        "none-chiblocker-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2f",
+        "cb2d"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br4a",
+      "raw_id": "br4a",
+      "name": "Corpo como Arma",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Usa todo o peso e momentum do corpo em ataques devastadores.",
+      "damage_summary": "3d8 + empurrado 3m — Atordoado+Lentidão",
+      "requirements_text": "Escalada Mestre + Seq. Ruptura",
+      "attribute_requirements": {
+        "FOR": 19,
+        "AGI": 14
+      },
+      "prerequisites": [
+        "none-chiblocker-ag3b",
+        "none-chiblocker-br3c"
+      ],
+      "prerequisites_raw": [
+        "ag3b",
+        "br3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br4b",
+      "raw_id": "br4b",
+      "name": "Impacto de Chi",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Golpe carregado de chi que causa dano espiritual além do físico.",
+      "damage_summary": "2d10 físico + 2d6 espiritual — Atordoado+Silêncio",
+      "requirements_text": "Equilíbrio + Dissolução Dobra",
+      "attribute_requirements": {
+        "FOR": 18,
+        "AGI": 11,
+        "ESP": 13
+      },
+      "prerequisites": [
+        "none-chiblocker-sp1b",
+        "none-chiblocker-br3a"
+      ],
+      "prerequisites_raw": [
+        "sp1b",
+        "br3a"
+      ],
+      "mastery_levels": [
+        "2d10 físico + 2d6 espiritual",
+        "3d10+3d6",
+        "5d10+5d6",
+        "8d10+8d6"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br4c",
+      "raw_id": "br4c",
+      "name": "Contra-Atq. Perfeito",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Cada ataque esquivado transforma-se num contra-ataque devastador.",
+      "damage_summary": "Reação — contra-ataque automático +2d8",
+      "requirements_text": "Arremesso Judo + Esquiva Intuitiva",
+      "attribute_requirements": {
+        "FOR": 18,
+        "AGI": 14,
+        "PER": 10
+      },
+      "prerequisites": [
+        "none-chiblocker-br3b",
+        "none-chiblocker-ag3a"
+      ],
+      "prerequisites_raw": [
+        "br3b",
+        "ag3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br5a",
+      "raw_id": "br5a",
+      "name": "Forma do Vazio",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Combate que usa o mínimo de movimento para o máximo de dano.",
+      "damage_summary": "Movimento mínimo +2d10 — Medo Sal. Sab CD 17",
+      "requirements_text": "Corpo Arma + Dança do Vazio",
+      "attribute_requirements": {
+        "FOR": 26,
+        "AGI": 20,
+        "ESP": 15
+      },
+      "prerequisites": [
+        "none-chiblocker-br4a",
+        "none-chiblocker-ag5b"
+      ],
+      "prerequisites_raw": [
+        "br4a",
+        "ag5b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-chiblocker-br5b",
+      "raw_id": "br5b",
+      "name": "Último Toque ★",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto ★",
+      "description": "Um único golpe que combina dano físico máximo com bloqueio total de chi.",
+      "damage_summary": "6d10 + bloqueio total chi — Sal. Con CD 19",
+      "requirements_text": "Impacto Chi + Bloqueio Total",
+      "attribute_requirements": {
+        "FOR": 25,
+        "AGI": 18,
+        "ESP": 20
+      },
+      "prerequisites": [
+        "none-chiblocker-br4b",
+        "none-chiblocker-pr5a"
+      ],
+      "prerequisites_raw": [
+        "br4b",
+        "pr5a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    }
+  ]
+}

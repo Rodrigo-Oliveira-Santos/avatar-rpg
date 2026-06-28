@@ -1,0 +1,1690 @@
+{
+  "element": "earth",
+  "non_bender_path": null,
+  "skills": [
+    {
+      "id": "earth-sp1a",
+      "raw_id": "sp1a",
+      "name": "Sentido da Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Deteta vibrações no solo, percebendo inimigos próximos.",
+      "damage_summary": "Percepção CD 10 passivo",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 1,
+        "PER": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "Percepção CD 10",
+        "Percepção CD 8",
+        "Percepção CD 6",
+        "Percepção CD 4"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp1b",
+      "raw_id": "sp1b",
+      "name": "Paciência da Rocha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Resistência passiva a efeitos de atordoamento e empurrão.",
+      "damage_summary": "Vantagem em saves empurrão",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "RES": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp2a",
+      "raw_id": "sp2a",
+      "name": "Visão Sísmica",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Visão completa de tudo que toca o solo num raio alargado.",
+      "damage_summary": "Percepção CD 12 / 18m",
+      "requirements_text": "Sentido da Terra",
+      "attribute_requirements": {
+        "ESP": 6,
+        "PER": 5
+      },
+      "prerequisites": [
+        "earth-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": [
+        "Percepção CD 12 / 18m",
+        "Percepção CD 10 / 24m",
+        "Percepção CD 8 / 30m",
+        "Percepção CD 6 / 36m"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp2b",
+      "raw_id": "sp2b",
+      "name": "Ligação à Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Recupera energia lentamente ao estar em contacto com o solo.",
+      "damage_summary": "1d4 PV/turno em solo",
+      "requirements_text": "Paciência da Rocha",
+      "attribute_requirements": {
+        "ESP": 5,
+        "RES": 4,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "earth-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp2c",
+      "raw_id": "sp2c",
+      "name": "Memória Mineral",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Identifica composição de rochas e minerais ao toque.",
+      "damage_summary": "Natureza CD 11 ao toque",
+      "requirements_text": "Sentido da Terra",
+      "attribute_requirements": {
+        "ESP": 6,
+        "PER": 3
+      },
+      "prerequisites": [
+        "earth-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp3a",
+      "raw_id": "sp3a",
+      "name": "Escuta Profunda",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Deteta estruturas subterrâneas, armadilhas e minerais ocultos.",
+      "damage_summary": "Investigação CD 14",
+      "requirements_text": "Visão Sísmica",
+      "attribute_requirements": {
+        "ESP": 12,
+        "PER": 8
+      },
+      "prerequisites": [
+        "earth-sp2a"
+      ],
+      "prerequisites_raw": [
+        "sp2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp3b",
+      "raw_id": "sp3b",
+      "name": "Raízes da Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Ancorado ao solo, torna-se imune a ser movido ou derrubado.",
+      "damage_summary": "Imune a ser movido/derrubado",
+      "requirements_text": "Ligação Terra + Paciência Rocha",
+      "attribute_requirements": {
+        "ESP": 10,
+        "RES": 8,
+        "FOR": 6
+      },
+      "prerequisites": [
+        "earth-sp2b",
+        "earth-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp2b",
+        "sp1b"
+      ],
+      "mastery_levels": [
+        "Imune a empurrão/derrube",
+        "Imune + CA+1",
+        "Imune + CA+2",
+        "Imune + CA+3"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp3c",
+      "raw_id": "sp3c",
+      "name": "Comunic. Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Lê a memória do terreno, descobrindo eventos passados.",
+      "damage_summary": "História CD 15 via toque",
+      "requirements_text": "Memória Mineral + Visão Sísmica",
+      "attribute_requirements": {
+        "ESP": 13,
+        "PER": 7
+      },
+      "prerequisites": [
+        "earth-sp2c",
+        "earth-sp2a"
+      ],
+      "prerequisites_raw": [
+        "sp2c",
+        "sp2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp4a",
+      "raw_id": "sp4a",
+      "name": "Perceção Total",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Percebe tudo no campo de batalha através do solo.",
+      "damage_summary": "Percebe tudo 30m via solo",
+      "requirements_text": "Escuta + Comunic. Pedra",
+      "attribute_requirements": {
+        "ESP": 20,
+        "PER": 13
+      },
+      "prerequisites": [
+        "earth-sp3a",
+        "earth-sp3c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp4b",
+      "raw_id": "sp4b",
+      "name": "Pulso de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Envia pulsos de energia pelo solo que perturbam o equilíbrio inimigo.",
+      "damage_summary": "Sal. Des CD 15 — Atordoado",
+      "requirements_text": "Raízes + Ligação Terra",
+      "attribute_requirements": {
+        "ESP": 18,
+        "RES": 12,
+        "CHI": 10
+      },
+      "prerequisites": [
+        "earth-sp3b",
+        "earth-sp2b"
+      ],
+      "prerequisites_raw": [
+        "sp3b",
+        "sp2b"
+      ],
+      "mastery_levels": [
+        "Sal. Des CD 15",
+        "Sal. Des CD 16",
+        "Sal. Des CD 17",
+        "Sal. Des CD 19"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp4c",
+      "raw_id": "sp4c",
+      "name": "Encontrar Minério",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Localiza depósitos de metal, cristais e recursos raros.",
+      "damage_summary": "Investigação CD 14 / 90m",
+      "requirements_text": "Escuta + Memória Mineral",
+      "attribute_requirements": {
+        "ESP": 17,
+        "PER": 11
+      },
+      "prerequisites": [
+        "earth-sp3a",
+        "earth-sp2c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp5a",
+      "raw_id": "sp5a",
+      "name": "Mente da Montanha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Estado meditativo que expande a visão sísmica massivamente.",
+      "damage_summary": "Perceção 90m via solo",
+      "requirements_text": "Perceção Total + Pulso de Terra",
+      "attribute_requirements": {
+        "ESP": 26,
+        "PER": 17,
+        "CHI": 15
+      },
+      "prerequisites": [
+        "earth-sp4a",
+        "earth-sp4b"
+      ],
+      "prerequisites_raw": [
+        "sp4a",
+        "sp4b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp5b",
+      "raw_id": "sp5b",
+      "name": "Vínculo Eterno",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Funde-se com o terreno, controlando o solo de uma área inteira.",
+      "damage_summary": "Controla solo em 18m",
+      "requirements_text": "Raízes + Encontrar Minério",
+      "attribute_requirements": {
+        "ESP": 28,
+        "RES": 17,
+        "CHI": 16
+      },
+      "prerequisites": [
+        "earth-sp3b",
+        "earth-sp4c"
+      ],
+      "prerequisites_raw": [
+        "sp3b",
+        "sp4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag1a",
+      "raw_id": "ag1a",
+      "name": "Salto de Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Impulsiona o utilizador ao ar com um bloco de terra.",
+      "damage_summary": "Atletismo CD 11 — salta 2x",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag1b",
+      "raw_id": "ag1b",
+      "name": "Armadura de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Envolve o corpo em pedra para aumentar resistência.",
+      "damage_summary": "CA +2 (passivo)",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "RES": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag2a",
+      "raw_id": "ag2a",
+      "name": "Surf de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Desloca-se sobre uma onda de terra a alta velocidade.",
+      "damage_summary": "Velocidade +6m em solo",
+      "requirements_text": "Salto de Pedra",
+      "attribute_requirements": {
+        "AGI": 6,
+        "CHI": 4
+      },
+      "prerequisites": [
+        "earth-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag2b",
+      "raw_id": "ag2b",
+      "name": "Botas de Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Âncora os pés ao solo, tornando impossível ser derrubado.",
+      "damage_summary": "Imune a empurrão/derrube",
+      "requirements_text": "Armadura de Terra",
+      "attribute_requirements": {
+        "RES": 5,
+        "FOR": 4,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "earth-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag2c",
+      "raw_id": "ag2c",
+      "name": "Escudo de Rocha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Cria um escudo portátil de pedra sólida.",
+      "damage_summary": "Escudo 20PV, CA 14",
+      "requirements_text": "Armadura de Terra",
+      "attribute_requirements": {
+        "RES": 6,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "earth-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag3a",
+      "raw_id": "ag3a",
+      "name": "Tunelização Rápida",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Mergulha no solo e emerge noutro ponto do campo de batalha.",
+      "damage_summary": "Acrobacia CD 13 — 9m sub.",
+      "requirements_text": "Surf de Terra",
+      "attribute_requirements": {
+        "AGI": 13,
+        "CHI": 7
+      },
+      "prerequisites": [
+        "earth-ag2a"
+      ],
+      "prerequisites_raw": [
+        "ag2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag3b",
+      "raw_id": "ag3b",
+      "name": "Armadura Completa",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Envolve o corpo inteiro em pedra sem perder velocidade.",
+      "damage_summary": "CA +4, sem penalidade",
+      "requirements_text": "Botas + Escudo de Rocha",
+      "attribute_requirements": {
+        "RES": 12,
+        "FOR": 7,
+        "CHI": 6
+      },
+      "prerequisites": [
+        "earth-ag2b",
+        "earth-ag2c"
+      ],
+      "prerequisites_raw": [
+        "ag2b",
+        "ag2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag3c",
+      "raw_id": "ag3c",
+      "name": "Passo de Montanha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Corre em paredes e encostas verticais de pedra.",
+      "damage_summary": "Corre em paredes de pedra",
+      "requirements_text": "Surf + Salto de Pedra",
+      "attribute_requirements": {
+        "AGI": 11,
+        "CHI": 6
+      },
+      "prerequisites": [
+        "earth-ag2a",
+        "earth-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag2a",
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag4a",
+      "raw_id": "ag4a",
+      "name": "Túnel Fantasma",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Move-se pelo subsolo sem causar perturbações na superfície.",
+      "damage_summary": "Subterrâneo sem perturbação",
+      "requirements_text": "Tunelização + Escuta Profunda",
+      "attribute_requirements": {
+        "AGI": 19,
+        "CHI": 10,
+        "PER": 10
+      },
+      "prerequisites": [
+        "earth-ag3a",
+        "earth-sp3a"
+      ],
+      "prerequisites_raw": [
+        "ag3a",
+        "sp3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag4b",
+      "raw_id": "ag4b",
+      "name": "Colossus de Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Aumenta o tamanho físico com pedra.",
+      "damage_summary": "Alcance +3m, tamanho aumenta",
+      "requirements_text": "Armadura Completa + Raízes Terra",
+      "attribute_requirements": {
+        "RES": 18,
+        "FOR": 14,
+        "CHI": 10
+      },
+      "prerequisites": [
+        "earth-ag3b",
+        "earth-sp3b"
+      ],
+      "prerequisites_raw": [
+        "ag3b",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag4c",
+      "raw_id": "ag4c",
+      "name": "Corrida Sísmica",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Cada passo causa mini-sismos, desestabilizando inimigos.",
+      "damage_summary": "Sal. Des CD 15 — Atordoado",
+      "requirements_text": "Passo + Surf de Terra",
+      "attribute_requirements": {
+        "AGI": 18,
+        "FOR": 10,
+        "CHI": 9
+      },
+      "prerequisites": [
+        "earth-ag3c",
+        "earth-ag2a"
+      ],
+      "prerequisites_raw": [
+        "ag3c",
+        "ag2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag5a",
+      "raw_id": "ag5a",
+      "name": "Avatar da Rocha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Transforma-se numa entidade de pedra colossal.",
+      "damage_summary": "Todos ataques +2d10 por 1d6t",
+      "requirements_text": "Colossus de Pedra + Raízes da Terra",
+      "attribute_requirements": {
+        "RES": 26,
+        "FOR": 20,
+        "CHI": 16
+      },
+      "prerequisites": [
+        "earth-ag4b",
+        "earth-sp3b"
+      ],
+      "prerequisites_raw": [
+        "ag4b",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-ag5b",
+      "raw_id": "ag5b",
+      "name": "Sombra Subterrânea",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Move-se pelo subsolo a velocidade de sprint, emergindo em surpresa.",
+      "damage_summary": "Sprint sub. + ataque surpresa",
+      "requirements_text": "Túnel Fantasma + Corrida Sísmica",
+      "attribute_requirements": {
+        "AGI": 27,
+        "CHI": 15,
+        "PER": 13
+      },
+      "prerequisites": [
+        "earth-ag4a",
+        "earth-ag4c"
+      ],
+      "prerequisites_raw": [
+        "ag4a",
+        "ag4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb1a",
+      "raw_id": "cb1a",
+      "name": "Projétil de Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Lança pedras com precisão cirúrgica.",
+      "damage_summary": "M0:1d6+FOR · M1:2d6+FOR · M2:3d6 · M3:5d6",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d6+FOR",
+        "2d6+FOR",
+        "3d6+FOR",
+        "5d6+FOR"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb1b",
+      "raw_id": "cb1b",
+      "name": "Espinho de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Faz emergir um espinho do solo num ponto específico.",
+      "damage_summary": "M0:1d4+2+Enr · M1:2d4+2 · M2:3d4 · M3:5d4",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 1,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d4+2 + Enraizado 1t",
+        "2d4+2 + Enraizado",
+        "3d4+2",
+        "5d4+2 + Enraizado"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb2a",
+      "raw_id": "cb2a",
+      "name": "Rajada de Cascalho",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Dispara múltiplos fragmentos em leque.",
+      "damage_summary": "M0:2d4 cone · M1:3d4 · M2:5d4 · M3:8d4",
+      "requirements_text": "Projétil de Pedra",
+      "attribute_requirements": {
+        "PER": 6,
+        "CHI": 5
+      },
+      "prerequisites": [
+        "earth-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "2d4 em cone",
+        "3d4 em cone",
+        "5d4",
+        "8d4"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb2b",
+      "raw_id": "cb2b",
+      "name": "Espinhos em Série",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Faz emergir uma linha de espinhos em sequência rápida.",
+      "damage_summary": "M0:1d6 em linha · M1:2d6 · M2:3d6 · M3:5d6",
+      "requirements_text": "Espinho de Terra",
+      "attribute_requirements": {
+        "PER": 5,
+        "CHI": 4,
+        "FOR": 3
+      },
+      "prerequisites": [
+        "earth-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb1b"
+      ],
+      "mastery_levels": [
+        "1d6 em linha",
+        "2d6",
+        "3d6",
+        "5d6"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb2c",
+      "raw_id": "cb2c",
+      "name": "Pedra Teleguiada",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Projétil que muda de direção após lançamento.",
+      "damage_summary": "M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8",
+      "requirements_text": "Projétil de Pedra",
+      "attribute_requirements": {
+        "PER": 7,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "earth-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "1d8 muda direção",
+        "2d8",
+        "3d8",
+        "5d8"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb2d",
+      "raw_id": "cb2d",
+      "name": "Muro de Pedra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Ergue barreiras sólidas instantaneamente.",
+      "damage_summary": "20 PV, CA 14",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 3,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-cb2e",
+      "raw_id": "cb2e",
+      "name": "Punho de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Soco amplificado por uma luva de pedra.",
+      "damage_summary": "1d8+FOR + empurra 3m",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 1,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 4,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr3a",
+      "raw_id": "pr3a",
+      "name": "Dobra de Pó",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Manipula partículas de rocha para cegar, sufocar ou cortar.",
+      "damage_summary": "1d6/turno + Cegueira+Lentidão",
+      "requirements_text": "Rajada + Visão Sísmica",
+      "attribute_requirements": {
+        "PER": 13,
+        "CHI": 8,
+        "ESP": 6
+      },
+      "prerequisites": [
+        "earth-cb2a",
+        "earth-sp2a"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "sp2a"
+      ],
+      "mastery_levels": [
+        "1d6/turno + Ceg+Lent",
+        "2d6/turno",
+        "3d6/turno",
+        "5d6/turno + Ceg+Lent"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr3b",
+      "raw_id": "pr3b",
+      "name": "Armadilha Espinhos",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Zonas do solo que disparam espinhos ao serem pisadas.",
+      "damage_summary": "2d6 ao pisar + Enraizado",
+      "requirements_text": "Espinhos em Série",
+      "attribute_requirements": {
+        "PER": 11,
+        "CHI": 7
+      },
+      "prerequisites": [
+        "earth-cb2b"
+      ],
+      "prerequisites_raw": [
+        "cb2b"
+      ],
+      "mastery_levels": [
+        "2d6 + Enraizado",
+        "3d6",
+        "5d6",
+        "8d6 + Enraizado+Sangramento"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr3c",
+      "raw_id": "pr3c",
+      "name": "Chuva de Pedras",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Nuvem de projéteis teleguiados simultaneamente.",
+      "damage_summary": "3d6 em área distribuído",
+      "requirements_text": "Pedra Teleguiada + Rajada",
+      "attribute_requirements": {
+        "PER": 12,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "earth-cb2c",
+        "earth-cb2a"
+      ],
+      "prerequisites_raw": [
+        "cb2c",
+        "cb2a"
+      ],
+      "mastery_levels": [
+        "3d6 em área",
+        "5d6",
+        "8d6",
+        "13d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr4a",
+      "raw_id": "pr4a",
+      "name": "Dobra de Metal",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Manipula metal como extensão da terra.",
+      "damage_summary": "2d8 + ignora armadura",
+      "requirements_text": "Visão Sísmica + Espinhos em Série",
+      "attribute_requirements": {
+        "PER": 19,
+        "CHI": 13,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "earth-sp2a",
+        "earth-cb2b"
+      ],
+      "prerequisites_raw": [
+        "sp2a",
+        "cb2b"
+      ],
+      "mastery_levels": [
+        "2d8 + ignora armadura",
+        "3d8",
+        "5d8",
+        "8d8"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr4b",
+      "raw_id": "pr4b",
+      "name": "Tempestade de Pó",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Nuvem de pó abrasivo que corrói armaduras em área 9m.",
+      "damage_summary": "3d6/turno + Ceg+Sangramento",
+      "requirements_text": "Dobra Pó + Armadilha Espinhos",
+      "attribute_requirements": {
+        "PER": 18,
+        "CHI": 12,
+        "RES": 8
+      },
+      "prerequisites": [
+        "earth-pr3a",
+        "earth-pr3b"
+      ],
+      "prerequisites_raw": [
+        "pr3a",
+        "pr3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr4c",
+      "raw_id": "pr4c",
+      "name": "Míssil de Rocha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Projétil massivo de alta penetração.",
+      "damage_summary": "3d10, penetra barreiras",
+      "requirements_text": "Chuva Pedras + Pedra Teleguiada",
+      "attribute_requirements": {
+        "PER": 20,
+        "CHI": 11,
+        "FOR": 10
+      },
+      "prerequisites": [
+        "earth-pr3c",
+        "earth-cb2c"
+      ],
+      "prerequisites_raw": [
+        "pr3c",
+        "cb2c"
+      ],
+      "mastery_levels": [
+        "3d10 penetra",
+        "5d10",
+        "8d10",
+        "13d10"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr5a",
+      "raw_id": "pr5a",
+      "name": "Fios de Metal",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Projeta fios de metal finos e cortantes com controlo absoluto.",
+      "damage_summary": "2d6 + Enraizado+Sangramento",
+      "requirements_text": "Dobra Metal + Chuva Pedras",
+      "attribute_requirements": {
+        "PER": 27,
+        "CHI": 17,
+        "ESP": 15
+      },
+      "prerequisites": [
+        "earth-pr4a",
+        "earth-pr3c"
+      ],
+      "prerequisites_raw": [
+        "pr4a",
+        "pr3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr5b",
+      "raw_id": "pr5b",
+      "name": "Vórtice de Pó",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Tornado de pó e fragmentos que tritura qualquer coisa.",
+      "damage_summary": "6d6 + Ceg+Sangramento+Lent",
+      "requirements_text": "Tempestade Pó + Dobra Pó",
+      "attribute_requirements": {
+        "PER": 26,
+        "CHI": 17,
+        "RES": 14
+      },
+      "prerequisites": [
+        "earth-pr4b",
+        "earth-pr3a"
+      ],
+      "prerequisites_raw": [
+        "pr4b",
+        "pr3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-pr5c",
+      "raw_id": "pr5c",
+      "name": "Impacto Meteoro",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Arranca fragmento massivo e lança-o com velocidade de projétil.",
+      "damage_summary": "5d12 + Atordoado Sal. Des 19",
+      "requirements_text": "Míssil Rocha + Colossus",
+      "attribute_requirements": {
+        "PER": 25,
+        "CHI": 16,
+        "FOR": 18
+      },
+      "prerequisites": [
+        "earth-pr4c",
+        "earth-ag4b"
+      ],
+      "prerequisites_raw": [
+        "pr4c",
+        "ag4b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br3a",
+      "raw_id": "br3a",
+      "name": "Prisão de Terra",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Encapsula um inimigo numa gaiola de pedra sólida.",
+      "damage_summary": "25PV para escapar + Enraizado",
+      "requirements_text": "Sismo + Muro Pedra",
+      "attribute_requirements": {
+        "FOR": 12,
+        "CHI": 8,
+        "RES": 6
+      },
+      "prerequisites": [
+        "earth-cb2d",
+        "earth-cb2e"
+      ],
+      "prerequisites_raw": [
+        "cb2d",
+        "cb2e"
+      ],
+      "mastery_levels": [
+        "25PV para escapar",
+        "30PV",
+        "35PV",
+        "45PV + Atordoado"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br3b",
+      "raw_id": "br3b",
+      "name": "Bombar- deamento",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Lança múltiplos blocos em arco sobre uma área.",
+      "damage_summary": "3d8 em área 6m",
+      "requirements_text": "Catapulta de Terra",
+      "attribute_requirements": {
+        "FOR": 13,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "earth-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "3d8 em área",
+        "5d8",
+        "8d8",
+        "13d8"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br3c",
+      "raw_id": "br3c",
+      "name": "Fissura",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Abre uma fenda no solo que engole inimigos.",
+      "damage_summary": "2d8 + cai para interior",
+      "requirements_text": "Sismo + Torrente Rochas",
+      "attribute_requirements": {
+        "FOR": 11,
+        "CHI": 9
+      },
+      "prerequisites": [
+        "earth-cb2e",
+        "earth-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2e",
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "2d8 + fissura",
+        "3d8",
+        "5d8",
+        "8d8 + cai no interior"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br4a",
+      "raw_id": "br4a",
+      "name": "Dobra de Lava",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Funde a rocha em lava e molda-a como arma.",
+      "damage_summary": "3d8 fogo + terreno em chamas",
+      "requirements_text": "Ligação Terra + Sismo",
+      "attribute_requirements": {
+        "FOR": 18,
+        "CHI": 13,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "earth-sp2b",
+        "earth-cb2e"
+      ],
+      "prerequisites_raw": [
+        "sp2b",
+        "cb2e"
+      ],
+      "mastery_levels": [
+        "3d8 + Queimadura",
+        "5d8 fogo",
+        "8d8",
+        "13d8 + Queimadura"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br4b",
+      "raw_id": "br4b",
+      "name": "Avalanche",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Desencadeia uma avalanche de pedras numa área.",
+      "damage_summary": "4d8 + Soterrado",
+      "requirements_text": "Bombardeamento + Prisão Terra",
+      "attribute_requirements": {
+        "FOR": 20,
+        "CHI": 12,
+        "RES": 10
+      },
+      "prerequisites": [
+        "earth-br3b",
+        "earth-br3a"
+      ],
+      "prerequisites_raw": [
+        "br3b",
+        "br3a"
+      ],
+      "mastery_levels": [
+        "4d8 + Soterrado",
+        "6d8",
+        "9d8",
+        "14d8"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br4c",
+      "raw_id": "br4c",
+      "name": "Coluna Sísmica",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Ergue uma coluna de terra que arremessa inimigos ao ar.",
+      "damage_summary": "3d6 + arremessado 6m ao ar",
+      "requirements_text": "Fissura + Torrente Rochas",
+      "attribute_requirements": {
+        "FOR": 19,
+        "CHI": 13
+      },
+      "prerequisites": [
+        "earth-br3c",
+        "earth-cb2e"
+      ],
+      "prerequisites_raw": [
+        "br3c",
+        "cb2e"
+      ],
+      "mastery_levels": [
+        "3d6 + Arremessado 6m",
+        "5d6",
+        "8d6",
+        "13d6 + Atordoado"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br5a",
+      "raw_id": "br5a",
+      "name": "Rio de Lava",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Cria corrente de lava que percorre o campo de batalha.",
+      "damage_summary": "4d10 fogo/turno + Enraizado",
+      "requirements_text": "Dobra Lava + Fissura",
+      "attribute_requirements": {
+        "FOR": 26,
+        "CHI": 17,
+        "ESP": 15
+      },
+      "prerequisites": [
+        "earth-br4a",
+        "earth-br3c"
+      ],
+      "prerequisites_raw": [
+        "br4a",
+        "br3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br5b",
+      "raw_id": "br5b",
+      "name": "Colapso Sísmico",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Destrói completamente uma estrutura ou área.",
+      "damage_summary": "6d10 em 18m + terreno destruído",
+      "requirements_text": "Avalanche + Coluna Sísmica",
+      "attribute_requirements": {
+        "FOR": 28,
+        "CHI": 17,
+        "RES": 15
+      },
+      "prerequisites": [
+        "earth-br4b",
+        "earth-br4c"
+      ],
+      "prerequisites_raw": [
+        "br4b",
+        "br4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-br5c",
+      "raw_id": "br5c",
+      "name": "Vulcão Pessoal",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Invoca uma erupção localizada de magma e cinzas.",
+      "damage_summary": "8d10 fogo em 24m + Cegueira",
+      "requirements_text": "Rio Lava + Colapso Sísmico",
+      "attribute_requirements": {
+        "FOR": 30,
+        "CHI": 18,
+        "ESP": 17
+      },
+      "prerequisites": [
+        "earth-br4a",
+        "earth-br4c"
+      ],
+      "prerequisites_raw": [
+        "br4a",
+        "br4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    }
+  ]
+}
