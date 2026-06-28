@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/components/import.css">
   <link rel="stylesheet" href="css/components/admin.css">
   <link rel="stylesheet" href="css/components/currency.css">
+  <link rel="stylesheet" href="css/components/multi-game.css">
 </head>
 <body>
   <!-- App loader -->
@@ -55,6 +56,15 @@
   </div>
 
   <div class="app">
+    <!-- Multi-game switcher (scaffolding — see docs/MULTI-GAME-DESIGN.md) -->
+    <nav class="game-switcher" id="game-switcher" role="tablist" aria-label="Jogos">
+      <button class="game-switcher-btn on" data-game="avatar" type="button">Avatar RPG</button>
+      <button class="game-switcher-btn"    data-game="dnd"    type="button">D&amp;D 5e</button>
+      <button class="game-switcher-btn"    data-game="minecraft" type="button">Minecraft Builds</button>
+    </nav>
+
+    <!-- ===== Avatar RPG game root (existing app) ===== -->
+    <div class="game-root on" data-game-root="avatar">
     <!-- Navigation Tabs -->
     <nav class="nav" role="tablist">
       <button class="nav-btn char on" data-page="character">Personagem</button>
@@ -390,6 +400,13 @@
     <main id="admin-page" class="page" role="tabpanel">
       <div id="admin-container"></div>
     </main>
+    </div><!-- /game-root avatar -->
+
+    <!-- ===== D&D 5e game root (placeholder) ===== -->
+    <div class="game-root" data-game-root="dnd"></div>
+
+    <!-- ===== Minecraft Builds game root (placeholder) ===== -->
+    <div class="game-root" data-game-root="minecraft"></div>
   </div>
 
   <!-- JavaScript -->
@@ -397,5 +414,6 @@
        localStorage mode — main.js still boots normally. -->
   <script src="config.js" onerror="void 0"></script>
   <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/games-bootstrap.js"></script>
 </body>
 </html>
