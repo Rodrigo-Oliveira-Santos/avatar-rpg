@@ -87,8 +87,9 @@ export class ShopPage {
   }
 
   canUseNationPrice(item) {
-    if (!item.nationPrice?.currency) return false;
-    return this.getNativeCurrency().id === item.nationPrice.currency;
+    // Any character can pay with any nation's coins, provided the item has a
+    // nation price. Cross-nation currency ownership is allowed by design.
+    return Boolean(item?.nationPrice?.currency);
   }
 
   renderBalanceBar() {
@@ -279,7 +280,7 @@ export class ShopPage {
 
     if (paymentMethod === 'nation') {
       if (!this.canUseNationPrice(item) || !item.nationPrice) {
-        toast('Este item não aceita pagamento com moedas nacionais para o teu elemento.', 'warning');
+        toast('Este item não aceita pagamento com moedas nacionais.', 'warning');
         return;
       }
 

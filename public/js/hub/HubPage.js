@@ -106,7 +106,8 @@ export class HubPage {
     this.container.innerHTML = '';
 
     const currentUsername = this.getCurrentUsername();
-    const players = getPlayers();
+    const isGameMaster = this.authManager?.hasRole('gm');
+    const players = getPlayers({ includeUnsaved: isGameMaster });
     const incomingTradeCount = getTradeNotificationCount(currentUsername);
 
     updateTradeBadge(currentUsername);
@@ -365,6 +366,13 @@ export class HubPage {
     header.appendChild(createElement('div', { class: 'player-name', textContent: player.name }));
     header.appendChild(createElement('div', { class: 'player-level', textContent: `Nv. ${player.level}` }));
     card.appendChild(header);
+
+    if (player.unsaved) {
+      card.appendChild(createElement('div', {
+        style: 'font-size: 10px; color: var(--text3); margin-bottom: 8px; font-style: italic;',
+        textContent: 'Sem ficha guardada',
+      }));
+    }
 
     const elementBadge = createElement('div', {
       class: `player-element ${player.element}`,

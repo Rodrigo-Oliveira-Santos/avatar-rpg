@@ -52,6 +52,18 @@ export const CATEGORIES = {
   brute: 'Combate Bruto',
 };
 
+/**
+ * Hard caps for derived stats. `null` means "no cap".
+ * Values to be defined later (decision pending). The dodge cap is fixed at 15.
+ */
+export const STAT_CAPS = {
+  maxHP: null,
+  maxSP: null,
+  maxCP: null,
+  defense: null,
+  dodge: 15,
+};
+
 export const RARITY_BONUSES = {
   common: { multiplier: 1.0, extraStat: 0 },
   rare: { multiplier: 1.15, extraStat: 1 },

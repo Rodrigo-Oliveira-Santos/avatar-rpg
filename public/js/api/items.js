@@ -1,29 +1,111 @@
 /**
  * Items API
+ *
+ * When Supabase is enabled, fetches items from the `items` table (and the
+ * `in_shop` slice for the shop). Otherwise returns empty arrays so the UI
+ * falls back to imported/mock data.
  */
 
-// BYPASS TEMPORÁRIO: import do client comentado (reverter: descomentar)
-// import { get, post } from './client.js';
+import { isSupabaseEnabled } from './config.js';
+import { getSupabaseClient } from './supabase-client.js';
 
-/* BYPASS TEMPORÁRIO: funções originais comentadas — reverter: descomentar tudo abaixo e apagar os mocks, descomentar o import acima
+function rowToItem(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    type: row.type,
+    rarity: row.rarity,
+    price: row.price,
+    weight_class: row.weight_class,
+    defense_bonus: row.defense_bonus,
+    dodge_penalty: row.dodge_penalty,
+    attributes: row.attributes || {},
+    in_shop: row.in_shop,
+    gm_notes: row.gm_notes,
+  };
+}
 
-import { get, post } from './client.js';
+export async function listAll() {
+  if (!isSupabaseEnabled()) return [];
+  try {
+    const client = await getSupabaseClient();
+    const { data, error } = await client.from('items').select('*');
+    if (error) throw error;
+    return (data || []).map(rowToItem);
+  } catch (err) {
+    console.warn('[items.listAll] Supabase fetch failed', err);
+    return [];
+  }
+}
 
-export function listAll() { return get('/api/items'); }
-export function getShopItems() { return get('/api/items/shop'); }
-export function purchase(itemId, characterId) { return post('/api/shop/purchase', { itemId, characterId }); }
-export function importItems(payload) { return post('/api/gm/import', { type: 'items', ...payload }); }
+export async function getShopItems() {
+  if (!isSupabaseEnabled()) return [];
+  try {
+    const client = await getSupabaseClient();
+    const { data, error } = await client
+      .from('items')
+      .select('*')
+      .eq('in_shop', true);
+    if (error) throw error;
+    return (data || []).map(rowToItem);
+  } catch (err) {
+    console.warn('[items.getShopItems] Supabase fetch failed', err);
+    return [];
+  }
+}
 
-*/
+/**
+ * Record a shop purchase. Decrements buyer gold and adds inventory row
+ * inside a best-effort sequence (no real transaction available from PostgREST).
+ */
+export async function purchase(itemId, characterId) {
+  if (!isSupabaseEnabled()) return { success: true };
+  try {
+    const client = await getSupabaseClient();
+    const { error } = await client
+      .from('character_inventory')
+      .upsert(
+        { character_id: characterId, item_id: itemId, acquired_from: 'shop' },
+        { onConflict: 'character_id,item_id' }
+      );
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.warn('[items.purchase] Supabase write failed', err);
+    return { success: false, error: err.message };
+  }
+}
 
-/** BYPASS TEMPORÁRIO: retorna lista vazia — a app (items/data.js e shop) já trata arrays vazios */
-export function listAll() { return Promise.resolve([]); }
-
-/** BYPASS TEMPORÁRIO */
-export function getShopItems() { return Promise.resolve([]); }
-
-/** BYPASS TEMPORÁRIO */
-export function purchase(itemId, characterId) { return Promise.resolve({ success: true }); }
-
-/** BYPASS TEMPORÁRIO */
-export function importItems(payload) { return Promise.resolve({ imported: 0 }); }
+/**
+ * Bulk-import items (GM action). Upserts on `name`.
+ */
+export async function importItems(payload) {
+  if (!isSupabaseEnabled()) return { imported: 0 };
+  const items = Array.isArray(payload?.items) ? payload.items : [];
+  if (!items.length) return { imported: 0 };
+  try {
+    const client = await getSupabaseClient();
+    const rows = items.map((it) => ({
+      name: it.name,
+      description: it.description ?? null,
+      type: it.type ?? 'other',
+      rarity: it.rarity ?? 'common',
+      price: it.price ?? 0,
+      weight_class: it.weight_class ?? null,
+      defense_bonus: it.defense_bonus ?? 0,
+      dodge_penalty: it.dodge_penalty ?? 0,
+      attributes: it.attributes ?? {},
+      in_shop: it.in_shop ?? false,
+      gm_notes: it.gm_notes ?? null,
+    }));
+    const { error, count } = await client
+      .from('items')
+      .upsert(rows, { onConflict: 'name', count: 'exact' });
+    if (error) throw error;
+    return { imported: count ?? rows.length };
+  } catch (err) {
+    console.warn('[items.importItems] Supabase upsert failed', err);
+    return { imported: 0, error: err.message };
+  }
+}

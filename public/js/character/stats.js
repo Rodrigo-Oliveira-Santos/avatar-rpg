@@ -3,7 +3,12 @@
  * Formulas for derived stats based on attributes, level, and equipment rarity
  */
 
-import { RARITY_BONUSES } from '../utils/constants.js';
+import { RARITY_BONUSES, STAT_CAPS } from '../utils/constants.js';
+
+function applyCap(value, cap) {
+  if (cap === null || cap === undefined || !Number.isFinite(cap)) return value;
+  return Math.min(value, cap);
+}
 
 const ATTRIBUTE_KEYS = ['FOR', 'AGI', 'CHI', 'PER', 'RES', 'ESP'];
 const DICE_NOTATION_REGEX = /^(\d+)d(\d+)([+-]\d+)?$/i;
@@ -208,12 +213,14 @@ export function calculateAllStats(character = {}) {
   const equipped = character.equipamentos || {};
   const { armorBonus, armorPenalty, weaponBonus, accessoryBonus } = getEquipmentBonuses(equipped);
 
+  const dodgeRaw = Math.max(0, calculateDodge(AGI, PER) - armorPenalty + accessoryBonus);
+
   return {
-    maxHP: calculateMaxHP(nivel, FOR),
-    maxSP: calculateMaxSP(nivel, ESP),
-    maxCP: calculateMaxCP(nivel, CHI),
-    defense: calculateDefense(nivel, RES) + armorBonus,
-    dodge: Math.max(0, calculateDodge(AGI, PER) - armorPenalty + accessoryBonus),
+    maxHP: applyCap(calculateMaxHP(nivel, FOR), STAT_CAPS.maxHP),
+    maxSP: applyCap(calculateMaxSP(nivel, ESP), STAT_CAPS.maxSP),
+    maxCP: applyCap(calculateMaxCP(nivel, CHI), STAT_CAPS.maxCP),
+    defense: applyCap(calculateDefense(nivel, RES) + armorBonus, STAT_CAPS.defense),
+    dodge: applyCap(dodgeRaw, STAT_CAPS.dodge),
     danoBase: weaponBonus,
   };
 }

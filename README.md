@@ -2,9 +2,10 @@
 
 > **Documentação Completa:**
 > - [FEATURES.md](./FEATURES.md) — Todas as páginas e mecânicas (atuais e futuras)
+> - [DECISIONS.md](./DECISIONS.md) — Decisões aplicadas e pendentes
 > - [DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md) — Fluxos e mecânicas do jogo
 > - [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
-> - [DEV-LOCAL.md](./DEV-LOCAL.md) — Como correr localmente
+> - [DEV-LOCAL.md](./DEV-LOCAL.md) — Como correr localmente (com Supabase opcional)
 
 ## Visão Geral
 

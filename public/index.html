@@ -264,6 +264,7 @@
                 <button class="xp-btn" style="flex: 1" id="sp-dec-1">‹ -1</button>
                 <button class="xp-btn" style="flex: 1" id="sp-inc-1">+1 ›</button>
                 <button class="xp-btn" style="flex: 1" id="sp-inc-5">+5 »</button>
+                <button class="xp-btn" style="flex: 1; color: var(--accent)" id="sp-max">MAX</button>
               </div>
             </div>
 
@@ -275,6 +276,7 @@
                 <button class="xp-btn" style="flex: 1" id="cp-dec-1">‹ -1</button>
                 <button class="xp-btn" style="flex: 1" id="cp-inc-1">+1 ›</button>
                 <button class="xp-btn" style="flex: 1" id="cp-inc-5">+5 »</button>
+                <button class="xp-btn" style="flex: 1; color: var(--accent)" id="cp-max">MAX</button>
               </div>
             </div>
           </div>
@@ -391,6 +393,9 @@
   </div>
 
   <!-- JavaScript -->
+  <!-- Optional runtime config (e.g. Supabase opt-in). Safe to 404 in pure
+       localStorage mode — main.js still boots normally. -->
+  <script src="config.js" onerror="void 0"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

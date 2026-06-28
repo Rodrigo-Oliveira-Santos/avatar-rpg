@@ -1,16 +1,25 @@
 # Avatar RPG — Claude Code Context
 
-**Updated:** 2026-05-31
+**Updated:** 2026-06-26
 
 ## Stack
 - Frontend: HTML5 + CSS3 + JS ES6 modules (no framework)
 - Backend: Netlify Functions + Supabase (PostgreSQL)
-- Current mode: localStorage bypass (no Supabase active)
+- Current mode: localStorage by default; optional Supabase persistence via `public/config.js` (`useSupabase: true`) or `?supabase=1`
 - Hosting: Netlify free tier
 
-## Status: Phases 1-6 Complete
+## Status: Phases 1-6 Complete + GM/UX patch
 
-All core features implemented. Remaining: companions system + Supabase integration.
+All core features implemented. Remaining: companions system + Supabase Auth integration.
+
+Recent changes (2026-06-26 patch):
+- Separate MAX buttons for HP/SP/CP
+- Players can no longer self-grant XP — GM-only
+- Dodge capped at 15; configurable `STAT_CAPS` for HP/SP/CP/Defense
+- Nation coins usable across all elements
+- GM/Admin lose the character/skill/items tabs
+- Hub for GM lists all registered players (even without saved characters)
+- Supabase CLI local persistence path wired up (opt-in)
 
 ## Modules
 

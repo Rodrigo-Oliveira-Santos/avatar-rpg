@@ -84,17 +84,74 @@ avatar-rpg/
 | `npm test` | Correr testes unitários |
 | `npm run test:watch` | Testes em modo watch |
 | `npm run build` | (placeholder — sem bundler) |
+| `npm run db:start` | (opcional) Arranca Supabase local |
+| `npm run db:stop` | (opcional) Pára Supabase local |
+| `npm run db:reset` | (opcional) Reaplica migrations + seed |
+| `npm run db:status` | (opcional) Estado do Supabase local |
+| `npm run dev:all` | (opcional) Arranca Supabase **e** o frontend numa só linha |
 
 ---
 
-## 🔮 Futuro — Backend com Netlify Dev + Supabase
+## 🔮 Futuro — Backend com Supabase CLI (modo BD local)
 
-Quando a integração com Supabase for implementada, será necessário:
+A app continua a funcionar 100% em localStorage por defeito. Quando quiseres começar a guardar/ler de uma BD igual à de produção, podes ligar o Supabase localmente.
 
-1. Conta no [Supabase](https://supabase.com/) (gratuita)
-2. Instalar Netlify CLI: `npm install -g netlify-cli`
-3. Configurar `.env` com chaves do Supabase (ver `.env.example`)
-4. Correr `netlify dev` em vez de `npm run dev` (porta 8888)
+### 1. Instalar e arrancar
+
+```bash
+# Instala a CLI do Supabase como dev dep
+npm install
+
+# Inicializa o projeto Supabase (1ª vez) — gera supabase/config.toml
+npx supabase init
+
+# Arranca os contentores Docker (Postgres + Studio + Storage + Auth)
+npm run db:start
+```
+
+Endereços úteis (defaults da CLI):
+- API REST: `http://127.0.0.1:54321`
+- Studio (UI web): `http://127.0.0.1:54323`
+- Postgres: `postgres://postgres:postgres@127.0.0.1:54322/postgres`
+
+### 2. Aplicar schema + seed
+
+```bash
+# Aplica todas as migrations em supabase/migrations/ e corre seed.sql
+npm run db:reset
+```
+
+A migration `20260101000000_init.sql` cria as tabelas (espelha o `supabase/schema.sql` legado) e o `seed.sql` insere os utilizadores de teste e fichas iniciais. A migration `20260628000000_relax_rls_pre_auth.sql` relaxa as policies de RLS para permitir que a app funcione com a `anon key` enquanto não há Supabase Auth — remove esta migração quando a integração com Auth for adicionada.
+
+### 3. Ligar o frontend ao Supabase
+
+```bash
+cp public/config.example.js public/config.js
+# Edita public/config.js e coloca useSupabase: true
+```
+
+Recarrega o browser. A partir daí o `AutoSave` faz upsert do personagem em `characters` em paralelo com o `localStorage`. Para alternar rapidamente sem editar o ficheiro, usa `http://localhost:3000/?supabase=1` (ou `?supabase=0` para desligar).
+
+### 4. Notas e limitações actuais
+
+- A migration deixa `auth_id` nullable para permitir login só por username em modo local. Em produção volta-se a exigir Supabase Auth.
+- As policies estritas de RLS são substituídas pela migration `20260628000000_relax_rls_pre_auth.sql` por policies permissivas (`using (true)`) enquanto não há Auth — remover essa migration quando o Auth for integrado.
+- O cliente Supabase é carregado por ESM dinâmico do `esm.sh` na primeira utilização — não há bundle adicional.
+- Em modo Supabase activo (`useSupabase: true`), todas as APIs (`characters`, `skills`, `items`, `notifications`, `auth`) falam directamente com Postgres via PostgREST. Quando desligado, voltam a usar localStorage / arrays vazios.
+
+### Scripts disponíveis
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run db:start` | Arranca Supabase local (Docker) |
+| `npm run db:stop` | Pára Supabase local |
+| `npm run db:reset` | Reaplica migrations + seed |
+| `npm run db:status` | Mostra portas e URLs ativos |
+| `npm run dev:all` | **Arranca Supabase local e o frontend numa só linha** (faz `db:start` e depois `dev`). Para terminar: `Ctrl+C` no servidor + `npm run db:stop`. |
+
+### Alternativa sem Docker — projeto remoto
+
+Se preferires não usar Docker, cria um projeto grátis em [supabase.com](https://supabase.com), corre o conteúdo de `supabase/migrations/20260101000000_init.sql` no SQL Editor e depois o `seed.sql`. No `public/config.js`, substitui `url` e `anonKey` pelos valores do teu projeto (Settings → API).
 
 ---
 

@@ -4,6 +4,8 @@
  */
 
 import { AUTOSAVE } from '../utils/constants.js';
+import { isSupabaseEnabled } from '../api/config.js';
+import { saveCharacter as saveCharacterToSupabase } from '../api/supabase-characters.js';
 
 /**
  * Logger helper
@@ -80,14 +82,39 @@ export class AutoSave {
   /**
    * Perform actual save
    */
+  /**
+   * Read the currently logged-in username (used by the Supabase writer).
+   */
+  getCurrentUsername() {
+    try {
+      const stored = localStorage.getItem('avatar_rpg_user');
+      if (stored) return JSON.parse(stored).username;
+    } catch {}
+    return null;
+  }
+
   async save() {
     const payload = this.character.serialize();
 
-    // BYPASS TEMPORÁRIO: save directly to localStorage (no backend)
     this.saveToLocal(payload);
     this.lastSavedState = JSON.stringify(payload);
     this.pendingChanges = false;
     log('info', 'Saved to localStorage');
+
+    if (isSupabaseEnabled()) {
+      const username = this.getCurrentUsername();
+      if (!username) {
+        log('warn', 'Supabase enabled but no username in session — skipping remote upsert');
+        return;
+      }
+
+      try {
+        await saveCharacterToSupabase(username, payload);
+        log('info', 'Synced to Supabase', { username });
+      } catch (err) {
+        log('error', 'Supabase save failed (kept localStorage copy)', err);
+      }
+    }
   }
 
   /**

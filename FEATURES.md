@@ -1,11 +1,25 @@
 # Avatar RPG — Documento de Features
 
-**Última atualização:** 2026-05-31  
+**Última atualização:** 2026-06-26  
 **Status:** Documento de referência
 
 **Legenda:**
 - ✅ Implementado
 - 🔮 Futuro (backlog)
+- ⚠️ Decisão pendente — ver [`DECISIONS.md`](./DECISIONS.md)
+
+---
+
+## Notas recentes (2026-06-26)
+
+- ✅ Botão MAX agora é específico por recurso: `HP-MAX`, `SP-MAX`, `CP-MAX` independentes.
+- ✅ Esquiva limitada a **15** (cap em `utils/constants.js` → `STAT_CAPS.dodge`).
+- ⚠️ Tetos máximos de Vida/Espírito/Chi/Defesa configuráveis em `STAT_CAPS` mas com valores por definir.
+- ✅ Apenas o GM concede XP (botão de XP desaparece para players).
+- ✅ Moedas nacionais já não dependem do elemento do jogador.
+- ✅ GM/Admin não têm ficha de personagem (abas `character`/elementos/`items` ocultas).
+- ✅ Hub do GM mostra todos os jogadores registados, mesmo sem ficha guardada.
+- ✅ Modo opcional de persistência Supabase local (ver [`DEV-LOCAL.md`](./DEV-LOCAL.md)).
 
 ---
 

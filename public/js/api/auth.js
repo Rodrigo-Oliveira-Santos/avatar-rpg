@@ -1,15 +1,19 @@
 /**
  * Auth API
+ *
+ * Local username-only authentication (no password). When Supabase is enabled
+ * we additionally upsert the user into the `users` table so role/elements
+ * line up with the DB-backed flows; otherwise we keep state in localStorage.
  */
 
-// BYPASS TEMPORÁRIO: imports do client comentados (reverter: descomentar e apagar esta linha)
-// import { post, get } from './client.js';
+import { isSupabaseEnabled } from './config.js';
+import { getSupabaseClient } from './supabase-client.js';
 
 const USERS_REGISTRY_KEY = 'avatar_rpg_users_registry';
 
 /**
- * Test profiles for local development
- * Each has a preset role and element
+ * Pre-defined test profiles. Mirrors `supabase/seed.sql` so behaviour is
+ * consistent across persistence backends.
  */
 const TEST_PROFILES = {
   admin: { id: 'user-admin', username: 'admin', role: 'admin' },
@@ -69,7 +73,7 @@ function ensureUserRegistry() {
   return registry;
 }
 
-function resolveUser(username) {
+function resolveUserFromLocal(username) {
   const key = normalizeUsername(username);
   const registry = ensureUserRegistry();
   const profile = TEST_PROFILES[key] || { id: `user-${key}`, username: key, role: 'player' };
@@ -90,53 +94,71 @@ function resolveUser(username) {
 }
 
 /**
- * BYPASS TEMPORÁRIO: Login mock sem chamar backend
- * Reverter: descomentar função original no final do ficheiro e apagar esta
+ * Upsert the user row in Supabase and return the persisted profile.
+ * If anything fails, callers should fall back to the local resolver.
  */
-export function login(username) {
-  const user = resolveUser(username);
-  localStorage.setItem('avatar_rpg_user', JSON.stringify(user));
-  return Promise.resolve({ token: 'bypass-token', user });
+async function resolveUserFromSupabase(username) {
+  const key = normalizeUsername(username);
+  const defaultProfile = TEST_PROFILES[key] || { id: `user-${key}`, username: key, role: 'player' };
+  const client = await getSupabaseClient();
+
+  const { data: existing, error: lookupErr } = await client
+    .from('users')
+    .select('id, username, role')
+    .eq('username', key)
+    .maybeSingle();
+  if (lookupErr) throw lookupErr;
+  if (existing) return existing;
+
+  const { data: created, error: insertErr } = await client
+    .from('users')
+    .insert({ username: key, role: defaultProfile.role })
+    .select('id, username, role')
+    .single();
+  if (insertErr) throw insertErr;
+  return created;
 }
 
-/**
- * BYPASS TEMPORÁRIO: Logout mock sem chamar backend
- * Reverter: descomentar função original no final do ficheiro e apagar esta
- */
-export function logout() {
-  localStorage.removeItem('avatar_rpg_user');
-  return Promise.resolve();
-}
+export async function login(username) {
+  let user = resolveUserFromLocal(username);
 
-/**
- * BYPASS TEMPORÁRIO: getMe mock sem chamar backend
- * Reverter: descomentar função original no final do ficheiro e apagar esta
- */
-export function getMe() {
-  const stored = localStorage.getItem('avatar_rpg_user');
-  if (stored) {
-    const sessionUser = JSON.parse(stored);
-    const user = resolveUser(sessionUser?.username);
-    localStorage.setItem('avatar_rpg_user', JSON.stringify(user));
-    return Promise.resolve(user);
+  if (isSupabaseEnabled()) {
+    try {
+      const remote = await resolveUserFromSupabase(username);
+      // Keep the remote role/id authoritative when available.
+      user = { ...user, id: remote.id, role: remote.role || user.role };
+    } catch (err) {
+      console.warn('[auth.login] Supabase user upsert failed, using local profile', err);
+    }
   }
-  return Promise.reject(new Error('Sem sessão'));
+
+  localStorage.setItem('avatar_rpg_user', JSON.stringify(user));
+  return { token: 'local-session', user };
 }
 
-/* BYPASS TEMPORÁRIO: funções originais comentadas (reverter: descomentar tudo abaixo, apagar as funções mock acima, e descomentar o import do client.js)
-
-import { post, get } from './client.js';
-
-export function login(username) {
-  return post('/api/auth/login', { username });
+export async function logout() {
+  localStorage.removeItem('avatar_rpg_user');
+  return null;
 }
 
-export function logout() {
-  return post('/api/auth/logout', {});
-}
+export async function getMe() {
+  const stored = localStorage.getItem('avatar_rpg_user');
+  if (!stored) throw new Error('Sem sessão');
 
-export function getMe() {
-  return get('/api/auth/me');
-}
+  const sessionUser = JSON.parse(stored);
+  const user = resolveUserFromLocal(sessionUser?.username);
 
-*/
+  if (isSupabaseEnabled()) {
+    try {
+      const remote = await resolveUserFromSupabase(sessionUser?.username);
+      const merged = { ...user, id: remote.id, role: remote.role || user.role };
+      localStorage.setItem('avatar_rpg_user', JSON.stringify(merged));
+      return merged;
+    } catch (err) {
+      console.warn('[auth.getMe] Supabase lookup failed, using local profile', err);
+    }
+  }
+
+  localStorage.setItem('avatar_rpg_user', JSON.stringify(user));
+  return user;
+}

@@ -6,6 +6,7 @@
 import { calculateAllStats } from '../character/stats.js';
 
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
+const USER_REGISTRY_KEY = 'avatar_rpg_users_registry';
 const PRESET_USERNAMES = ['zuko', 'katara', 'toph', 'aang', 'sokka', 'gm', 'admin'];
 const DEFAULT_ATTRIBUTES = {
   FOR: 8,
@@ -262,18 +263,76 @@ export function getPlayerUsernames() {
 }
 
 /**
+ * Read all usernames registered as `player` role, regardless of whether
+ * they have a saved character. Useful for GM tooling that needs to see
+ * the full roster even before players log in for the first time.
+ */
+export function getRegisteredPlayerUsernames() {
+  if (!hasLocalStorage()) return [];
+
+  try {
+    const stored = localStorage.getItem(USER_REGISTRY_KEY);
+    if (!stored) return [];
+
+    const parsed = JSON.parse(stored);
+    if (!parsed || typeof parsed !== 'object') return [];
+
+    return Object.entries(parsed)
+      .filter(([, entry]) => entry?.role === 'player')
+      .map(([username]) => username)
+      .sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
+}
+
+function createUnsavedPlayer(username) {
+  return {
+    id: username,
+    username,
+    name: username,
+    element: 'none',
+    level: 1,
+    hp: 0,
+    hpMax: 0,
+    chi: 0,
+    chiMax: 0,
+    espiritu: 0,
+    espirituMax: 0,
+    defense: 0,
+    dodge: 0,
+    subclass: null,
+    buffs: [],
+    debuffs: [],
+    unsaved: true,
+  };
+}
+
+/**
  * Get hub players from saved character data, falling back to mocks.
+ * @param {object} [options]
+ * @param {boolean} [options.includeUnsaved] - When true, also lists registered
+ *   players without a saved character (placeholder entries flagged `unsaved`).
  * @returns {object[]}
  */
-export function getPlayers() {
+export function getPlayers(options = {}) {
   if (!hasLocalStorage()) return [...MOCK_PLAYERS];
 
-  const players = getPlayerUsernames()
+  const savedUsernames = getPlayerUsernames();
+  const players = savedUsernames
     .map(username => {
       const character = parseCharacter(localStorage.getItem(getCharacterStorageKey(username)));
       return character ? toHubPlayer(username, character) : null;
     })
     .filter(Boolean);
+
+  if (options.includeUnsaved) {
+    const savedSet = new Set(savedUsernames);
+    const unsaved = getRegisteredPlayerUsernames()
+      .filter(username => !savedSet.has(username))
+      .map(createUnsavedPlayer);
+    return [...players, ...unsaved];
+  }
 
   return players.length > 0 ? players : [...MOCK_PLAYERS];
 }

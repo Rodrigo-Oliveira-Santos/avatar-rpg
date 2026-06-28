@@ -7,7 +7,12 @@
     "dev": "npx serve public -l 3000",
     "build": "echo 'Static build - no bundler needed'",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:status": "npx supabase status",
+    "dev:all": "npm run db:start && npm run dev"
   },
   "keywords": [
     "rpg",
@@ -19,6 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "serve": "^14.2.0",
+    "supabase": "^1.200.0",
     "vitest": "^4.1.7"
   },
   "dependencies": {

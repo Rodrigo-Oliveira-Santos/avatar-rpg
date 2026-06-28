@@ -1,40 +1,34 @@
 /**
  * Characters API
+ *
+ * When `useSupabase` is enabled (see `public/config.js`), reads and writes
+ * are issued directly against the Supabase REST API via `supabase-client.js`.
+ * Otherwise the module falls back to localStorage so the app keeps working
+ * offline.
  */
 
-// BYPASS TEMPORÁRIO: import do client comentado (reverter: descomentar)
-// import { get, post, put, del } from './client.js';
+import { isSupabaseEnabled } from './config.js';
+import {
+  loadCharacter as loadCharacterFromSupabase,
+  saveCharacter as saveCharacterToSupabase,
+} from './supabase-characters.js';
+import { getSupabaseClient } from './supabase-client.js';
+import { rowToCharacter } from './character-mapper.js';
 
-/* BYPASS TEMPORÁRIO: funções originais comentadas — reverter: descomentar tudo abaixo e apagar os mocks, descomentar o import acima
-
-import { get, post, put, del } from './client.js';
-
-export function list() { return get('/api/characters'); }
-export function create(data) { return post('/api/characters', data); }
-export function getById(id) { return get(`/api/characters/${id}`); }
-export function update(id, data) { return put(`/api/characters/${id}`, data); }
-export function remove(id) { return del(`/api/characters/${id}`); }
-export function listAll() { return get('/api/characters/all'); }
-
-*/
-
-/**
- * Get current username for localStorage key
- */
-function getCurrentUser() {
+function readCurrentUsername() {
   try {
     const stored = localStorage.getItem('avatar_rpg_user');
     if (stored) return JSON.parse(stored).username;
   } catch {}
-  return 'default';
+  return null;
 }
 
 function getStorageKey() {
-  return `avatar_rpg_character_${getCurrentUser()}`;
+  return `avatar_rpg_character_${readCurrentUsername() || 'default'}`;
 }
 
 /**
- * Default character presets for test profiles
+ * Default character presets for test profiles (first-login bootstrap).
  */
 const PRESETS = {
   zuko: {
@@ -74,49 +68,143 @@ const PRESETS = {
   },
 };
 
-/** BYPASS TEMPORÁRIO: retorna lista vazia — a app faz fallback para localStorage */
-export function list() { return Promise.resolve([]); }
+/**
+ * List characters for the current user.
+ * - Supabase mode: returns `[character]` (single record per user today) or `[]`.
+ * - Local mode: returns the localStorage record wrapped in an array, or `[]`.
+ */
+export async function list() {
+  if (isSupabaseEnabled()) {
+    const username = readCurrentUsername();
+    if (!username) return [];
+    try {
+      const character = await loadCharacterFromSupabase(username);
+      return character ? [character] : [];
+    } catch (err) {
+      console.warn('[characters.list] Supabase load failed, falling back to localStorage', err);
+    }
+  }
 
-/** BYPASS TEMPORÁRIO */
-export function create(data) {
-  return Promise.resolve({ id: 'local-char', ...data });
+  const local = loadLocal();
+  return local ? [local] : [];
 }
-
-/** BYPASS TEMPORÁRIO */
-export function getById(id) {
-  const saved = localStorage.getItem(getStorageKey());
-  return saved ? Promise.resolve(JSON.parse(saved)) : Promise.resolve(null);
-}
-
-/** BYPASS TEMPORÁRIO */
-export function update(id, data) { return Promise.resolve(data); }
-
-/** BYPASS TEMPORÁRIO */
-export function remove(id) { return Promise.resolve(null); }
-
-/** BYPASS TEMPORÁRIO: retorna lista vazia */
-export function listAll() { return Promise.resolve([]); }
 
 /**
- * Get preset data for a username (used on first login)
- * @param {string} username
- * @returns {object|null}
+ * Create a character for the current user (used on first login bootstrap).
+ */
+export async function create(data) {
+  if (isSupabaseEnabled()) {
+    const username = readCurrentUsername();
+    if (username) {
+      try {
+        const id = await saveCharacterToSupabase(username, data);
+        return { ...data, id };
+      } catch (err) {
+        console.warn('[characters.create] Supabase save failed, kept local copy', err);
+      }
+    }
+  }
+  saveLocal(data);
+  return { id: data.id || 'local-char', ...data };
+}
+
+/**
+ * Fetch a character by id (Supabase) or fall back to the localStorage record.
+ */
+export async function getById(id) {
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { data, error } = await client
+        .from('characters')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return rowToCharacter(data);
+    } catch (err) {
+      console.warn('[characters.getById] Supabase fetch failed, falling back', err);
+    }
+  }
+  const saved = localStorage.getItem(getStorageKey());
+  return saved ? JSON.parse(saved) : null;
+}
+
+/**
+ * Update a character (id is ignored in Supabase mode because we key by username).
+ */
+export async function update(id, data) {
+  if (isSupabaseEnabled()) {
+    const username = readCurrentUsername();
+    if (username) {
+      try {
+        await saveCharacterToSupabase(username, data);
+      } catch (err) {
+        console.warn('[characters.update] Supabase update failed, kept local copy', err);
+      }
+    }
+  }
+  saveLocal(data);
+  return data;
+}
+
+/**
+ * Delete a character. In Supabase mode it removes the row; locally clears the key.
+ */
+export async function remove(id) {
+  if (isSupabaseEnabled() && id) {
+    try {
+      const client = await getSupabaseClient();
+      const { error } = await client.from('characters').delete().eq('id', id);
+      if (error) throw error;
+    } catch (err) {
+      console.warn('[characters.remove] Supabase delete failed', err);
+    }
+  }
+  localStorage.removeItem(getStorageKey());
+  return null;
+}
+
+/**
+ * List all characters in the system (GM/Admin view).
+ */
+export async function listAll() {
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { data, error } = await client
+        .from('characters')
+        .select('*, users:users!characters_user_id_fkey(username, role)');
+      if (error) throw error;
+      return (data || []).map((row) => ({
+        ...rowToCharacter(row),
+        owner_username: row.users?.username || null,
+        owner_role: row.users?.role || null,
+      }));
+    } catch (err) {
+      console.warn('[characters.listAll] Supabase fetch failed', err);
+      return [];
+    }
+  }
+  return [];
+}
+
+/**
+ * Get preset data for a username (used on first login).
  */
 export function getPreset(username) {
   return PRESETS[username.toLowerCase()] || null;
 }
 
 /**
- * Save character to localStorage (per-user)
- * @param {object} data - Character data
+ * Save character to localStorage (per-user). Always available as a backup.
  */
 export function saveLocal(data) {
   localStorage.setItem(getStorageKey(), JSON.stringify(data));
 }
 
 /**
- * Load character from localStorage (per-user)
- * @returns {object|null}
+ * Load character from localStorage (per-user).
  */
 export function loadLocal() {
   const saved = localStorage.getItem(getStorageKey());
