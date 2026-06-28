@@ -70,6 +70,7 @@ export class App {
         this.showLoading(false);
       },
       onLogout: () => {
+        this.teardownSession();
         this.showLoading(false);
         this.authManager.showLogin();
       },
@@ -140,13 +141,27 @@ export class App {
   }
 
   setupUI() {
-    // Prevent duplicate setup (re-login scenario)
     if (this._uiInitialized) {
-      // Just reload character data and refresh UI
+      // Re-login: rebuild everything that depends on the current user/character.
+      this.resetNavigationVisibility();
+      this.setupNavigation();
+      this.renderAttributeControls();
+      this.bindIdentityFields();
+      this.setupElementSelector();
+      this.initSkillTrees();
+      this.initInventory();
+      this.initShop();
+      this.initHub();
       this.initImport();
       this.initAdmin();
       this.updateUI(this.character.getData());
-      this.setupElementSelector();
+
+      // Re-create AutoSave since teardownSession() disposed of the previous one.
+      if (!this.autoSave) {
+        this.autoSave = new AutoSave(this.character, { debounceMs: 2000 });
+      } else {
+        this.autoSave.lastSavedState = null;
+      }
       return;
     }
     this._uiInitialized = true;
@@ -172,6 +187,37 @@ export class App {
     this.autoSave = new AutoSave(this.character, { debounceMs: 2000 });
   }
 
+  /**
+   * Reset role-dependent nav visibility (called on re-login so a role
+   * change between users does not leave tabs hidden/shown incorrectly).
+   */
+  resetNavigationVisibility() {
+    $$('.nav-btn[data-page]').forEach((btn) => {
+      btn.style.display = '';
+    });
+  }
+
+  /**
+   * Tear down per-user state before a new login. Prevents leaking the
+   * previous user's hub/inventory cache, debounced autosaves, etc.
+   */
+  teardownSession() {
+    if (this.autoSave) {
+      this.autoSave.destroy();
+      this.autoSave = null;
+    }
+    if (this.hubPage) {
+      this.hubPage.destroy();
+      this.hubPage = null;
+    }
+    if (this.inventoryPage) {
+      this.inventoryPage.destroy?.();
+      this.inventoryPage = null;
+    }
+    this.shopPage = null;
+    this.skillTrees = {};
+  }
+
   showLoading(show) {
     const loader = $('#app-loader');
     if (loader) loader.style.display = show ? 'flex' : 'none';
@@ -181,6 +227,19 @@ export class App {
     $$('.nav-btn[data-page]').forEach(btn => {
       on(btn, 'click', () => this.switchTab(btn.dataset.page));
     });
+
+    // GMs and admins don't play — hide character/skill/item gameplay tabs.
+    const isGameMaster = this.authManager?.hasRole('gm');
+    if (isGameMaster) {
+      const hiddenForGM = ['character', 'fire', 'water', 'earth', 'air', 'none', 'items'];
+      hiddenForGM.forEach(pageId => {
+        const btn = document.querySelector(`.nav-btn[data-page="${pageId}"]`);
+        if (btn) btn.style.display = 'none';
+      });
+      this.switchTab('hub');
+      return;
+    }
+
     this.switchTab('character');
   }
 
@@ -314,30 +373,42 @@ export class App {
       });
     });
 
-    const maxBtn = $('#hp-max');
-    if (maxBtn) {
-      on(maxBtn, 'click', () => {
+    const maxButtons = [
+      { id: 'hp-max', statKey: 'maxHP', currentKey: 'currentHp' },
+      { id: 'sp-max', statKey: 'maxSP', currentKey: 'currentSp' },
+      { id: 'cp-max', statKey: 'maxCP', currentKey: 'currentCp' },
+    ];
+
+    maxButtons.forEach(({ id, statKey, currentKey }) => {
+      const btn = $(`#${id}`);
+      if (!btn) return;
+      on(btn, 'click', () => {
         const stats = this.character.getStats();
-        this.currentHp = stats.maxHP;
-        this.currentSp = stats.maxSP;
-        this.currentCp = stats.maxCP;
+        this[currentKey] = stats[statKey];
         this.updateCombatBars();
       });
-    }
+    });
   }
 
   bindXPControls() {
     const addXpBtn = $('[data-action="add-xp"]');
-    if (addXpBtn) {
-      on(addXpBtn, 'click', async () => {
-        const input = await promptDialog('Quanto XP adicionar?', { placeholder: 'Ex: 100' });
-        const amount = parseInt(input, 10);
-        if (!isNaN(amount) && amount > 0) {
-          this.character.addXP(amount);
-          toast(`+${amount} XP adicionado!`, 'success');
-        }
-      });
+    if (!addXpBtn) return;
+
+    // Only the GM can grant XP. Players don't get a self-service XP button.
+    if (!this.authManager?.hasRole('gm')) {
+      addXpBtn.style.display = 'none';
+      return;
     }
+
+    on(addXpBtn, 'click', async () => {
+      if (!this.authManager?.hasRole('gm')) return;
+      const input = await promptDialog('Quanto XP adicionar?', { placeholder: 'Ex: 100' });
+      const amount = parseInt(input, 10);
+      if (!isNaN(amount) && amount > 0) {
+        this.character.addXP(amount);
+        toast(`+${amount} XP adicionado!`, 'success');
+      }
+    });
   }
 
   bindImportExport() {
