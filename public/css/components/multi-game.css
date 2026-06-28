@@ -3,37 +3,6 @@
    See docs/MULTI-GAME-DESIGN.md
    ============================================================ */
 
-.game-switcher {
-  display: flex;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--bg2, #1a1a1a);
-  border-bottom: 1px solid var(--border, #333);
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.game-switcher-btn {
-  background: transparent;
-  color: var(--text2, #aaa);
-  border: 1px solid var(--border, #333);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.game-switcher-btn:hover {
-  color: var(--text, #eee);
-}
-
-.game-switcher-btn.on {
-  background: var(--accent, #f97316);
-  color: #fff;
-  border-color: var(--accent, #f97316);
-}
-
 .game-root {
   display: none;
 }
@@ -132,12 +101,21 @@
 
 .landing-card-btn:hover { filter: brightness(1.1); }
 
-/* ---------- Back-to-hub button (inside each game) ---------- */
-.back-to-hub-btn {
+/* ---------- Back-to-landing widget (inside each game) ---------- */
+.game-back-widget {
   position: fixed;
-  top: 12px;
+  top: 10px;
   left: 12px;
   z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.game-back-btn {
+  pointer-events: auto;
   background: var(--bg2, #1a1a1a);
   color: var(--text, #eee);
   border: 1px solid var(--border, #333);
@@ -145,8 +123,20 @@
   padding: 4px 10px;
   font-size: 12px;
   cursor: pointer;
-  opacity: 0.85;
-  transition: opacity 0.15s;
+  opacity: 0.9;
+  transition: opacity 0.15s, background 0.15s;
 }
 
-.back-to-hub-btn:hover { opacity: 1; }
+.game-back-btn:hover {
+  opacity: 1;
+  background: var(--bg3, #232323);
+}
+
+.game-back-label {
+  font-size: 10px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-left: 4px;
+  pointer-events: none;
+}

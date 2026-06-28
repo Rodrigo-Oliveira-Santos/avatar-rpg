@@ -8,41 +8,28 @@
  */
 
 import { renderBuildsPage } from './pages/BuildsPage.js';
-import { router } from '../../router.js';
+import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 
 const ROOT_SELECTOR = '[data-game-root="minecraft"]';
-const BACK_BTN_ID = 'mc-back-to-hub';
+const GAME_ID = 'minecraft';
+const GAME_LABEL = 'Minecraft Builds';
 
 function root() {
   return document.querySelector(ROOT_SELECTOR);
 }
 
-function ensureBackButton() {
-  if (document.getElementById(BACK_BTN_ID)) return;
-  const el = root();
-  if (!el) return;
-  const btn = document.createElement('button');
-  btn.id = BACK_BTN_ID;
-  btn.type = 'button';
-  btn.className = 'back-to-hub-btn';
-  btn.textContent = '← Hub';
-  btn.title = 'Voltar à página inicial';
-  btn.addEventListener('click', () => router.navigate('landing'));
-  el.prepend(btn);
-}
-
 export const minecraftGame = {
-  id: 'minecraft',
-  label: 'Minecraft Builds',
+  id: GAME_ID,
+  label: GAME_LABEL,
 
   mount(route) {
     const el = root();
     if (!el) return;
     el.classList.add('on');
+    el.innerHTML = '';
+    mountBackWidget(el, GAME_ID, GAME_LABEL);
 
     const page = route?.page || 'builds';
-    el.innerHTML = '';
-    ensureBackButton();
     switch (page) {
       case 'builds':
       default:
@@ -56,6 +43,7 @@ export const minecraftGame = {
       el.classList.remove('on');
       el.innerHTML = '';
     }
+    unmountBackWidget(GAME_ID);
   },
 };
 

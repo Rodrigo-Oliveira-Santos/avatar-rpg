@@ -10,7 +10,6 @@ import { renderLandingPage } from './pages/LandingPage.js';
 import { router } from '../../router.js';
 
 const ROOT_SELECTOR = '[data-game-root="landing"]';
-const SWITCHER_SELECTOR = '#game-switcher';
 
 function root() {
   return document.querySelector(ROOT_SELECTOR);
@@ -26,10 +25,6 @@ export const landingGame = {
     el.classList.add('on');
     el.innerHTML = '';
     el.appendChild(renderLandingPage((gameId) => router.navigate(gameId)));
-
-    // Hide the top switcher while on the landing — the cards are the entry point.
-    const switcher = document.querySelector(SWITCHER_SELECTOR);
-    if (switcher) switcher.style.display = 'none';
   },
 
   unmount() {
@@ -38,8 +33,6 @@ export const landingGame = {
       el.classList.remove('on');
       el.innerHTML = '';
     }
-    const switcher = document.querySelector(SWITCHER_SELECTOR);
-    if (switcher) switcher.style.display = '';
   },
 };
 

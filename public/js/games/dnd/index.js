@@ -8,41 +8,28 @@
  */
 
 import { renderCharactersPage } from './pages/CharactersPage.js';
-import { router } from '../../router.js';
+import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 
 const ROOT_SELECTOR = '[data-game-root="dnd"]';
-const BACK_BTN_ID = 'dnd-back-to-hub';
+const GAME_ID = 'dnd';
+const GAME_LABEL = 'D&D 5e';
 
 function root() {
   return document.querySelector(ROOT_SELECTOR);
 }
 
-function ensureBackButton() {
-  if (document.getElementById(BACK_BTN_ID)) return;
-  const el = root();
-  if (!el) return;
-  const btn = document.createElement('button');
-  btn.id = BACK_BTN_ID;
-  btn.type = 'button';
-  btn.className = 'back-to-hub-btn';
-  btn.textContent = '← Hub';
-  btn.title = 'Voltar à página inicial';
-  btn.addEventListener('click', () => router.navigate('landing'));
-  el.prepend(btn);
-}
-
 export const dndGame = {
-  id: 'dnd',
-  label: 'D&D 5e',
+  id: GAME_ID,
+  label: GAME_LABEL,
 
   mount(route) {
     const el = root();
     if (!el) return;
     el.classList.add('on');
+    el.innerHTML = '';
+    mountBackWidget(el, GAME_ID, GAME_LABEL);
 
     const page = route?.page || 'characters';
-    el.innerHTML = '';
-    ensureBackButton();
     switch (page) {
       case 'characters':
       default:
@@ -56,6 +43,7 @@ export const dndGame = {
       el.classList.remove('on');
       el.innerHTML = '';
     }
+    unmountBackWidget(GAME_ID);
   },
 };
 

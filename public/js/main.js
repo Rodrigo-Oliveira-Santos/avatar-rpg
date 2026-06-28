@@ -19,31 +19,8 @@ router.register('avatar', avatarGame);
 router.register('dnd', dndGame);
 router.register('minecraft', minecraftGame);
 
-const SWITCHER_SELECTOR = '#game-switcher';
-
-function activeGame() {
-  return (window.location.hash.replace(/^#\/?/, '').split('/')[0]) || 'landing';
-}
-
-function syncSwitcher() {
-  const game = activeGame();
-  document.querySelectorAll('.game-switcher-btn').forEach((btn) => {
-    btn.classList.toggle('on', btn.dataset.game === game);
-  });
-  const switcher = document.querySelector(SWITCHER_SELECTOR);
-  if (switcher) {
-    switcher.style.display = game === 'landing' ? 'none' : '';
-  }
-}
-
 function init() {
-  document.querySelectorAll('.game-switcher-btn').forEach((btn) => {
-    btn.addEventListener('click', () => router.navigate(btn.dataset.game));
-  });
-  window.addEventListener('hashchange', syncSwitcher);
-
   router.start();
-  syncSwitcher();
 }
 
 if (document.readyState === 'loading') {
