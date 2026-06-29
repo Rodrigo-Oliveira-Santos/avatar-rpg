@@ -652,6 +652,23 @@ export class GiftTransfer {
       ...details,
     }, actor);
 
+    // Persist the GM transfer as a "forced" trade so it appears in the
+    // recipient's history. Best-effort: if Supabase is offline the API
+    // already falls back to localStorage.
+    import('../api/trades.js').then(({ forced }) => {
+      const items = type === 'item' ? [{ name: details.itemName, quantity: details.quantity }] : [];
+      const gold  = type === 'gold' ? details.amount : 0;
+      const note  = type === 'nation_coins'
+        ? `Moeda ${details.currencyId}: ${details.amount}`
+        : null;
+      return forced({
+        from: from || (actor || 'GM'),
+        to,
+        items, gold, note,
+        kind: type === 'gold' ? 'reward' : 'loot',
+      });
+    }).catch((err) => console.warn('[GiftTransfer] could not log forced trade', err));
+
     toast(`Transferência concluída: ${this.getTransferSummary(from, to, type, details)}.`, 'success');
 
     this.container.dispatchEvent(new CustomEvent(GIFT_TRANSFER_UPDATED_EVENT, {

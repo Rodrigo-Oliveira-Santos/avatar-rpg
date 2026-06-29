@@ -1,9 +1,17 @@
 /**
  * Hub data source
- * Uses localStorage character saves when available, with mock fallback.
+ *
+ * Resolution order:
+ *   1. Supabase REST (when `useSupabase` is on) — players + characters joined.
+ *   2. localStorage saves keyed per-user.
+ *   3. MOCK_PLAYERS, only when neither backend yields anything.
  */
 
 import { calculateAllStats } from '../character/stats.js';
+import { isSupabaseEnabled } from '../api/config.js';
+import { getSupabaseClient } from '../api/supabase-client.js';
+import { rowToCharacter } from '../api/character-mapper.js';
+import { normalizeStatusEffect } from '../utils/statusEffects.js';
 
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
 const USER_REGISTRY_KEY = 'avatar_rpg_users_registry';
@@ -207,16 +215,29 @@ function getEffectType(effect) {
   return null;
 }
 
+/**
+ * Convert the raw `status_effects` array stored on a character into the
+ * `{ buffs, debuffs }` shape the Hub UI expects. Uses the catalog
+ * (`utils/statusEffects`) to resolve human-readable names + icons for
+ * entries persisted by id only (e.g. `{ id: 'sangrando', type: 'negative' }`).
+ */
 function mapStatusEffects(statusEffects = []) {
   const effects = Array.isArray(statusEffects) ? statusEffects : [];
 
-  return effects.reduce((accumulator, effect) => {
-    const name = getEffectName(effect);
-    const type = getEffectType(effect);
+  return effects.reduce((accumulator, raw) => {
+    // Prefer the catalog-aware normaliser; fall back to legacy name+type
+    // heuristics for very old shapes (string-only labels, `positive: true`).
+    const normalised = normalizeStatusEffect(raw);
+    if (normalised) {
+      const bucket = normalised.type === 'positive' ? 'buffs' : 'debuffs';
+      accumulator[bucket].push(normalised);
+      return accumulator;
+    }
 
+    const name = getEffectName(raw);
+    const type = getEffectType(raw);
     if (!name || !type) return accumulator;
-
-    accumulator[type === 'positive' ? 'buffs' : 'debuffs'].push({ name, type });
+    accumulator[type === 'positive' ? 'buffs' : 'debuffs'].push({ id: name, name, type, icon: '•', custom: true });
     return accumulator;
   }, { buffs: [], debuffs: [] });
 }
@@ -239,11 +260,11 @@ function toHubPlayer(username, character) {
     name: identity.nome || username,
     element: String(identity.elemento || 'none').toLowerCase(),
     level,
-    hp: resolveCurrentValue(character, ['hp', 'currentHp', 'currentHP', 'vida', 'vidaAtual'], derivedStats.maxHP),
+    hp: resolveCurrentValue(character, ['hp_current', 'hp', 'currentHp', 'currentHP', 'vida', 'vidaAtual'], derivedStats.maxHP),
     hpMax: derivedStats.maxHP,
-    chi: resolveCurrentValue(character, ['chi', 'currentChi', 'currentCp', 'currentCP', 'cp', 'chiAtual'], derivedStats.maxCP),
+    chi: resolveCurrentValue(character, ['cp_current', 'chi', 'currentChi', 'currentCp', 'currentCP', 'cp', 'chiAtual'], derivedStats.maxCP),
     chiMax: derivedStats.maxCP,
-    espiritu: resolveCurrentValue(character, ['espiritu', 'espirito', 'currentSp', 'currentSP', 'sp', 'espirituAtual', 'espiritoAtual'], derivedStats.maxSP),
+    espiritu: resolveCurrentValue(character, ['sp_current', 'espiritu', 'espirito', 'currentSp', 'currentSP', 'sp', 'espirituAtual', 'espiritoAtual'], derivedStats.maxSP),
     espirituMax: derivedStats.maxSP,
     defense: derivedStats.defense,
     dodge: derivedStats.dodge,
@@ -335,4 +356,80 @@ export function getPlayers(options = {}) {
   }
 
   return players.length > 0 ? players : [...MOCK_PLAYERS];
+}
+
+/**
+ * Supabase-backed version of `getPlayers`. Returns an array of HubPlayer
+ * objects keyed by registered users with role='player'. When
+ * `includeUnsaved` is true, players without a character row are returned
+ * as placeholder entries flagged `unsaved`.
+ *
+ * Falls back to the synchronous `getPlayers` on any error so the UI keeps
+ * working offline.
+ *
+ * @param {object} [options]
+ * @param {boolean} [options.includeUnsaved]
+ * @returns {Promise<object[]>}
+ */
+export async function getPlayersAsync(options = {}) {
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { data, error } = await client
+        .from('users')
+        .select('username, role, characters(*)')
+        .eq('role', 'player');
+      if (error) throw error;
+
+      const players = (data || [])
+        .map((userRow) => {
+          const rawChar = Array.isArray(userRow.characters)
+            ? userRow.characters[0]
+            : userRow.characters;
+          if (rawChar) {
+            const character = rowToCharacter(rawChar);
+            return toHubPlayer(userRow.username, character);
+          }
+          return options.includeUnsaved ? createUnsavedPlayer(userRow.username) : null;
+        })
+        .filter(Boolean);
+
+      // Sort: saved first, then unsaved, alphabetical within each group.
+      players.sort((a, b) => {
+        if (Boolean(a.unsaved) !== Boolean(b.unsaved)) return a.unsaved ? 1 : -1;
+        return a.username.localeCompare(b.username);
+      });
+      return players;
+    } catch (err) {
+      console.warn('[hub.getPlayersAsync] Supabase fetch failed, falling back', err);
+    }
+  }
+  return getPlayers(options);
+}
+
+/**
+ * Count of registered campaign players (role='player'). Independent of
+ * whether they have a saved character. Used by the nav badge.
+ *
+ * @returns {Promise<number>}
+ */
+export async function getPlayerCount() {
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { count, error } = await client
+        .from('users')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'player');
+      if (error) throw error;
+      if (typeof count === 'number') return count;
+    } catch (err) {
+      console.warn('[hub.getPlayerCount] Supabase count failed, using fallback', err);
+    }
+  }
+  // Local fallback: registered players (everyone with role='player' in localStorage).
+  const registered = getRegisteredPlayerUsernames();
+  if (registered.length) return registered.length;
+  const saved = getPlayerUsernames();
+  return saved.length || MOCK_PLAYERS.length;
 }
