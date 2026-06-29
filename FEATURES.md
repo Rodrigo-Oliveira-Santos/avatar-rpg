@@ -10,16 +10,51 @@
 
 ---
 
-## Notas recentes (2026-06-26)
+## Notas recentes (2026-06-29)
 
-- ✅ Botão MAX agora é específico por recurso: `HP-MAX`, `SP-MAX`, `CP-MAX` independentes.
-- ✅ Esquiva limitada a **15** (cap em `utils/constants.js` → `STAT_CAPS.dodge`).
-- ⚠️ Tetos máximos de Vida/Espírito/Chi/Defesa configuráveis em `STAT_CAPS` mas com valores por definir.
-- ✅ Apenas o GM concede XP (botão de XP desaparece para players).
-- ✅ Moedas nacionais já não dependem do elemento do jogador.
-- ✅ GM/Admin não têm ficha de personagem (abas `character`/elementos/`items` ocultas).
-- ✅ Hub do GM mostra todos os jogadores registados, mesmo sem ficha guardada.
-- ✅ Modo opcional de persistência Supabase local (ver [`DEV-LOCAL.md`](./DEV-LOCAL.md)).
+### Sistema de combate por turnos
+- ✅ Encontros centralizados em Supabase (`encounters` + `encounter_combatants`) com Realtime: o painel do combate atualiza em todos os browsers sem refresh.
+- ✅ Botão `⚔ Iniciar batalha` vive na nova tab **🎛 Controlo** (GM/Admin).
+- ✅ Iniciativa por `promptRoll` — default manual, toggle para "rodar no site" sem alterar a regra default.
+- ✅ Jogadores no seu turno têm `Fim do meu turno` que avança mesmo o turno (sem precisar do GM confirmar).
+- ✅ Indicador `#1, #2, #3…` (ordem) em todos os cards (Hub, monstros, GM Control, EncounterPanel).
+- ✅ Status effects ganharam `damage_per_turn`, `tick_when` (`start`/`end`), `default_duration`, `attribute_mod` → engine de ticks corre automaticamente quando o turno avança.
+
+### Página de Controlo do GM
+- ✅ Dashboard único: HP/CP/SP +/- com persistência, skills clicáveis com nomes resolvidos, atalhos `⚡ Efeitos`, `💰 Ouro`, `⭐ XP`, `📝 Notas` (GM), `⚰ Cemitério`.
+
+### Persistência
+- ✅ Colunas dedicadas em `characters`: `hp_current`, `cp_current`, `sp_current`, `status_effects`, `player_notes`, `gm_notes`. Updates cirúrgicos via API; AutoSave omite-as.
+- ✅ Realtime ligado em `characters`, `monsters`, `encounters`, `trades` — alterações propagam-se sem refresh.
+
+### Trades cross-browser
+- ✅ Nova tabela `trades` substitui o storage local-only que assumia ambos os jogadores no mesmo browser.
+- ✅ Toast no destinatário ao receber proposta + badge na nav (cross-browser via Realtime).
+- ✅ Histórico de trocas no perfil do jogador (`TradeHistoryPanel`).
+- ✅ GM forced transfers (GiftTransfer) entram no histórico como `status='forced'`.
+
+### Loja
+- ✅ Modo **🛠 Gerir / 🛒 Vista do Jogador** (toggle só para GM).
+- ✅ CRUD inline de items (preço/nome/raridade/tipo/descrição) + criar novo.
+- ✅ **Perfis de Loja** (`shop_profiles`): bundles named que o GM aplica num clique para trocar o catálogo.
+
+### Outras melhorias
+- ✅ Botão "Propor Troca" funciona cross-browser (já não exige a ficha do alvo localmente).
+- ✅ Notas no perfil: jogador (próprias, visíveis a si) + GM (sobre o jogador, GM-only).
+- ✅ `createElement` usa `setAttribute` para `aria-*`/`data-*`/`role` (antes eram expandos ignorados pelos screen readers).
+- ✅ Modais ad-hoc deixaram de aparecer invisíveis (default `.modal-overlay { opacity: 1 }`; `confirmDialog/promptDialog` ainda fazem fade-in).
+- ✅ Sistema de botões consistente: `.btn` + variantes `.btn-primary`, `.btn-green`, `.btn-danger`, `.btn-icon`.
+
+### Notas do patch anterior (2026-06-26)
+
+- Botão MAX agora é específico por recurso: `HP-MAX`, `SP-MAX`, `CP-MAX` independentes.
+- Esquiva limitada a **15** (cap em `utils/constants.js` → `STAT_CAPS.dodge`).
+- Tetos máximos de Vida/Espírito/Chi/Defesa configuráveis em `STAT_CAPS` mas com valores por definir.
+- Apenas o GM concede XP (botão de XP desaparece para players).
+- Moedas nacionais já não dependem do elemento do jogador.
+- GM/Admin não têm ficha de personagem (abas `character`/elementos/`items` ocultas).
+- Hub do GM mostra todos os jogadores registados, mesmo sem ficha guardada.
+- Modo opcional de persistência Supabase local (ver [`DEV-LOCAL.md`](./DEV-LOCAL.md)).
 
 ---
 
@@ -226,6 +261,158 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 
 ---
 
+### 9. Página de Monstros (GM/Admin)
+
+A tab "Monstros" tem **3 colunas**: `Selecionados p/ batalha` (staged), `Biblioteca`, `⚰ Cemitério`. Cada card oferece:
+- `Selecionar p/ batalha` / `✓ Selecionado` — marca para a próxima batalha (`is_staged`).
+- `Editar` — abre o form completo (atributos, ataques, loot, notas).
+- `⚰ Cemitério` — marca como morto (`is_dead`; não apaga; pode ser revivido).
+- `✕` — apaga permanentemente.
+
+`⚔ Iniciar batalha` no header abre o `BattleLauncher` que já pré-seleciona os staged.
+
+**Loot table** suporta dois tipos por entrada:
+- `kind: 'item'` — referência a uma row da tabela `items`
+- `kind: 'custom'` — drop one-off com `name` livre
+
+Quando um monstro está num encontro ativo (não apenas staged), aparece também no Hub com HP/defesa/efeitos.
+
+**Estado:** ✅ Implementado.
+
+---
+
+### 10. Página de Controlo do GM
+
+**Público:** GM, Admin
+
+Dashboard central a partir do qual o GM controla a sessão inteira (objetivo: 1 computador a coordenar tudo):
+
+- **EncounterPanel sticky** no topo — ordem de turnos, ronda atual, controlos GM sempre à mão.
+- **Grid de cards** com todos os jogadores + monstros relevantes (staged ou em encontro ativo).
+  - **Card de jogador:** nome + nível, HP visual + botões `−5/−1/+1/+5/SET`, lista de habilidades ativas como chips clicáveis, atalhos `⚡ Efeitos` (StatusEffectManager), `💰 Ouro`, `⭐ XP`, `📝 Notas` (gm_notes via popup).
+  - **Card de monstro:** HP +/-, ataques como chips, botão `⚰ Cemitério`. Quando HP cai a 0 pergunta se quer mandar para o cemitério.
+
+**Notas atuais:**
+- HP dos monstros persiste imediatamente (`monsters.hp_current`).
+- HP dos jogadores ainda é ephemeral nesta versão (toast; GM avisa o jogador). Futura iteração: coluna `hp_current` em characters com targeted update.
+- Ouro/XP escrevem via `saveCharacter` (full row); race com AutoSave do jogador é aceitável neste modo cooperativo.
+
+**Estado:** ✅ Implementado (display + acções base).
+
+---
+
+### 11. Loja — modo Gerir (GM)
+
+A página da Loja agora deteta GM/admin e mostra um **toggle** no topo:
+- `🛠 Gerir` (default para GM): tabela editável de todos os itens (Supabase + imported + mock), com inline edit de nome/tipo/raridade/preço/descrição, checkbox `in_shop`, botão `+ Novo Item` (modal), botão `Promover` para copiar itens mock/imported para a BD.
+- `🛒 Vista do Jogador`: vista normal (igual ao que os jogadores veem) para testar.
+
+**Estado:** ✅ Implementado. "Perfis de loja" (bundles named) ficam para iteração futura.
+
+---
+
+### 12. Notas no perfil do jogador
+
+Duas listas de notas separadas, cada uma com CRUD individual (cada nota tem `id`, `text`, `created_at`, `updated_at`):
+
+- **Notas do jogador** (`character.player_notes`): vivem na página do perfil, editáveis pelo próprio jogador. Persistidas via AutoSave normal (a coluna foi promovida em migration `20260629190000_notes.sql`).
+- **Notas do GM** (`character.gm_notes`): editáveis a partir da página de Controlo do GM, via popup `📝 Notas` em cada player card. Persistem via `updateGmNotes` (targeted column update) para não competir com o AutoSave do jogador.
+
+**Estado:** ✅ Implementado.
+
+---
+
+### 13. HP/CP/SP persistentes (vitals)
+
+As 3 vitais atuais do jogador (HP / Chi / Espírito) vivem em colunas dedicadas na tabela `characters`:
+- `hp_current`, `cp_current`, `sp_current` (int, nullable — `null` = recalcula para o máximo no próximo load).
+- Escritas **só** via `updateVitals(username, patch)` (targeted column update). Tanto o próprio jogador (via botões da ficha) como o GM (via GMControlPage) escrevem por aqui.
+- AutoSave passa `omitVitals: true` para nunca sobrescrever estas colunas com snapshots stale.
+- `characters` está adicionada à publication `supabase_realtime`: o cliente subscreve `postgres_changes` em `app.js` e atualiza as barras de combate quando o GM (ou outro browser) muda um valor. Sem refresh.
+
+**Estado:** ✅ Implementado.
+
+---
+
+### 14. Perfis de Loja (bundles)
+
+Para a GM poder trocar o catálogo da loja num clique:
+- Nova tabela `shop_profiles` (id, name, description, item_ids uuid[], created_by, timestamps).
+- API `api/shopProfiles.js`: `list`, `create`, `update`, `remove`, `apply(profileId)`, `snapshotCurrent(name, description)`.
+- Na tab Loja → modo `🛠 Gerir`, nova secção **Perfis de Loja**:
+  - Botão `💾 Guardar atual como perfil` → snapshota todos os items com `in_shop=true` num novo perfil.
+  - Cada perfil tem chip com nome + contagem + botões `Aplicar` / `✎ Renomear` / `✕ Apagar`.
+  - `Aplicar` faz um update em duas etapas: clear `in_shop=false` em todos, depois set `in_shop=true` nos ids do perfil.
+
+**Estado:** ✅ Implementado.
+
+---
+
+### 15. Trocas cross-browser + Histórico
+
+Antes: as trocas viviam só em `localStorage` e os dois jogadores tinham de estar no mesmo browser. Agora:
+
+**Persistência centralizada**:
+- Nova tabela `trades` (migração `20260629230000_trades.sql`) com `from_username`, `to_username`, `offer_items/gold`, `request_items/gold`, `status` (`pending/accepted/rejected/cancelled/forced`), `kind` (`trade/forced/loot/reward`), `note`.
+- Adicionada à publication `supabase_realtime` → propostas aparecem no destinatário sem refresh, mesmo noutro browser.
+
+**Fluxo:**
+1. Propor: `TradeManager.createTrade()` valida apenas o lado do proponente (a sua ficha está disponível); o destinatário valida quando aceita.
+2. Aceitar: `acceptTrade()` carrega ambas as fichas via Supabase (`loadCharacter`), faz remove/add nos inventários, ajusta ouro, persiste ambos e flipa o trade para `accepted`. Realtime notifica o outro browser.
+3. Toast no destinatário quando entra uma nova proposta (cross-browser via realtime → CustomEvent → Hub `handleTradeUpdate`).
+4. Forçar (GM via GiftTransfer): cria uma row `status='forced'` com `kind='loot'`/`reward` para aparecer no histórico do destinatário.
+
+**Histórico no perfil** (`TradeHistoryPanel`):
+- Renderiza no perfil do jogador (`#trade-history-host`) abaixo das notas.
+- Lista as 25 trocas mais recentes (aceites, recusadas, canceladas, forçadas pelo GM) com badge de estado, contraparte, data e descritivo de cada lado.
+- Subscreve `api/trades.subscribe()` → atualiza-se sozinho.
+
+**Fallback offline:** sem Supabase, a API degrada para localStorage e fica a comportar-se como antes (single-tab).
+
+**Estado:** ✅ Implementado.
+
+---
+
+Para a GM poder trocar o catálogo da loja num clique:
+- Nova tabela `shop_profiles` (id, name, description, item_ids uuid[], created_by, timestamps).
+- API `api/shopProfiles.js`: `list`, `create`, `update`, `remove`, `apply(profileId)`, `snapshotCurrent(name, description)`.
+- Na tab Loja → modo `🛠 Gerir`, nova secção **Perfis de Loja**:
+  - Botão `💾 Guardar atual como perfil` → snapshota todos os items com `in_shop=true` num novo perfil.
+  - Cada perfil tem chip com nome + contagem + botões `Aplicar` / `✎ Renomear` / `✕ Apagar`.
+  - `Aplicar` faz um update em duas etapas: clear `in_shop=false` em todos, depois set `in_shop=true` nos ids do perfil.
+
+**Estado:** ✅ Implementado.
+
+---
+
+Duas listas de notas separadas, cada uma com CRUD individual (cada nota tem `id`, `text`, `created_at`, `updated_at`):
+
+- **Notas do jogador** (`character.player_notes`): vivem na página do perfil, editáveis pelo próprio jogador. Persistidas via AutoSave normal (a coluna foi promovida em migration `20260629190000_notes.sql`).
+- **Notas do GM** (`character.gm_notes`): editáveis a partir da página de Controlo do GM, via popup `📝 Notas` em cada player card. Persistem via `updateGmNotes` (targeted column update) para não competir com o AutoSave do jogador.
+
+**Estado:** ✅ Implementado.
+
+---
+
+**Público:** GM, Admin
+
+**Funcionalidades implementadas:**
+
+- Catálogo persistente de NPCs/criaturas (tabela `monsters` no Supabase, fallback localStorage)
+- Formulário completo: nome, nível, HP atual/máx, defesa, esquiva, 6 atributos, ataques (lista de `{name, damage, range, effect}`), loot table (misto: itens do catálogo + drops one-off), notas
+- Vista em duas colunas: **Em jogo** (cards destacados a vermelho) vs **Biblioteca**
+- Botão "Colocar em jogo" / "✓ Em jogo" alterna o flag `in_play`
+- Quando um monstro está `in_play`, aparece automaticamente no **Hub** como overlay `⚔ Encontro em curso`, visível a todos os jogadores (HP, defesa, esquiva e efeitos de estado)
+- Editar/apagar a qualquer momento; alterações sincronizam-se em tempo real via event `monsters:updated`
+
+**Loot table:** suporta dois tipos por entrada:
+- `kind: 'item'` — referência a uma row da tabela `items` (drop "real" do catálogo)
+- `kind: 'custom'` — drop one-off com `name` livre (ex: "Insígnia da Nação do Fogo")
+
+**Estado:** ✅ Implementado (display + persistence). Mecânica automática de combate (turn order, application de loot ao morrer, dano automático dos status effects) fica para fase posterior.
+
+---
+
 ## Mecânicas Principais
 
 ### Sistema de Economia
@@ -298,6 +485,51 @@ GM insere valor total → Sistema divide pelo nº de jogadores → Cada jogador 
 - Limite de habilidades por categoria
 - Limite de habilidades por tier/nível
 - Pergaminhos para melhorar habilidades existentes
+
+---
+
+### Sistema de Combate por Turnos
+
+**O que faz:**
+- O GM inicia uma batalha a partir da tab **Monstros** → `⚔ Iniciar batalha` → modal de seleção de combatentes (jogadores + monstros `in_play`).
+- Para cada combatente é pedido o valor de **iniciativa** num popup (`promptRoll`): por defeito é manual (regra da casa — *toda* a UI de rolls começa em manual com toggle para auto-rolar nessa prompt).
+- Aparece um **`EncounterPanel`** no Hub (visível a todos) com a ordem completa, ronda atual, indicador animado no combatente que está a jogar, número de iniciativa flutuante em cada player card e botões:
+  - **Jogador** (apenas no seu próprio combatente, no seu turno) → `Fim do meu turno` (marca `has_acted=true`).
+  - **GM** → `Próximo turno →` (avança o cursor, aplica ticks, faz wrap de ronda) e `Terminar batalha`.
+
+**Ticks dos efeitos de estado:**
+Cada efeito do catálogo (`utils/statusEffects.js`) tem:
+- `default_duration` — turnos default ao aplicar (`null` = até remoção)
+- `tick_when` — `start` ou `end` do turno do alvo
+- `damage_per_turn` — expressão de dados (ex: `1d4`, `2d6+1`; valor negativo `-1d4` cura)
+- `attribute_mod` — modificadores de atributo declarativos (GM aplica manualmente)
+
+Quando o turno avança, o engine corre `applyTickFor` em `combat/statusTicks.js`: aplica dano/cura via `promptRoll`, decrementa duração e remove a 0. Para monstros, o HP é atualizado no row; para jogadores aparece um toast (jogadores controlam o seu próprio HP).
+
+**Realtime:** o `EncounterPanel` subscreve `postgres_changes` em `encounters` + `encounter_combatants` via Supabase Realtime. Sem Supabase, faz polling a cada 3s na localStorage.
+
+**Cooldowns futuros:** `Character.recordSkillUse` grava `skill_last_used[skillId] = { encounter_id, round, turn_index }` para que a próxima fase consiga implementar cooldowns ancorados ao turno em que a habilidade foi castada.
+
+**Estado:** ✅ Implementado (display + lifecycle + ticks). Cooldowns automáticos e ações em combate (ataques que aplicam efeitos) ficam para próxima iteração.
+
+---
+
+**O que faz:**
+- Tags visuais aplicadas pelo GM em jogadores ou monstros
+- Mostrados como chips coloridas no card (positivo=verde, negativo=vermelho) com ícone + nome + tooltip de descrição
+- Persistidos em `character.status_effects` (jogadores) e `monsters.status_effects` (NPCs)
+- Cada efeito carrega `default_duration`, `tick_when` (`start|end`), `damage_per_turn` (expressão de dados; valor negativo = cura) e `attribute_mod` declarativo — usados pelo Sistema de Combate por Turnos para ticks automáticos
+
+**Catálogo pré-definido** (`public/js/utils/statusEffects.js`):
+- **Negativos:** Sangrando, Atordoado, Cego, Enjoado, Fatigado, Paralisado, Lentidão, Aterrorizado, Queimadura, Congelado, Envenenado
+- **Positivos:** Regeneração, Acelerado, Escudo, Concentrado, Inspirado, Invisível, A Voar
+
+**Aplicação:**
+1. GM abre o card do jogador no **Hub** → botão `⚡ Efeitos`
+2. Modal mostra efeitos atuais (com × para remover), grelha do catálogo (clica para aplicar) e form para criar custom (nome + polaridade)
+3. Ao fechar, escreve em Supabase (`saveCharacter`) + localStorage e emite evento `status-effects:updated` para refrescar a UI
+
+**Estado:** ✅ Implementado (apenas etiquetas visuais; tracking de turnos e aplicação automática de dano fica para fase posterior).
 
 ---
 

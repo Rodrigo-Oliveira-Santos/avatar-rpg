@@ -1,43 +1,45 @@
 # Avatar RPG — Claude Code Context
 
-**Updated:** 2026-06-26
+**Updated:** 2026-06-29
 
 ## Stack
 - Frontend: HTML5 + CSS3 + JS ES6 modules (no framework)
-- Backend: Netlify Functions + Supabase (PostgreSQL)
-- Current mode: localStorage by default; optional Supabase persistence via `public/config.js` (`useSupabase: true`) or `?supabase=1`
+- Backend: Netlify Functions + Supabase (PostgreSQL) + Supabase Realtime
+- Default: localStorage; opt-in Supabase persistence via `public/config.js` (`useSupabase: true`) or `?supabase=1`
 - Hosting: Netlify free tier
 
-## Status: Phases 1-6 Complete + GM/UX patch
+## Status: Phases 1-6 + GM tooling + Combat-by-turns + Cross-browser trades
 
-All core features implemented. Remaining: companions system + Supabase Auth integration.
+All core features implemented. Remaining: companions + Supabase Auth + automated combat resolution.
 
-Recent changes (2026-06-26 patch):
-- Separate MAX buttons for HP/SP/CP
-- Players can no longer self-grant XP — GM-only
-- Dodge capped at 15; configurable `STAT_CAPS` for HP/SP/CP/Defense
-- Nation coins usable across all elements
-- GM/Admin lose the character/skill/items tabs
-- Hub for GM lists all registered players (even without saved characters)
-- Supabase CLI local persistence path wired up (opt-in)
+Recent (2026-06-29):
+- **Encounters** + EncounterPanel + status-effect tick engine + player-side `endOwnTurn`.
+- **GM Control page** com HP/CP/SP +/- persistente, skills clicáveis, atalhos Efeitos/Ouro/XP/Notas/Cemitério, Iniciar Batalha.
+- **Persistência cirúrgica**: colunas `hp_current/cp_current/sp_current/status_effects/player_notes/gm_notes` em `characters`.
+- **Trades cross-browser** com Realtime + histórico no perfil.
+- **Loja GM**: modo Gerir + `shop_profiles` (bundles).
+- **Notas duplas** (jogador + GM).
+- `.btn` system + `createElement` aria-fix + modal-overlay opacity fix.
 
 ## Modules
 
 | Module | Path | Purpose |
 |--------|------|---------|
 | auth | js/auth/ | AuthManager, login, roles (player/gm/admin) |
-| character | js/character/ | Character class, stats, XP, level-up, subclasses, slots |
-| skills | js/skills/ | Skill tree, cards, sub-skills UI, slot limits, mastery (M0-M3), 5 tiers, branches (sp/ag/cb/pr/br) |
+| character | js/character/ | Character class, stats, XP, level-up, subclasses, slots, AttributeStrip, NotesEditor |
+| skills | js/skills/ | Skill tree, cards, sub-skills UI, slot limits, mastery (M0-M3), 5 tiers, branches (sp/ag/cb/pr/br), SkillPanel (side panel) |
 | items | js/items/ | InventoryPage, equip/unequip, scrolls |
-| shop | js/shop/ | Shop page, data (mock + imported), dual-currency pricing |
-| hub | js/hub/ | Player hub, CharacterModal, GroupRewards, LootDelivery, GiftTransfer |
+| shop | js/shop/ | Shop page (player view + ShopManager CRUD para GM), data (Supabase + imported + mock), dual-currency pricing |
+| hub | js/hub/ | Player hub (jogadores primeiro, ferramentas em baixo), CharacterModal, GroupRewards, LootDelivery, GiftTransfer, StatusEffectManager, EncounterPanel mount, in-battle monster overlay |
+| monsters | js/monsters/ | MonstersPage (3 colunas: staged/biblioteca/cemitério), persistence via api/monsters, BattleLauncher trigger |
+| gm-control | js/gm-control/ | GMControlPage — dashboard único do GM (HP +/-, skills, ouro, XP, notas, encounter sticky) |
+| combat | js/combat/ | Dice (rollExpression + promptRoll com manual/auto toggle), EncounterPanel, BattleLauncher, statusTicks, resolver (legacy), status (legacy) |
 | import | js/import/ | GM JSON import (validators, storage, ImportPage) |
 | trade | js/trade/ | TradeManager, TradeModal, notifications |
 | admin | js/admin/ | AdminPanel, BackupRestore, LogService, LogViewer |
-| storage | js/storage/ | AutoSave, export/import character JSON |
-| api | js/api/ | HTTP client, auth, characters, skills, items endpoints |
-| utils | js/utils/ | DOM helpers, constants (NATION_CURRENCIES, RARITY_BONUSES), toast |
-| combat | js/combat/ | Dice, resolver, status effects |
+| storage | js/storage/ | AutoSave (debounced; `flush()` on logout; passa `omitStatusEffects`+`omitGmNotes` para Supabase) |
+| api | js/api/ | auth, characters, skills, items (create/update/delete), monsters (setStaged/setDead), encounters, notifications — Supabase-first com localStorage fallback |
+| utils | js/utils/ | DOM helpers, constants (NATION_CURRENCIES, RARITY_BONUSES), toast (× per toast + Limpar tudo), statusEffects catalog (com damage_per_turn/tick_when/duration) |
 
 ## Key Patterns
 
