@@ -19,19 +19,43 @@
 
 /* Login box */
 .login-box {
+  --login-accent: var(--fire);
   background: var(--bg2);
   border: 1px solid var(--border2);
+  border-top: 3px solid var(--login-accent);
   border-radius: 16px;
   padding: 36px 32px;
   width: 100%;
   max-width: 380px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* "← Início" button (top-left, shown only outside single-game mode) */
+.login-home-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.login-home-btn:hover {
+  color: var(--login-accent);
+  border-color: var(--login-accent);
 }
 
 .login-logo {
   font-size: 22px;
   font-weight: 700;
-  color: var(--fire-light);
+  color: var(--login-accent);
   text-align: center;
   margin-bottom: 8px;
   letter-spacing: 0.5px;
@@ -83,20 +107,19 @@
 .login-btn {
   width: 100%;
   padding: 11px;
-  background: var(--fire);
+  background: var(--login-accent);
   color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: filter 0.15s;
   margin-top: 4px;
 }
 
 .login-btn:hover:not(:disabled) {
-  background: var(--fire-light);
-  color: var(--bg);
+  filter: brightness(1.15);
 }
 
 .login-btn:disabled {

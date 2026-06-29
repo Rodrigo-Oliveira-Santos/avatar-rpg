@@ -26,6 +26,8 @@
   <link rel="stylesheet" href="css/components/admin.css">
   <link rel="stylesheet" href="css/components/currency.css">
   <link rel="stylesheet" href="css/components/multi-game.css">
+  <link rel="stylesheet" href="css/components/dnd-sheet.css">
+  <link rel="stylesheet" href="css/components/mc-gallery.css">
 </head>
 <body>
   <!-- App loader -->
@@ -37,7 +39,8 @@
   <!-- Login Overlay -->
   <div id="login-overlay" class="overlay">
     <div class="login-box">
-      <div class="login-logo">⚡ Avatar RPG</div>
+      <button type="button" id="login-home-btn" class="login-home-btn" hidden>← Início</button>
+      <div class="login-logo" id="login-logo">⚡ Avatar RPG</div>
       <h2 class="login-title">Entrar</h2>
       <form id="login-form" autocomplete="on">
         <div class="login-field">
@@ -47,7 +50,7 @@
         <p id="login-error" class="login-error"></p>
         <button type="submit" id="login-btn" class="login-btn">Entrar</button>
       </form>
-      <div style="margin-top: 14px; font-size: 10px; color: var(--text3); text-align: center; line-height: 1.6;">
+      <div class="login-test-hints" style="margin-top: 14px; font-size: 10px; color: var(--text3); text-align: center; line-height: 1.6;">
         <strong>Perfis de teste:</strong><br>
         zuko (🔥), katara (🌊), toph (🪨), aang (🌀), sokka (⚔️)<br>
         gm (Game Master), admin (Admin)

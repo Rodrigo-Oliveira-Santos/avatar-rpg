@@ -15,6 +15,8 @@ const WIDGET_ID = (gameId) => `game-back-${gameId}`;
 
 export function mountBackWidget(rootEl, gameId, gameLabel, accent) {
   if (!rootEl) return;
+  // Single-game mode: no "Início" because there's nowhere to go back to.
+  if (typeof window !== 'undefined' && window.__SINGLE_GAME_MODE__) return;
   if (document.getElementById(WIDGET_ID(gameId))) return;
 
   const wrap = document.createElement('div');
