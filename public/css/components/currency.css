@@ -40,5 +40,12 @@
 
 .currency-chip.compact {
   padding: 4px 7px;
+  gap: 4px;
   font-size: 10px;
+  opacity: .65;
+  transition: opacity .15s;
+}
+
+.currency-chip.compact:hover {
+  opacity: 1;
 }

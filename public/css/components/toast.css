@@ -51,6 +51,48 @@
 
 .toast-msg {
   line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+
+.toast-close:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.toast-clear-all {
+  align-self: flex-end;
+  pointer-events: auto;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: color .15s, border-color .15s;
+}
+
+.toast-clear-all:hover {
+  color: var(--text);
+  border-color: var(--text2);
 }
 
 /* Toast types */
@@ -78,7 +120,13 @@
 }
 .toast-info .toast-icon { color: var(--spirit); }
 
-/* Modal Overlay */
+/* Modal Overlay
+   ─ Default state is visible (opacity 1) so any ad-hoc `.modal-overlay`
+     created by feature modals (StatusEffectManager, BattleLauncher,
+     RollDialog…) shows up without having to add the animation class.
+   ─ `confirmDialog` / `promptDialog` in toast.js drive the open/closing
+     animation by starting with `modal-closing` and toggling to
+     `modal-open` on rAF. */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -88,7 +136,7 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 
@@ -100,7 +148,9 @@
   opacity: 0;
 }
 
-/* Modal Box */
+/* Modal Box
+   Default is full-scale; the toast.js dialogs use `modal-closing` to fade
+   the scale-down on close. */
 .modal-box {
   background: var(--bg2);
   border: 1px solid var(--border2);
@@ -109,7 +159,7 @@
   min-width: 300px;
   max-width: 420px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  transform: scale(0.95);
+  transform: scale(1);
   transition: transform 0.2s ease;
 }
 

@@ -42,6 +42,7 @@
   /* Categories */
   --spirit: #7a70e0;
   --agility: #20a070;
+  --combat: #d88840;
   --precise: #d05080;
   --brute: #e05a2a;
 
@@ -81,6 +82,17 @@ body {
 
 .page.on {
   display: block;
+  animation: page-fade-in 0.22s ease both;
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Animate the container itself when switching to/from fullscreen skill pages */
+.app {
+  transition: max-width 0.22s ease, padding 0.22s ease;
 }
 
 /* Layout - Two Columns */
@@ -116,12 +128,22 @@ body {
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
+  /* Non-selected elements get a clear visual cue (greyed + faded). */
+  opacity: .45;
+  filter: grayscale(.6);
   transition: all .15s;
 }
 
 .esbtn:hover {
   color: var(--text);
   background: var(--bg2);
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+.esbtn.on {
+  opacity: 1;
+  filter: none;
 }
 
 .esbtn.fire.on {

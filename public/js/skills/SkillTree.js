@@ -11,6 +11,7 @@ import { createSkillCard } from './SkillCard.js';
 import { loadSkills } from './data.js';
 import { askCombatPath, askNonBenderPath } from './PathPicker.js';
 import { mountCanvasTree } from './CanvasTreeView.js';
+import { createSkillPanel, describeSkillState } from './SkillPanel.js';
 
 /**
  * Maintain a window-level registry so non-skill code (scrolls, hub
@@ -62,6 +63,7 @@ function createCategoryDescription(category) {
   const descriptions = {
     spirit: 'Habilidades de conexão espiritual, meditação e manipulação de energia.',
     agility: 'Habilidades de movimento, esquiva e velocidade.',
+    combat: 'Técnicas base partilhadas — disponíveis antes de escolher Preciso ou Bruto.',
     precise: 'Técnicas de precisão, controle fino e ataques cirúrgicos.',
     brute: 'Ataques poderosos, destruição em área e força bruta.',
   };
@@ -123,16 +125,15 @@ function checkRequirements(skill, charData) {
   const atributos = charData.atributos || {};
   const nivel = charData.identidade?.nivel || 1;
 
-  // Check attribute requirements
-  if (skill.requirements) {
-    Object.entries(skill.requirements).forEach(([attr, value]) => {
-      if (value > 0 && (atributos[attr] || 0) < value) {
-        reasons.push(`${attr} ${atributos[attr] || 0}/${value}`);
-      }
-    });
-  }
+  // Attribute requirements (canonical key is `attribute_requirements`;
+  // fall back to legacy `requirements` for older imported data).
+  const attrReqs = skill.attribute_requirements || skill.requirements || {};
+  Object.entries(attrReqs).forEach(([attr, value]) => {
+    if (value > 0 && (atributos[attr] || 0) < value) {
+      reasons.push(`${attr} ${atributos[attr] || 0}/${value}`);
+    }
+  });
 
-  // Check minimum level
   if (skill.min_level && nivel < skill.min_level) {
     reasons.push(`Nível ${nivel}/${skill.min_level}`);
   }
@@ -154,12 +155,13 @@ function createTierGrid(skills, allSkills, characterSkills, charData, onSkillTog
   const grid = createElement('div', { class: 'skills-grid' });
 
   skills.forEach(skill => {
-    // Check prerequisites: match by name → find corresponding id
+    // Check prerequisites: JSON canonical uses skill IDs; legacy imports
+    // may reference skills by name. Try id-first, fall back to name lookup.
     const prereqsMet = !skill.prerequisites || skill.prerequisites.length === 0 || skill.prerequisites.every(
-      prereqName => {
-        const prereqSkill = allSkills.find(s => s.name === prereqName);
-        const prereqId = prereqSkill ? prereqSkill.id : prereqName;
-        return characterSkills[prereqId]?.active;
+      (ref) => {
+        if (characterSkills[ref]?.active) return true;
+        const byName = allSkills.find((s) => s.name === ref);
+        return byName ? !!characterSkills[byName.id]?.active : false;
       }
     );
 
@@ -204,6 +206,7 @@ export class SkillTree {
     this.loading = true;
     this.viewMode = 'tree';   // 'tree' (canvas) | 'cards'
     this._canvas = null;
+    this._panel = null;
 
     this.loadSkills();
   }
@@ -227,9 +230,13 @@ export class SkillTree {
 
     try {
       const charData = this.character.getData();
-      const data = await loadSkills(this.element, {
-        nonBenderPath: charData.non_bender_path || null,
-      });
+      // nonBenderPath only matters for the 'none' element; passing it for
+      // bender elements would request a non-existent fire-chiblocker.json
+      // etc. and return zero skills.
+      const nonBenderPath = this.element === 'none'
+        ? (charData.non_bender_path || null)
+        : null;
+      const data = await loadSkills(this.element, { nonBenderPath });
       this.skills = data.skills || [];
       registerSkillDefinitions(this.skills);
       this.loading = false;
@@ -246,6 +253,10 @@ export class SkillTree {
     if (this._canvas) {
       this._canvas.destroy();
       this._canvas = null;
+    }
+    if (this._panel) {
+      this._panel.destroy();
+      this._panel = null;
     }
     this.container.innerHTML = '';
 
@@ -280,17 +291,56 @@ export class SkillTree {
       }));
       return;
     }
+
+    // Legend (mirrors docs/*_skill_tree.html)
+    const legend = createElement('div', { class: 'skill-tree-legend' });
+    legend.innerHTML = `
+      <div class="leg"><div class="lsq" style="background:#1e1a40;border:2px solid #7F77DD"></div>Espiritualidade</div>
+      <div class="leg"><div class="lsq" style="background:#0a2e20;border:2px solid #1D9E75"></div>Agilidade</div>
+      <div class="leg"><div class="lsq" style="background:#3a2006;border:2px solid #D88840"></div>Combate N1–N2</div>
+      <div class="leg"><div class="lsq" style="background:#3a1606;border:2px solid #E8844A"></div>Preciso N3+</div>
+      <div class="leg"><div class="lsq" style="background:#2e0804;border:2px solid #C03020"></div>Bruto N3+</div>
+      <div class="leg"><div class="lsq" style="background:#2e1c02;border:2px solid #BA7517"></div>Lendário</div>
+      <div class="hint">— sólida = mesma classe · - - - tracejada = outra classe · clica para abrir detalhes</div>
+    `;
+    this.container.appendChild(legend);
+
     const host = createElement('div');
     this.container.appendChild(host);
+
+    // Side panel — mount inside the SkillTree container so it inherits
+    // tab visibility (hidden when the user navigates away).
+    this._panel = createSkillPanel({
+      host: this.container,
+      character: this.character,
+      getAllSkills: () => this.skills,
+      callbacks: {
+        onUnlock: (skill) => this.requestUnlock(skill),
+        onUse: (skill) => this.requestUse(skill),
+        onUpgrade: (skill) => this.requestUpgrade(skill),
+        onClose: () => { if (this._canvas) this._canvas.setSelected(null); },
+      },
+    });
+
     this._canvas = mountCanvasTree({
       container: host,
       skills: this.skills,
       character: this.character,
-      onNodeClick: (node) => this.toggleSkill(node),
+      canUnlock: (skill) => this.isUnlockable(skill),
+      onNodeClick: (node) => {
+        if (this._panel) this._panel.open(node.id);
+      },
     });
   }
 
   renderCards() {
+    // Preserve the view-toggle (added by render()) and wipe everything else
+    // so successive renderCards() calls (tab clicks, search input) don't
+    // stack search bars / tabs / grids on top of each other.
+    Array.from(this.container.children).forEach((child) => {
+      if (!child.classList.contains('skill-view-toggle')) child.remove();
+    });
+
     // Search bar
     const searchInput = createElement('input', {
       class: 'field-input',
@@ -366,6 +416,108 @@ export class SkillTree {
         this.container.appendChild(grid);
       }
     });
+  }
+
+  /**
+   * Visual gate used by the canvas to mark a node "unlockable". Combines
+   * prerequisites, attribute requirements and combat-path conflicts.
+   */
+  isUnlockable(skill) {
+    const charData = this.character.getData();
+    const charSkills = charData.habilidades || {};
+    if (charSkills[skill.id]?.active) return false;
+
+    const depsOk = (skill.prerequisites || []).every((id) => !!charSkills[id]?.active);
+    if (!depsOk) return false;
+
+    const { met } = checkRequirements(skill, charData);
+    if (!met) return false;
+
+    if (skill.tier >= 3 && (skill.branch === 'pr' || skill.branch === 'br')) {
+      const required = skill.branch === 'pr' ? 'precise' : 'brute';
+      const charPath = charData.combat_path;
+      if (charPath && charPath !== required) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Unlock a skill via the side panel. Handles combat-path locking
+   * (with confirmation modal) and validates attributes/prerequisites.
+   */
+  async requestUnlock(skill) {
+    const charData = this.character.getData();
+    if (charData.habilidades?.[skill.id]?.active) return;
+
+    // Prerequisites
+    const charSkills = charData.habilidades || {};
+    const missingDeps = (skill.prerequisites || []).filter((id) => !charSkills[id]?.active);
+    if (missingDeps.length) {
+      toast('Faltam pré-requisitos desbloqueados.', 'error');
+      return;
+    }
+
+    // Attribute / level requirements
+    const { met, reasons } = checkRequirements(skill, charData);
+    if (!met) {
+      toast(`Requisitos não cumpridos: ${reasons.join(', ')}`, 'error');
+      return;
+    }
+
+    // Combat-path gating (tier 3+ on pr/br)
+    if (skill.tier >= 3 && (skill.branch === 'pr' || skill.branch === 'br')) {
+      const required = skill.branch === 'pr' ? 'precise' : 'brute';
+      const charPath = charData.combat_path;
+      if (charPath && charPath !== required) {
+        toast(
+          `Esta habilidade pertence ao caminho ${required === 'precise' ? 'Preciso' : 'Bruto'}; já escolheste ${charPath === 'precise' ? 'Preciso' : 'Bruto'}.`,
+          'error'
+        );
+        return;
+      }
+      if (!charPath) {
+        const chosen = await askCombatPath();
+        if (!chosen) return;
+        this.character.setCombatPath(chosen);
+        if (chosen !== required) {
+          toast(`Escolheste ${chosen === 'precise' ? 'Preciso' : 'Bruto'}; esta habilidade é do outro ramo.`, 'warning');
+          return;
+        }
+      }
+    }
+
+    // Slot availability (sub-skill slot model)
+    const slots = getAvailableSlots(charData, this.skills);
+    if (slots.available <= 0) {
+      toast('Sem slots de sub-habilidade disponíveis!', 'warning');
+      return;
+    }
+
+    this.character.toggleSkill(skill.id, true);
+    toast(`✦ Desbloqueaste: ${skill.name}`, 'success');
+  }
+
+  /** Increment usage counter for an unlocked skill. */
+  requestUse(skill) {
+    const active = !!this.character.getData().habilidades?.[skill.id]?.active;
+    if (!active) return;
+    const uses = this.character.recordSkillUse(skill.id, 1);
+    const level = this.character.getMasteryLevel(skill.id);
+    toast(`⚡ ${skill.name} usada (${uses} usos, M${level})`, 'info');
+  }
+
+  /** Same effect as a use, but with a distinct toast for mastery milestones. */
+  requestUpgrade(skill) {
+    const active = !!this.character.getData().habilidades?.[skill.id]?.active;
+    if (!active) return;
+    const before = this.character.getMasteryLevel(skill.id);
+    const uses = this.character.recordSkillUse(skill.id, 1);
+    const after = this.character.getMasteryLevel(skill.id);
+    if (after > before) {
+      toast(`⭐ Maestria M${after}: ${skill.name}`, 'success');
+    } else {
+      toast(`Usos: ${uses}`, 'info');
+    }
   }
 
   /**

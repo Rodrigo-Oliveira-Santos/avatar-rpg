@@ -34,11 +34,37 @@
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px;
-  transition: border-color .15s;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
 }
 
 .player-card:hover {
   border-color: var(--border2);
+}
+
+/* Current user card — coloured border + glow + name accent, no extra button */
+.player-card.is-self {
+  border-color: var(--gold, #d4a849);
+  box-shadow: 0 0 0 1px var(--gold, #d4a849), 0 0 14px rgba(212, 168, 73, 0.18);
+}
+
+.player-card.is-self .player-name {
+  color: var(--gold, #d4a849);
+}
+
+.player-card.is-self::before {
+  content: 'A tua ficha';
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold, #d4a849);
+  color: #1a1408;
 }
 
 /* Player Card Header */
@@ -153,26 +179,52 @@
 /* Buffs/Debuffs */
 .player-buffs {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   margin-top: 8px;
   flex-wrap: wrap;
 }
 
 .player-buff {
-  font-size: 9px;
-  padding: 1px 6px;
-  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 12px;
   font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.player-buff-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.player-buff-name {
+  line-height: 1;
 }
 
 .player-buff.positive {
-  background: #081408;
-  color: var(--green);
+  background: rgba(34, 134, 75, 0.16);
+  color: #6fd99c;
+  border-color: rgba(111, 217, 156, 0.35);
 }
 
 .player-buff.negative {
-  background: #1a0808;
-  color: var(--red);
+  background: rgba(180, 50, 50, 0.18);
+  color: #f08070;
+  border-color: rgba(240, 128, 112, 0.35);
+}
+
+.hub-player-actions-secondary {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+
+.hub-player-actions-secondary:hover {
+  border-color: var(--gold, #d4a849);
+  color: var(--gold, #d4a849);
 }
 
 /* Hub Empty State */

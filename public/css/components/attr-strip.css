@@ -1,0 +1,89 @@
+/* ============================================================
+   Attribute Strip — read-only band shown above skill-tree pages
+   ============================================================ */
+
+.attr-strip {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: #0f0f14;
+  border-bottom: 1px solid #2a2a35;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+body.on-skill-page .attr-strip {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.attr-strip-cell {
+  --c: #9a9890;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+}
+
+.attr-strip-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--c);
+}
+
+.attr-strip-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8e6e0;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Tighten skill pages so the canvas owns as much vertical space as possible */
+body.on-skill-page .page.skill-page {
+  padding: 8px 12px 16px;
+}
+
+.skill-page .skill-view-toggle {
+  margin: 4px 0 6px;
+}
+
+/* Fullscreen skill tree: drop the centred 1400px container & app padding
+   so the canvas can stretch to the viewport edges. The nav/header still
+   sit inside the body, so we only widen .app and zero its padding. */
+body.on-skill-page .app {
+  max-width: none;
+  padding: 0;
+}
+
+/* Prevent the off-screen skill side panel (position:fixed; right:0;
+   transform: translateX(100%)) from contributing to body scroll width. */
+body.on-skill-page {
+  overflow-x: hidden;
+}
+
+body.on-skill-page .page.skill-page {
+  padding: 0 0 12px;
+}
+
+body.on-skill-page .skill-canvas-wrap {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+}
+
+body.on-skill-page .skill-tree-legend {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+body.on-skill-page .skill-view-toggle {
+  margin: 6px 12px 4px;
+}

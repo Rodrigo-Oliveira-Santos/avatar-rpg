@@ -43,6 +43,12 @@
   background: #0a1a14;
 }
 
+.ctab.combat.on {
+  border-color: var(--combat);
+  color: var(--combat);
+  background: #1a1208;
+}
+
 .ctab.precise.on {
   border-color: var(--precise);
   color: var(--precise);
