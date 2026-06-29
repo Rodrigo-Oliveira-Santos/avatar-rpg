@@ -1,7 +1,12 @@
 # Avatar RPG — Documento de Features
 
-**Última atualização:** 2026-06-26  
+**Última atualização:** 2026-06-26
 **Status:** Documento de referência
+
+> **Nota multi-game:** Este documento descreve apenas a app Avatar.
+> Para D&D 5e e Minecraft Builds (adicionadas em 2026-06-29), ver:
+> [`docs/DND-APP.md`](./docs/DND-APP.md) · [`docs/MINECRAFT-APP.md`](./docs/MINECRAFT-APP.md)
+> · [`docs/MULTI-GAME-DESIGN.md`](./docs/MULTI-GAME-DESIGN.md)
 
 **Legenda:**
 - ✅ Implementado

@@ -1,4 +1,4 @@
-# Avatar RPG — Sistema de Personagem Web
+# Avatar RPG — Multi-game Platform
 
 > **Documentação Completa:**
 > - [FEATURES.md](./FEATURES.md) — Todas as páginas e mecânicas (atuais e futuras)
@@ -6,27 +6,39 @@
 > - [DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md) — Fluxos e mecânicas do jogo
 > - [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
 > - [DEV-LOCAL.md](./DEV-LOCAL.md) — Como correr localmente (com Supabase opcional)
+>
+> **Por app (`docs/`):**
+> - [AVATAR-APP.md](./docs/AVATAR-APP.md) · [DND-APP.md](./docs/DND-APP.md) · [MINECRAFT-APP.md](./docs/MINECRAFT-APP.md)
+> - [MULTI-GAME-DESIGN.md](./docs/MULTI-GAME-DESIGN.md) — landing + router + single-game mode
 
 ## Visão Geral
 
-Sistema de RPG customizado inspirado em **Avatar: The Last Air Bender**, estilo D&D, com foco em:
-- Distribuição de atributos (FOR, AGI, CHI, PER, RES, ESP)
-- Progressão por níveis (máx 40)
-- Desbloqueio de habilidades por elemento (Fogo, Água, Terra, Ar, Sem Dobra)
-- Sistema de combate com dados, status effects e custos de Chi
+Plataforma web que aloja **três aplicações independentes** que partilham
+infraestrutura (landing, login overlay, persistência localStorage /
+Supabase opcional):
 
-**Público:** Você e seus amigos. Multi-usuário com autenticação simples (nome do personagem).
+| App         | O quê                                                                 | Status |
+|-------------|----------------------------------------------------------------------|--------|
+| **Avatar**  | RPG inspirado em *Avatar: The Last Airbender* (fichas, dobras, hub)  | ✅ Phases 1-6 |
+| **D&D 5e**  | Fichas D&D 5e completas (multiclass, magias, trade, import de packs) | ✅ MVP |
+| **Minecraft** | Galeria de builds com likes/dislikes e playlists pessoais          | ✅ MVP |
+
+Cada app tem o seu próprio look (cor, logo) no overlay de login que herda
+das cores da landing card. Sessões são isoladas por app (`avatar_rpg_user`,
+`dnd_user`, `mc_user`).
+
+**Público:** tu e os teus amigos. Login local (sem password), single-server.
 
 ---
 
-## Arquitetura Multi-Site (Visão Futura)
+## Arquitetura Multi-Site
 
-Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura deve acomodar:
+Este projeto **já é** o portal multi-aplicação:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    PORTAL HUB (futuro)                      │
-│  Uma página inicial que lista e linka para todos os sites   │
+│              LANDING (#/) — seletor de jogo                 │
+│       cartões Avatar · D&D · Minecraft (público, sem login) │
 └─────────────────────────────────────────────────────────────┘
          │                    │                    │
          ▼                    ▼                    ▼
@@ -226,10 +238,24 @@ avatar-rpg/
 ### Comandos
 
 ```bash
-npm run dev        # Servidor local (porta 3000)
-npm test           # Correr testes unitários
-npm run test:watch # Testes em modo watch
+npm run dev          # Tudo: landing + Avatar + D&D + Minecraft (porta 3000)
+npm run dev:avatar   # Apenas a app Avatar RPG (esconde a landing)
+npm run dev:dnd      # Apenas a app D&D 5e
+npm run dev:minecraft# Apenas a app Minecraft Builds
+npm test             # Correr testes unitários
+npm run test:watch   # Testes em modo watch
 ```
+
+Os scripts `dev:<game>` arrancam o mesmo servidor mas abrem o browser
+diretamente nessa app (`?game=<id>`), saltando o seletor de jogos —
+útil para desenvolvimento focado.
+
+Cada app tem documentação dedicada em `docs/`:
+- [`docs/AVATAR-APP.md`](./docs/AVATAR-APP.md)
+- [`docs/DND-APP.md`](./docs/DND-APP.md)
+- [`docs/MINECRAFT-APP.md`](./docs/MINECRAFT-APP.md)
+- [`docs/MULTI-GAME-DESIGN.md`](./docs/MULTI-GAME-DESIGN.md) — arquitetura
+  do multi-game e modo single-app.
 
 ---
 

@@ -1,8 +1,11 @@
 # Multi-Game Platform — Design
 
-**Status:** scaffolding only (no features yet)
+**Status:** Avatar (Phases 1-6) ✓ · D&D 5e (MVP) ✓ · Minecraft (MVP) ✓
 **Branch:** `feature/multi-game-platform`
-**Updated:** 2026-06-28
+**Updated:** 2026-06-29
+
+> Cada app tem um doc próprio:
+> [`AVATAR-APP.md`](AVATAR-APP.md) · [`DND-APP.md`](DND-APP.md) · [`MINECRAFT-APP.md`](MINECRAFT-APP.md)
 
 ## Goal
 
@@ -11,8 +14,8 @@ Extend the site to host three independent "apps" sharing the same user/auth laye
 | App        | Purpose                                                                    | Status              |
 |------------|----------------------------------------------------------------------------|---------------------|
 | `avatar`   | The existing Avatar: The Last Airbender RPG                                | Done (Phases 1-6)   |
-| `dnd`      | Plain D&D 5e character sheets — no Avatar customisations                   | Placeholder         |
-| `minecraft`| Showcase of Minecraft build schematics, hosted via external file links     | Placeholder         |
+| `dnd`      | Plain D&D 5e character sheets — no Avatar customisations                   | MVP (full sheet)    |
+| `minecraft`| Showcase of Minecraft build schematics, hosted via external file links     | MVP (gallery + CRUD)|
 
 ## Top-level navigation
 
@@ -34,6 +37,29 @@ landing — which triggers `unmount()` of that game.
 
 The router is a small hash dispatcher (`public/js/router.js`); no framework.
 
+## Single-game mode (development)
+
+Para testar uma app em isolado, sem o seletor de jogos, há scripts npm
+dedicados:
+
+```bash
+npm run dev          # multi-game (landing + 3 apps)
+npm run dev:avatar   # só Avatar
+npm run dev:dnd      # só D&D
+npm run dev:minecraft # só Minecraft
+```
+
+Os scripts isolados abrem `http://localhost:3000/?game=<id>#/<id>`. O
+parâmetro `?game=` é lido por `public/js/main.js`:
+
+1. Só o jogo indicado é registado no router (landing fica skipped).
+2. O hash é forçado para `#/<id>` se chegar vazio.
+3. A flag `window.__SINGLE_GAME_MODE__` é exposta — o widget
+   "← Início" deteta-a e não se renderiza (não há para onde voltar).
+
+Em produção (sem `?game=`) o comportamento original mantém-se: landing
+público + cartões dos 3 jogos.
+
 ## Session isolation
 
 - The **landing page is public** — no auth required.
@@ -43,32 +69,48 @@ The router is a small hash dispatcher (`public/js/router.js`); no framework.
   - Destroys per-user pages, listeners and timers;
   - Clears the game's auth keys (silent logout) so re-entering shows the
     login overlay again.
-- Auth keys are **namespaced per game** (`avatar_rpg_user`, future
-  `dnd_user`, etc.) — leaving one game cannot leak credentials to another.
+- Auth keys are **namespaced per game**:
+  - Avatar usa `avatar_rpg_user` (gerido pelo `AuthManager` original).
+  - D&D usa `dnd_user` e Minecraft `mc_user`, ambos geridos pelo
+    factory partilhado `public/js/games/lib/shared-auth.js` —
+    centraliza o reuso do `#login-overlay` (título por jogo, hints
+    contextuais, clone de form para evitar leak de listeners).
+
+## Next steps (backlog)
 
 ## Folder layout
 
 ```
 public/js/
 ├── api/                 ← shared API layer (Supabase + localStorage fallback)
-├── auth/                ← shared AuthManager
+├── auth/                ← Avatar AuthManager (não tocado por D&D / MC)
 ├── router.js            ← hash router
 ├── games/
+│   ├── lib/             ← código partilhado entre os jogos novos
+│   │   └── shared-auth.js   ← createSharedAuth({ storageKey, defaultTitle })
 │   ├── avatar/          ← Avatar entrypoint (delegates to existing modules)
 │   ├── dnd/
-│   │   ├── index.js     ← D&D entrypoint
-│   │   ├── pages/       ← CharactersPage, SheetPage, ...
-│   │   └── data.js      ← (future) DnDCharacter model + API wrappers
+│   │   ├── index.js     ← D&D entrypoint (mount/unmount, tabs, autosave)
+│   │   ├── data/srd.js  ← tabelas SRD (skills, classes, races, XP)
+│   │   ├── dnd-character.js  ← modelo + cálculos (modifiers, prof, saves)
+│   │   ├── dnd-trade.js      ← trade entre jogadores (state machine)
+│   │   ├── dnd-import.js     ← packs (spells/subclasses/items/races)
+│   │   └── pages/            ← Character, Skills, Spells, Inventory, Trade,
+│   │                            Hub, Import
 │   └── minecraft/
 │       ├── index.js     ← Minecraft entrypoint
-│       ├── pages/       ← BuildsPage, BuildDetailPage
-│       └── data.js
+│       ├── lib/         ← drive.js (link helpers), social.js (YT/IG)
+│       └── pages/       ← Gallery, MyPanel, BuildForm
 └── utils/, character/, … (existing shared)
 ```
 
 ## Schema (Supabase)
 
-Migration `20260629000000_multi_game.sql` introduces two new domains.
+Migration `20260629000000_multi_game.sql` introduz `dnd_characters`,
+`mc_builds` e `mc_build_likes`. A `20260629100000_multi_game_extras.sql`
+adiciona depois:
+- `dnd_characters.classes jsonb` (multiclass)
+- `mc_builds.video_url`, `mc_builds.social_url` (links opcionais)
 
 ### D&D 5e
 
@@ -78,7 +120,8 @@ create table dnd_characters (
   user_id     uuid not null references users(id) on delete cascade,
   name        text not null,
   race        text,
-  class       text,
+  class       text,                          -- classe principal (sync c/ classes[0])
+  classes     jsonb default '[]',            -- multiclass: [{class, subclass, level}]
   background  text,
   alignment   text,
   level       int not null default 1 check (level between 1 and 20),
@@ -165,10 +208,9 @@ introduced by `20260628000000_relax_rls_pre_auth.sql`.
 2. This branch rebases onto `master`.
 3. Future incremental work: D&D character sheet UI, then Minecraft gallery.
 
-## Next steps (not in this commit)
+## Next steps (backlog)
 
-- Implement D&D character sheet (5e rules: STR mods, prof bonus, saves, skills).
-- Implement Minecraft builds gallery + create-build form (URL inputs only).
-- Add `dnd-characters.js`, `mc-builds.js` API modules.
-- Wire likes endpoint for Minecraft builds.
-- Migrate AuthManager so the same login serves the three games.
+- Substituir localStorage por Supabase Auth real (cookies + RLS).
+- **D&D**: motor de combate (rolls automáticos, status effects, dice
+  resolver) — único item D&D ainda em backlog.
+- (Avatar) Companheiros com stats próprios e Supabase Auth real.
