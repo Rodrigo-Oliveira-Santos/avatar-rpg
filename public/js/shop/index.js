@@ -3,4 +3,4 @@
  */
 
 export { ShopPage } from './ShopPage.js';
-export { getShopItems, MOCK_SHOP_ITEMS } from './data.js';
+export { getShopItems, MOCK_SHOP_ITEMS, loadShopItemsFromSupabase } from './data.js';

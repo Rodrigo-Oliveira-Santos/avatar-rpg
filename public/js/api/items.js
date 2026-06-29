@@ -109,3 +109,57 @@ export async function importItems(payload) {
     return { imported: 0, error: err.message };
   }
 }
+
+/**
+ * Create a single item (GM management UI). Returns the new row.
+ */
+export async function createItem(input) {
+  if (!isSupabaseEnabled()) throw new Error('Supabase desligado.');
+  const client = await getSupabaseClient();
+  const { data, error } = await client
+    .from('items')
+    .insert({
+      name: input.name,
+      description: input.description || null,
+      type: input.type || 'other',
+      rarity: input.rarity || 'common',
+      price: Number(input.price) || 0,
+      weight_class: input.weight_class || null,
+      defense_bonus: Number(input.defense_bonus) || 0,
+      dodge_penalty: Number(input.dodge_penalty) || 0,
+      attributes: input.attributes || {},
+      in_shop: Boolean(input.in_shop),
+      gm_notes: input.gm_notes || null,
+    })
+    .select('*')
+    .single();
+  if (error) throw error;
+  return rowToItem(data);
+}
+
+/**
+ * Patch a single item by id (GM management UI). Returns the updated row.
+ */
+export async function updateItem(id, patch) {
+  if (!isSupabaseEnabled()) throw new Error('Supabase desligado.');
+  const client = await getSupabaseClient();
+  const cleaned = {};
+  ['name','description','type','rarity','price','weight_class','defense_bonus','dodge_penalty','attributes','in_shop','gm_notes']
+    .forEach((k) => { if (k in patch) cleaned[k] = patch[k]; });
+  const { data, error } = await client
+    .from('items')
+    .update(cleaned)
+    .eq('id', id)
+    .select('*')
+    .single();
+  if (error) throw error;
+  return rowToItem(data);
+}
+
+/** Delete an item by id (cascades into character_inventory). */
+export async function deleteItem(id) {
+  if (!isSupabaseEnabled()) throw new Error('Supabase desligado.');
+  const client = await getSupabaseClient();
+  const { error } = await client.from('items').delete().eq('id', id);
+  if (error) throw error;
+}

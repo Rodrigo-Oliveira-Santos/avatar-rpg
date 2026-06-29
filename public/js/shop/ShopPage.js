@@ -121,6 +121,37 @@ export class ShopPage {
   render() {
     this.container.innerHTML = '';
 
+    // GM/Admin get a mode toggle at the top: gerir vs. vista do jogador.
+    if (this.authManager?.hasRole?.('gm')) {
+      this.gmMode ||= 'manage';
+      const toggle = createElement('div', { class: 'shop-mode-toggle' });
+      ['manage', 'player'].forEach((mode) => {
+        const btn = createElement('button', {
+          type: 'button',
+          class: `shop-mode-btn${this.gmMode === mode ? ' on' : ''}`,
+          textContent: mode === 'manage' ? '🛠 Gerir' : '🛒 Vista do Jogador',
+        });
+        on(btn, 'click', () => {
+          if (this.gmMode === mode) return;
+          this.gmMode = mode;
+          this.render();
+        });
+        toggle.appendChild(btn);
+      });
+      this.container.appendChild(toggle);
+
+      if (this.gmMode === 'manage') {
+        // Render the management UI and stop here.
+        import('./ShopManager.js').then(({ ShopManager }) => {
+          const host = createElement('div');
+          this.container.appendChild(host);
+          this._manager = new ShopManager(host);
+          this._manager.render();
+        });
+        return;
+      }
+    }
+
     this.balanceBar = createElement('div', { class: 'shop-gold-bar' });
     this.container.appendChild(this.balanceBar);
     this.renderBalanceBar();
