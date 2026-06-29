@@ -83,6 +83,14 @@ function createDefaultCharacter() {
     non_bender_path: null,
     /** { [skill_id]: usage_count } — drives mastery level (see masteryLevelForUses). */
     skill_uses: {},
+    /** Own notes — list of { id, text, created_at, updated_at? }. Player-owned. */
+    player_notes: [],
+    /** GM's notes about this character — same shape. GM-only writes via targeted column. */
+    gm_notes: [],
+    /** Current vitals; null means "not set" (recompute from max stats). */
+    hp_current: null,
+    cp_current: null,
+    sp_current: null,
   };
 }
 
@@ -116,6 +124,11 @@ function normalizeCharacterData(data = {}) {
       ...(data.moedas || {}),
     },
     scrolls: data.scrolls || defaults.scrolls,
+    player_notes: data.player_notes || defaults.player_notes,
+    gm_notes: data.gm_notes || defaults.gm_notes,
+    hp_current: Number.isFinite(data.hp_current) ? data.hp_current : defaults.hp_current,
+    cp_current: Number.isFinite(data.cp_current) ? data.cp_current : defaults.cp_current,
+    sp_current: Number.isFinite(data.sp_current) ? data.sp_current : defaults.sp_current,
     subclass_bonus: {
       ...defaults.subclass_bonus,
       ...(data.subclass_bonus || {}),
@@ -282,6 +295,12 @@ export class Character {
   /**
    * Increment the usage counter for a skill. Drives the mastery system
    * (M0..M3 unlocked at MASTERY_THRESHOLDS).
+   *
+   * Also stamps `last_used_on_turn` with the current encounter snapshot
+   * (round + turn index). This is the anchor future cooldown logic will
+   * use so a "1 turn cooldown" stays tied to the turn the skill was
+   * cast — even if it was cast on someone else's turn (bonus action).
+   *
    * @param {string} skillId
    * @param {number} amount
    * @returns {number} new use count
@@ -293,6 +312,27 @@ export class Character {
     const current = Number(this.data.skill_uses[skillId]) || 0;
     const next = Math.max(0, current + amount);
     this.data.skill_uses[skillId] = next;
+
+    // Cooldown anchor: store the encounter snapshot at cast time. Reads
+    // from `window.__ACTIVE_ENCOUNTER__` which the EncounterPanel keeps
+    // in sync — no hard import to avoid coupling the character module to
+    // the combat module. We also store `encounter_status` so future
+    // cooldown checks can treat any anchor whose encounter is no longer
+    // active (or whose id doesn't match the current encounter) as expired.
+    if (typeof window !== 'undefined' && window.__ACTIVE_ENCOUNTER__) {
+      this.data.skill_last_used ||= {};
+      const enc = window.__ACTIVE_ENCOUNTER__;
+      if (enc.status === 'active') {
+        this.data.skill_last_used[skillId] = {
+          encounter_id: enc.id,
+          encounter_status: enc.status,
+          round: enc.current_round,
+          turn_index: enc.current_turn_index,
+          at: new Date().toISOString(),
+        };
+      }
+    }
+
     this.notify();
     return next;
   }
