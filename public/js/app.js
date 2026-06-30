@@ -1166,6 +1166,8 @@ export class App {
 
     // Active skills
     this.updateActiveSkills(data);
+    // All unlocked skills (active + inactive)
+    this.updateAllSkills(data);
 
     // Equipment
     this.updateEquipment(data);
@@ -1308,6 +1310,78 @@ export class App {
       ? 'warning'
       : (result.mastery > result.masteryBefore ? 'success' : 'info');
     toast(lines.join('\n'), level);
+  }
+
+  /**
+   * Render the "Todas as Habilidades" section on the character profile.
+   *
+   * Shows every skill the player has unlocked (i.e. every entry in
+   * `habilidades`). Active ones get a normal Use card; inactive ones
+   * (`active: false`) get a dimmed card with an "Activa primeiro"
+   * hint so the player can see at a glance what they own but aren't
+   * currently equipping.
+   *
+   * Reuses the same SkillUseGrid the active section uses — passes a
+   * `getInactive` callback so the grid knows which cards to dim.
+   */
+  updateAllSkills(data) {
+    const container = $('#all-skills');
+    if (!container) return;
+
+    const entries = Object.entries(data.habilidades || {});
+    if (entries.length === 0) {
+      this._allSkillsGrid?.destroy?.();
+      this._allSkillsGrid = null;
+      container.innerHTML = '<p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade desbloqueada.</p>';
+      return;
+    }
+
+    const defs = window.__SKILL_DEFINITIONS__;
+    const resolved = entries
+      .map(([id, state]) => {
+        const def = defs?.get?.(id);
+        if (!def) return null;
+        return { def, isActive: !!state?.active };
+      })
+      .filter(Boolean);
+
+    // Stable order: active first (so the player sees what they can use
+    // right now), then by branch + tier so siblings cluster together.
+    resolved.sort((a, b) => {
+      if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
+      const ba = a.def.branch || '';
+      const bb = b.def.branch || '';
+      if (ba !== bb) return ba.localeCompare(bb);
+      return (a.def.tier || 0) - (b.def.tier || 0);
+    });
+
+    const skills = resolved.map((r) => r.def);
+    const activeIds = new Set(resolved.filter((r) => r.isActive).map((r) => r.def.id));
+
+    // (Re)mount the grid when the set changes; otherwise just refresh()
+    // it. Re-mounting on every character.notify would be wasteful — the
+    // grid already subscribes internally and re-renders on demand.
+    const knownIds = new Set(skills.map((s) => s.id));
+    const prevIds = this._allSkillsGridIds || new Set();
+    const sameSet = knownIds.size === prevIds.size
+      && Array.from(knownIds).every((id) => prevIds.has(id));
+
+    if (!this._allSkillsGrid || !sameSet) {
+      this._allSkillsGrid?.destroy?.();
+      container.innerHTML = '';
+      this._allSkillsGrid = mountSkillUseGrid({
+        container,
+        skills,
+        character: this.character,
+        compact: true,
+        onUse: (skill) => this._handleProfileSkillUse(skill),
+        getInactive: (skill) => !activeIds.has(skill.id),
+        emptyMessage: 'Nenhuma habilidade desbloqueada.',
+      });
+    } else {
+      this._allSkillsGrid.refresh();
+    }
+    this._allSkillsGridIds = knownIds;
   }
 
   /**

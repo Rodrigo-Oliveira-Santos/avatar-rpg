@@ -115,3 +115,10 @@ textarea.field-input {
   opacity: 1;
   background: rgba(224, 48, 48, 0.1);
 }
+
+.char-section-hint {
+  margin: 0 0 10px 0;
+  font-size: 11px;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}
