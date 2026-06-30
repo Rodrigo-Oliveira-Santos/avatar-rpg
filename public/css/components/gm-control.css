@@ -333,3 +333,26 @@
   color: var(--text2, #9a9890);
   font-style: italic;
 }
+
+/* ── Per-player skill use grid block ─────────────────────── */
+.gm-skills-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.gm-skills-block-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2, #9a9890);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Compact mode tweaks specific to the GM Control card layout — the
+   cards already use `.suc-compact` styles from skill-use-grid.css. */
+.gm-card .suc-grid-compact {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}

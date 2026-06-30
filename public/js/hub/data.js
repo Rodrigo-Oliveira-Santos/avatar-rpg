@@ -299,6 +299,11 @@ function toHubPlayer(username, character) {
     subclass: identity.subclasse || null,
     buffs: effects.buffs,
     debuffs: effects.debuffs,
+    // Surfaced so the GM Control SkillUseGrid can render the right
+    // mastery dots + use counters on every player card without having
+    // to load each character separately.
+    habilidades: character?.habilidades || {},
+    skill_uses: character?.skill_uses || {},
   };
 }
 

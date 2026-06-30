@@ -316,3 +316,25 @@
   height: 100%;
   border: 0;
 }
+
+/* ── Player's "Minhas Habilidades" section (Hub) ──────────── */
+.hub-my-skills {
+  margin: 12px 0 18px;
+  padding: 14px;
+  border: 1px solid var(--border, #2b2b34);
+  border-radius: 10px;
+  background: var(--bg2, #16161b);
+}
+
+.hub-my-skills h2 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: var(--gold, #d4a849);
+}
+
+.hub-my-skills-hint {
+  margin: 0 0 10px 0;
+  font-size: 11px;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}

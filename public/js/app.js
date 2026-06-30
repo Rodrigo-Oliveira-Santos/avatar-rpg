@@ -8,7 +8,7 @@ import { AutoSave, exportToJSON, createFileInput } from './storage/index.js';
 import { createElement, on, $, $$ } from './utils/dom.js';
 import { ATTRIBUTES, NATION_CURRENCIES } from './utils/constants.js';
 import { toast, confirmDialog, promptDialog } from './utils/toast.js';
-import { SkillTree, loadSkills } from './skills/index.js';
+import { SkillTree, loadSkills, mountSkillUseGrid } from './skills/index.js';
 import { InventoryPage } from './items/index.js';
 import { unequipItem } from './items/inventory.js';
 import { ShopPage, loadShopItemsFromSupabase } from './shop/index.js';
@@ -1203,14 +1203,17 @@ export class App {
   }
 
   /**
-   * Render the "Habilidades Ativas" chips on the character profile.
+   * Render the "Habilidades Ativas" section on the character profile.
    *
-   * Resolves human-readable names from `window.__SKILL_DEFINITIONS__`
-   * (populated by each `SkillTree` after fetching its JSON). When a
-   * skill id is unknown (e.g. the user hasn't visited that element's
-   * tab yet), we lazy-load the relevant JSON via `loadSkills(...)` and
-   * re-render once the cache is warm — so the chip never shows the raw
-   * `fire-cb1a` style id to the player.
+   * Replaced the old chip-only list with a `SkillUseGrid` so the player
+   * can actually trigger Character.useSkill from here without going to
+   * the skill tree. The grid handles its own live updates via
+   * `character.subscribe()`, so re-running this method is cheap — we
+   * just feed it the latest list of resolved active skill defs.
+   *
+   * Skill defs come from `window.__SKILL_DEFINITIONS__` (populated by
+   * each SkillTree on init). When a def isn't cached yet we still
+   * trigger the lazy-load fallback to warm it, then re-render.
    */
   updateActiveSkills(data) {
     const container = $('#active-skills');
@@ -1218,63 +1221,93 @@ export class App {
 
     const active = Object.entries(data.habilidades || {}).filter(([, s]) => s.active);
     if (active.length === 0) {
-      container.innerHTML = '<p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade ativa selecionada.</p>';
+      this._skillUseGrid?.destroy?.();
+      this._skillUseGrid = null;
+      container.innerHTML = '<p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade ativa selecionada. Desbloqueia-as nas árvores de skills.</p>';
       return;
     }
 
     const defs = window.__SKILL_DEFINITIONS__;
-    const resolved = active.map(([id]) => {
-      const def = defs?.get?.(id) || null;
-      return { id, def };
-    });
+    const resolved = active
+      .map(([id]) => defs?.get?.(id) || null)
+      .filter(Boolean);
 
-    // Trigger background loads for elements we don't yet have cached.
+    // Some defs may not be cached yet (e.g. player active a skill in an
+    // element they haven't visited in this session). Kick a lazy load
+    // so the grid re-renders with the full set once they're warm.
     const missingByElement = new Map();
-    resolved
-      .filter((entry) => !entry.def)
-      .forEach((entry) => {
-        const target = inferSkillElementFromId(entry.id);
-        if (!target) return;
-        const key = target.nonBenderPath ? `${target.element}:${target.nonBenderPath}` : target.element;
-        missingByElement.set(key, target);
-      });
+    active.forEach(([id]) => {
+      if (defs?.get?.(id)) return;
+      const target = inferSkillElementFromId(id);
+      if (!target) return;
+      const key = target.nonBenderPath ? `${target.element}:${target.nonBenderPath}` : target.element;
+      missingByElement.set(key, target);
+    });
     if (missingByElement.size > 0) {
       this._kickActiveSkillsLazyLoad(missingByElement, data);
     }
 
-    container.innerHTML = '';
-    resolved.forEach(({ id, def }) => {
-      const name = def?.name || (defs?.get?.(id)?.name) || '…';
-      const branchColor = def ? branchAccentColor(def.branch, def.tier) : null;
-
-      const chip = createElement('span', { class: `skill-chip${def ? ' resolved' : ' loading'}` });
-      if (branchColor) chip.style.setProperty('--chip-color', branchColor);
-
-      if (def?.tier_label) {
-        chip.title = `${def.tier_label}${def.description ? ' — ' + def.description : ''}`;
-      } else if (!def) {
-        chip.title = 'A carregar nome da habilidade…';
+    // Mount the grid lazily so destroying it on logout is a single
+    // call. From here on `refresh()` is enough — it rebuilds cards
+    // from the live `character` data.
+    if (!this._skillUseGrid || this._skillUseGridContainer !== container) {
+      this._skillUseGrid?.destroy?.();
+      container.innerHTML = '';
+      this._skillUseGridContainer = container;
+      this._skillUseGrid = mountSkillUseGrid({
+        container,
+        skills: resolved,
+        character: this.character,
+        onUse: (skill) => this._handleProfileSkillUse(skill),
+        emptyMessage: 'Nenhuma habilidade ativa selecionada.',
+      });
+    } else {
+      // Update the skill set + re-render in place.
+      this._skillUseGrid.refresh();
+      // (skills change rarely — re-mount when activation set changes)
+      const knownIds = new Set(resolved.map((s) => s.id));
+      const prevIds = this._skillUseGridIds || new Set();
+      const sameSet = knownIds.size === prevIds.size
+        && Array.from(knownIds).every((id) => prevIds.has(id));
+      if (!sameSet) {
+        this._skillUseGrid.destroy();
+        container.innerHTML = '';
+        this._skillUseGrid = mountSkillUseGrid({
+          container,
+          skills: resolved,
+          character: this.character,
+          onUse: (skill) => this._handleProfileSkillUse(skill),
+          emptyMessage: 'Nenhuma habilidade ativa selecionada.',
+        });
       }
+    }
+    this._skillUseGridIds = new Set(resolved.map((s) => s.id));
+  }
 
-      chip.appendChild(createElement('span', { class: 'skill-chip-name', textContent: name }));
-
-      // Mastery dots reuse the same threshold logic as the side panel.
-      const uses = Number(data.skill_uses?.[id]) || 0;
-      const masteryLevel = typeof this.character?.getMasteryLevel === 'function'
-        ? this.character.getMasteryLevel(id)
-        : 0;
-      if (def && (uses > 0 || masteryLevel > 0)) {
-        const dots = createElement('span', { class: 'skill-chip-mastery' });
-        for (let i = 0; i < 3; i++) {
-          dots.appendChild(createElement('i', {
-            class: `skill-chip-dot${i < masteryLevel ? ' on' : ''}`,
-          }));
-        }
-        chip.appendChild(dots);
-      }
-
-      container.appendChild(chip);
-    });
+  /**
+   * Click handler for the profile "Habilidades" grid. Runs the same
+   * Character.useSkill the SkillTree uses, then emits a toast with the
+   * outcome. `character.notify()` inside useSkill already triggers a
+   * re-render so the chi pool / use counter / mastery dots update
+   * instantly without a page reload.
+   */
+  _handleProfileSkillUse(skill) {
+    if (!skill || !this.character?.useSkill) return;
+    const result = this.character.useSkill(skill);
+    const lines = [`⚡ ${skill.name} usada`];
+    const chiBits = [];
+    if (result.chiCost > 0) chiBits.push(`−${result.chiCost} chi`);
+    if (result.chiRestore > 0) chiBits.push(`+${result.chiRestore} chi`);
+    if (chiBits.length) {
+      const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
+      lines.push(`${chiBits.join(' · ')}${newChi}`);
+    }
+    lines.push(`${result.uses} usos · M${result.mastery}`);
+    if (result.insufficientChi) lines.push('⚠ chi insuficiente');
+    const level = result.insufficientChi
+      ? 'warning'
+      : (result.mastery > result.masteryBefore ? 'success' : 'info');
+    toast(lines.join('\n'), level);
   }
 
   /**

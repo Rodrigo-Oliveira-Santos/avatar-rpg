@@ -17,6 +17,7 @@ import { normalizeStatusEffect } from '../utils/statusEffects.js';
 import { listStaged as listMonstersStaged } from '../api/monsters.js';
 import { MONSTERS_UPDATED_EVENT } from '../monsters/index.js';
 import { EncounterPanel, ENCOUNTER_UPDATED_EVENT } from '../combat/index.js';
+import { mountSkillUseGrid } from '../skills/index.js';
 
 const ELEMENT_LABELS = {
   fire: 'Fogo',
@@ -252,6 +253,16 @@ export class HubPage {
       })
       .catch((err) => console.warn('[HubPage] encounter monsters load', err));
 
+    // Player's own skill use grid — only for non-GM users with at least
+    // one active skill. Sits between the map and the player grid so it
+    // is right where the player is looking during a battle. Re-rendered
+    // each Hub render, but the underlying grid subscribes to the
+    // Character so individual chi/uses changes don't need a full Hub
+    // rebuild.
+    if (!isGameMaster && this.character) {
+      this._renderMySkillsSection();
+    }
+
     const gridHost = createElement('div');
     gridHost.appendChild(createElement('p', {
       class: 'hub-empty',
@@ -391,6 +402,78 @@ export class HubPage {
 
     column.appendChild(list);
     return column;
+  }
+
+  /**
+   * Render the logged-in player's "Minhas Habilidades" section. Mounts
+   * a SkillUseGrid so the player can use their active skills without
+   * leaving the Hub (useful during a battle).
+   *
+   * Skill defs come from `window.__SKILL_DEFINITIONS__` (warmed by the
+   * SkillTree instances initialised on app start). For users who
+   * haven't visited every element yet, the cache may be incomplete —
+   * we still render whatever we can resolve.
+   */
+  _renderMySkillsSection() {
+    if (!this.character?.getData) return;
+    const data = this.character.getData();
+    const activeIds = Object.entries(data.habilidades || {})
+      .filter(([, s]) => s.active)
+      .map(([id]) => id);
+    if (activeIds.length === 0) return;
+
+    const defs = window.__SKILL_DEFINITIONS__;
+    const resolved = activeIds.map((id) => defs?.get?.(id)).filter(Boolean);
+    if (resolved.length === 0) return;
+
+    const section = createElement('section', { class: 'hub-my-skills' });
+    section.appendChild(createElement('h2', { textContent: '🌳 As minhas habilidades' }));
+
+    const hint = createElement('p', { class: 'hub-my-skills-hint' });
+    hint.textContent = 'Clica em "Usar" para gastar o chi correspondente e contar para a maestria. Cards a vermelho indicam chi insuficiente.';
+    section.appendChild(hint);
+
+    const gridHost = createElement('div');
+    section.appendChild(gridHost);
+    this.container.appendChild(section);
+
+    // Tear down any previous grid before mounting fresh one so the
+    // character.subscribe inside the grid doesn't accumulate handlers
+    // across the many re-renders the Hub triggers.
+    this._mySkillsGrid?.destroy?.();
+    this._mySkillsGrid = mountSkillUseGrid({
+      container: gridHost,
+      skills: resolved,
+      character: this.character,
+      onUse: (skill) => this._handleHubSkillUse(skill),
+      emptyMessage: 'Nenhuma habilidade ativa selecionada.',
+    });
+  }
+
+  /**
+   * Click handler for the Hub "Minhas Habilidades" grid. Runs the same
+   * Character.useSkill the SkillTree uses, then emits a multi-line
+   * toast with the outcome. The grid + the character profile re-render
+   * automatically via `character.subscribe()` — no manual refresh
+   * needed.
+   */
+  _handleHubSkillUse(skill) {
+    if (!skill || !this.character?.useSkill) return;
+    const result = this.character.useSkill(skill);
+    const lines = [`⚡ ${skill.name} usada`];
+    const chiBits = [];
+    if (result.chiCost > 0) chiBits.push(`−${result.chiCost} chi`);
+    if (result.chiRestore > 0) chiBits.push(`+${result.chiRestore} chi`);
+    if (chiBits.length) {
+      const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
+      lines.push(`${chiBits.join(' · ')}${newChi}`);
+    }
+    lines.push(`${result.uses} usos · M${result.mastery}`);
+    if (result.insufficientChi) lines.push('⚠ chi insuficiente');
+    const level = result.insufficientChi
+      ? 'warning'
+      : (result.mastery > result.masteryBefore ? 'success' : 'info');
+    toast(lines.join('\n'), level);
   }
 
   /**

@@ -52,6 +52,7 @@ import {
 import { NotesEditor } from '../character/NotesEditor.js';
 import { Character } from '../character/Character.js';
 import { loadPlayerCharacter, savePlayerCharacter } from '../api/gm-characters.js';
+import { mountSkillUseGrid } from '../skills/index.js';
 import { PlayerShopModal } from './PlayerShopModal.js';
 import { PlayerInventoryModal } from './PlayerInventoryModal.js';
 import { PlayerSkillsModal } from './PlayerSkillsModal.js';
@@ -266,37 +267,20 @@ export class GMControlPage {
     // Vitals — HP, CP (Chi) and SP (Spirit) get the same +/- controls.
     card.appendChild(this._vitalsBlock(player));
 
+    // Skill use grid — compact cards the GM can click to fire a skill
+    // on the player's behalf. Sits BETWEEN vitals and effects so the
+    // GM can see chi/HP, fire a skill, then check what effects landed.
+    // The full skill tree (read/write) is still one click away via
+    // the 🌳 Skills action button below.
+    const skillsBlock = this._renderPlayerSkillsBlock(player);
+    if (skillsBlock) card.appendChild(skillsBlock);
+
     // Status effects — chips coloured by polarity (green=buff, red=debuff).
     // Hover shows the description on each chip; clicking the row opens a
     // detail popup with the full catalog entry (description + duration +
     // damage/tick info) so the GM has full context in one place.
     const effectsBlock = this._effectsBlock(player);
     if (effectsBlock) card.appendChild(effectsBlock);
-
-    const skillsRow = createElement('div', { class: 'gm-skills' });
-    const charSkills = player.habilidades || {};
-    const activeSkills = Object.keys(charSkills).filter((id) => charSkills[id]?.active);
-    if (activeSkills.length === 0) {
-      skillsRow.appendChild(createElement('span', { class: 'gm-empty-row', textContent: 'Sem habilidades ativas registadas.' }));
-    } else {
-      activeSkills.forEach((id) => {
-        const def = window.__SKILL_DEFINITIONS__?.get?.(id);
-        const cost = Number(def?.chi_cost) || 0;
-        const restore = Number(def?.chi_restore) || 0;
-        const costLabel = cost > 0 ? `−${cost} chi` : '';
-        const restoreLabel = restore > 0 ? `+${restore} chi` : '';
-        const meta = [costLabel, restoreLabel].filter(Boolean).join(' / ');
-        const chip = createElement('button', {
-          type: 'button',
-          class: 'gm-skill-chip',
-          textContent: def?.name || id,
-          title: [def?.description, meta].filter(Boolean).join('\n'),
-        });
-        on(chip, 'click', () => this._usePlayerSkill(player, id, def));
-        skillsRow.appendChild(chip);
-      });
-    }
-    card.appendChild(skillsRow);
 
     const actions = createElement('div', { class: 'gm-card-actions' });
     actions.append(
@@ -310,6 +294,67 @@ export class GMControlPage {
     );
     card.appendChild(actions);
     return card;
+  }
+
+  /**
+   * Build the per-player "active skills" block on the GM Control card.
+   * Returns null when the player has no active skills (caller skips
+   * appending so the card doesn't show an empty row).
+   *
+   * The block is a SkillUseGrid in compact mode. Each card surfaces
+   * chi cost / restore, current chi via the projected `player.chi`,
+   * disables itself when chi is insufficient and fires the same
+   * `_usePlayerSkill` flow we use for the legacy chip click.
+   */
+  _renderPlayerSkillsBlock(player) {
+    const charSkills = player.habilidades || {};
+    const activeIds = Object.keys(charSkills).filter((id) => charSkills[id]?.active);
+    if (activeIds.length === 0) return null;
+
+    const defs = window.__SKILL_DEFINITIONS__;
+    const resolved = activeIds.map((id) => defs?.get?.(id)).filter(Boolean);
+    if (resolved.length === 0) return null;
+
+    const block = createElement('div', { class: 'gm-skills-block' });
+    block.appendChild(createElement('div', {
+      class: 'gm-skills-block-label',
+      textContent: '🌳 Habilidades activas',
+    }));
+
+    const gridHost = createElement('div');
+    block.appendChild(gridHost);
+
+    // Build a minimal "character-like" facade so SkillUseGrid can read
+    // chi / uses / mastery without actually owning a Character instance
+    // for every player on screen. No subscribe — the grid re-renders
+    // when the whole GM Control card is rebuilt (after a use action,
+    // status update, etc.).
+    const charLike = {
+      getData: () => ({
+        skill_uses: player.skill_uses || {},
+        cp_current: player.chi,
+        stats_derived: { maxCP: player.chiMax },
+      }),
+      getMasteryLevel: (skillId) => {
+        const uses = Number(player.skill_uses?.[skillId]) || 0;
+        if (uses >= 150) return 3;
+        if (uses >= 50) return 2;
+        if (uses >= 15) return 1;
+        return 0;
+      },
+      subscribe: () => () => {},
+    };
+
+    mountSkillUseGrid({
+      container: gridHost,
+      skills: resolved,
+      character: charLike,
+      compact: true,
+      onUse: (skill) => this._usePlayerSkill(player, skill.id, skill),
+      emptyMessage: 'Sem habilidades activas.',
+    });
+
+    return block;
   }
 
   /**
@@ -843,18 +888,18 @@ export class GMControlPage {
       return;
     }
 
-    const parts = [`${player.name || player.username} usou ${name}`];
+    const lines = [`⚡ ${player.name || player.username} usou ${name}`];
     const deltaBits = [];
     if (result.chiCost > 0) deltaBits.push(`−${result.chiCost} chi`);
     if (result.chiRestore > 0) deltaBits.push(`+${result.chiRestore} chi`);
     if (deltaBits.length) {
       const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
-      parts.push(`${deltaBits.join(' / ')}${newChi}`);
+      lines.push(`${deltaBits.join(' · ')}${newChi}`);
     }
-    parts.push(`${result.uses} usos · M${result.mastery}`);
-    let level = result.insufficientChi ? 'warning' : (result.mastery > result.masteryBefore ? 'success' : 'info');
-    const msg = parts.join(' · ') + (result.insufficientChi ? ' ⚠ chi insuficiente' : '');
-    toast(msg, level);
+    lines.push(`${result.uses} usos · M${result.mastery}`);
+    if (result.insufficientChi) lines.push('⚠ chi insuficiente');
+    const level = result.insufficientChi ? 'warning' : (result.mastery > result.masteryBefore ? 'success' : 'info');
+    toast(lines.join('\n'), level);
 
     await this.refresh();
   }
