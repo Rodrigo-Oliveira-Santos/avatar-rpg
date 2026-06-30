@@ -431,13 +431,17 @@ GM clica "⚔ Iniciar batalha" (MonstersPage)
      → INSERT encounter_combatants (turn_order = ordenado por initiative DESC)
   → EncounterPanel renderiza no Hub a todos os jogadores
 
-GM clica "Próximo turno →"
-  → applyTickFor(combatente actual, 'end', encounter)   ← tick_when='end'
+GM clica "Próxima vez →"
+  → applyTickFor(combatente actual, 'end', encounter)   ← tick_when='end' (default)
   → Encounters.advanceTurn(id)                          ← cursor++, has_acted=true
+  → se transitar de turno N → N+1 e (N+1-1)%2 === 0:
+       applyChiRegen(encounter)                         ← +20 chi a jogadores + monstros (cp_max set)
   → applyTickFor(novo combatente, 'start', encounter)   ← tick_when='start'
 
-Jogador clica "Fim do meu turno" (no seu próprio combatente)
-  → Encounters.markActed(combatantId)                   ← has_acted=true (avisa GM)
+Jogador clica "Fim da minha vez" (no seu próprio combatente)
+  → applyTickFor(self, 'end', encounter)                ← ticks no fim das próprias acções
+  → Encounters.endOwnTurn(id, username)                 ← cursor++ (validado server-side)
+  → (mesmo gatilho de chi regen acima)
 
 GM clica "Terminar batalha"
   → Encounters.end(id) → status='ended'

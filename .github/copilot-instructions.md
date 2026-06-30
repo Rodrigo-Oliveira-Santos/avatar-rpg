@@ -23,7 +23,40 @@ infraestrutura (router, registry de utilizadores, persistência).
 | Minecraft | MVP + Admin | Galeria · Painel Pessoal · Minhas Listas · Admin |
 | Landing | Game selector + Admin Global | botão admin se sessão admin activa |
 
-### Recente (2026-06-30) — Multi-game platform + admin panels
+### Recente (2026-06-30) — Combat tweaks + chi regen + item modifiers
+
+- **Vocabulário de combate**: "ronda" → **Turno** (loop completo);
+  "turno" individual → **Vez** (slot de cada combatente). Apenas
+  strings de UI; colunas `current_round` / `current_turn_index`
+  ficam como estão. Botões agora: `Próxima vez →`, `Fim da minha vez`,
+  badge `Turno N`.
+- **Status effects no fim da vez**: DoT (sangrando, queimadura,
+  regeneração) movidos de `tick_when:'start'` para `'end'` — efeitos
+  aplicam-se depois das ações do alvo. Effects de bloqueio de ação
+  (stun/paralisia/medo/congelado) ficam em `'start'`. Default no
+  engine (`processEffects`) também passou explicitamente a `'end'`.
+- **Chi regen +20 a cada 2 turnos**: novo `combat/regen.js` cobre
+  jogadores (via `updateVitals`) e monstros (via `tickPatch` quando
+  têm `cp_max` definido). Disparado em rondas 3/5/7… no GM
+  "Próxima vez" e no jogador "Fim da minha vez". Toast resume
+  quantos foram afetados.
+- **Monsters chi pool**: nova migração
+  `20260630000000_monsters_chi.sql` adiciona `cp_max` + `cp_current`
+  (nullable). Editor de monstros tem helper `_numberNullable` — em
+  branco = monstro não usa chi (regen ignora-o).
+- **Item modifiers**: `validators.js` aceita `item.modifiers`
+  (string, opcional). UI mostra bloco "Modificadores" + aviso
+  `⚠ Cálculos automáticos pendentes no backend.` no detalhe do item.
+- **Skill chi_cost top-level**: `validators.js` aceita
+  `skill.chi_cost` (number ≥ 0). `SkillCard` renderiza chip
+  `Chi: N` ao lado do tier. Per-attack `attack.chi_cost` continua
+  inalterado.
+- **Ferramentas GM colapsáveis**: HubPage renomeou "Ferramentas GM
+  (simulado)" → "Ferramentas GM" e ganhou botão
+  `▲ Esconder / ▼ Mostrar` (mesma UX do mapa, persistido em
+  `localStorage.avatar_rpg_hub_gmtools_collapsed`).
+
+### Recente (anterior 2026-06-30) — Multi-game platform + admin panels
 
 - **Multi-game platform**: landing (#/) + router (`#/<game>/<page>`) +
   per-game session isolation (`avatar_rpg_user` / `dnd_user` /

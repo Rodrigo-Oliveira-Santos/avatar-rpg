@@ -17,6 +17,22 @@
 
 ## Notas recentes (2026-06-30)
 
+### Combate — vocabulário + chi regen + ticks no fim da vez
+- ✅ **Renome de vocabulário**: o que antes se chamava "ronda" passa a ser **`Turno`** (loop completo de todos os combatentes) e o que antes era "turno" passa a ser **`Vez`** (slot individual de cada combatente). Aplicado em todas as strings de UI (`Próxima vez →`, `Fim da minha vez`, `Turno N`); colunas internas (`current_round`, `current_turn_index`) ficam como estão para evitar migração de schema.
+- ✅ **Status effects DoT** (sangrando, queimadura, regeneração) tickam agora por defeito **no fim da vez** do alvo — depois das ações. Efeitos que precisam de fazer efeito *antes* da ação (stun / paralisia / medo / congelado) mantêm `tick_when: 'start'`.
+- ✅ **Regeneração de chi**: a cada 2 turnos (rondas 3, 5, 7…) todos os combatentes recebem **+20 chi** automaticamente (cap em `cp_max`). Cobre jogadores e monstros — monstros opt-in via novos campos `cp_max` / `cp_current` no editor (em branco = não usa chi). Migração: `20260630000000_monsters_chi.sql`.
+
+### Conteúdo
+- ✅ **Item modifiers** — novo campo livre (`modifiers`, string) no schema de items. Aceite pelo `validators.js` e renderizado no painel de detalhe do inventário com aviso `⚠ Cálculos automáticos pendentes no backend.`. GM pode descrever "Armadura pesada: −2 AGI, +5 DEF" enquanto a lógica não está implementada.
+- ✅ **Skill chi cost** — `chi_cost` top-level (number ≥ 0) aceite no schema de habilidades. Renderizado como chip azul `Chi: N` no card. Per-attack `attack.chi_cost` continua a funcionar para custos de ação individual.
+
+### UX
+- ✅ **Ferramentas GM no Hub** — renomeado de "⚔ Ferramentas GM (simulado)" para "⚔ Ferramentas GM" + botão `▲ Esconder / ▼ Mostrar` com estado persistido em `localStorage` (mesma UX do mapa).
+
+---
+
+## Notas anteriores (2026-06-30) — Multi-game + admin
+
 ### GM Control — modais delegados e ações cross-user
 - ✅ **`PlayerShopModal`** — botão `🛒 Comprar` em cada card de jogador; o GM faz uma compra em nome do jogador (ouro ou moedas nacionais), debitando da carteira do próprio.
 - ✅ **`PlayerInventoryModal`** — botão `🎒 Inventário`; abre o inventário do jogador com equip/unequip/usar (consumíveis decrementam 1). Reusa os helpers `equipItem`/`unequipItem` envolvendo a ficha numa `Character` temporária.
@@ -56,7 +72,7 @@
 - ✅ Encontros centralizados em Supabase (`encounters` + `encounter_combatants`) com Realtime: o painel do combate atualiza em todos os browsers sem refresh.
 - ✅ Botão `⚔ Iniciar batalha` vive na nova tab **🎛 Controlo** (GM/Admin).
 - ✅ Iniciativa por `promptRoll` — default manual, toggle para "rodar no site" sem alterar a regra default.
-- ✅ Jogadores no seu turno têm `Fim do meu turno` que avança mesmo o turno (sem precisar do GM confirmar).
+- ✅ Jogadores na sua vez têm `Fim da minha vez` que avança mesmo a vez (sem precisar do GM confirmar).
 - ✅ Indicador `#1, #2, #3…` (ordem) em todos os cards (Hub, monstros, GM Control, EncounterPanel).
 - ✅ Status effects ganharam `damage_per_turn`, `tick_when` (`start`/`end`), `default_duration`, `attribute_mod` → engine de ticks corre automaticamente quando o turno avança.
 
@@ -327,7 +343,7 @@ Quando um monstro está num encontro ativo (não apenas staged), aparece também
 
 Dashboard central a partir do qual o GM controla a sessão inteira (objetivo: 1 computador a coordenar tudo):
 
-- **EncounterPanel sticky** no topo — ordem de turnos, ronda atual, controlos GM sempre à mão.
+- **EncounterPanel sticky** no topo — ordem de vezes, turno atual, controlos GM sempre à mão.
 - **Grid de cards** com todos os jogadores + monstros relevantes (staged ou em encontro ativo).
   - **Card de jogador:** nome + nível, HP visual + botões `−5/−1/+1/+5/SET`, lista de habilidades ativas como chips clicáveis, atalhos `⚡ Efeitos` (StatusEffectManager), `💰 Ouro`, `⭐ XP`, `📝 Notas` (gm_notes via popup).
   - **Card de monstro:** HP +/-, ataques como chips, botão `⚰ Cemitério`. Quando HP cai a 0 pergunta se quer mandar para o cemitério.
@@ -525,18 +541,18 @@ Duas listas de notas separadas, cada uma com CRUD individual (cada nota tem `id`
 **O que faz:**
 - O GM inicia uma batalha a partir da tab **Monstros** → `⚔ Iniciar batalha` → modal de seleção de combatentes (jogadores + monstros `in_play`).
 - Para cada combatente é pedido o valor de **iniciativa** num popup (`promptRoll`): por defeito é manual (regra da casa — *toda* a UI de rolls começa em manual com toggle para auto-rolar nessa prompt).
-- Aparece um **`EncounterPanel`** no Hub (visível a todos) com a ordem completa, ronda atual, indicador animado no combatente que está a jogar, número de iniciativa flutuante em cada player card e botões:
-  - **Jogador** (apenas no seu próprio combatente, no seu turno) → `Fim do meu turno` (marca `has_acted=true`).
-  - **GM** → `Próximo turno →` (avança o cursor, aplica ticks, faz wrap de ronda) e `Terminar batalha`.
+- Aparece um **`EncounterPanel`** no Hub (visível a todos) com a ordem completa, turno atual, indicador animado no combatente que está a jogar, número de iniciativa flutuante em cada player card e botões:
+  - **Jogador** (apenas no seu próprio combatente, na sua vez) → `Fim da minha vez` (marca `has_acted=true`).
+  - **GM** → `Próxima vez →` (avança o cursor, aplica ticks, faz wrap de turno e dispara o chi regen a cada 2 turnos) e `Terminar batalha`.
 
 **Ticks dos efeitos de estado:**
 Cada efeito do catálogo (`utils/statusEffects.js`) tem:
-- `default_duration` — turnos default ao aplicar (`null` = até remoção)
-- `tick_when` — `start` ou `end` do turno do alvo
+- `default_duration` — vezes default ao aplicar (`null` = até remoção)
+- `tick_when` — `start` ou `end` da vez do alvo (default `'end'` desde 2026-06-30 — DoT tickam *depois* das ações; stun/paralisia continuam em `'start'`)
 - `damage_per_turn` — expressão de dados (ex: `1d4`, `2d6+1`; valor negativo `-1d4` cura)
 - `attribute_mod` — modificadores de atributo declarativos (GM aplica manualmente)
 
-Quando o turno avança, o engine corre `applyTickFor` em `combat/statusTicks.js`: aplica dano/cura via `promptRoll`, decrementa duração e remove a 0. Para monstros, o HP é atualizado no row; para jogadores aparece um toast (jogadores controlam o seu próprio HP).
+Quando a vez avança, o engine corre `applyTickFor` em `combat/statusTicks.js`: aplica dano/cura via `promptRoll`, decrementa duração e remove a 0. Para monstros, o HP é atualizado no row; para jogadores aparece um toast (jogadores controlam o seu próprio HP). **Chi regen** (+20 a cada 2 turnos, rondas 3/5/7…) é aplicado em `combat/regen.js` a todos os jogadores e a monstros com `cp_max` definido.
 
 **Realtime:** o `EncounterPanel` subscreve `postgres_changes` em `encounters` + `encounter_combatants` via Supabase Realtime. Sem Supabase, faz polling a cada 3s na localStorage.
 

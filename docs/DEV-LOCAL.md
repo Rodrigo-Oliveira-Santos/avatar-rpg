@@ -198,14 +198,14 @@ Fluxo recomendado para validar a persistência:
 
 Para testar como um novo jogador (sem seed), faz login com um username novo: o `preset` é aplicado (se houver) e o `App.loadCharacter()` chama `API.characters.create(...)` para gravar a personagem no Supabase logo no primeiro login.
 
-### 7. Testar o sistema de turnos
+### 7. Testar o sistema de combate
 
 1. Login como `gm` (ou `admin`).
 2. Vai a **Monstros** → coloca pelo menos um monstro em jogo (`Colocar em jogo`).
 3. Clica `⚔ Iniciar batalha` → seleciona quem participa → introduz/rola a iniciativa de cada um (default manual; toggle `🎲 Rodar` no popup para a app rolar por ti).
-4. Vai ao **Hub**: vês a ordem completa no painel `⚔ Combate`, com indicador animado no combatente activo e número de iniciativa nos cards.
-5. Logout, login como um jogador (`zuko`, `katara`…). Hub atualiza-se sozinho via Supabase Realtime — sem refresh manual. No teu turno aparece `Fim do meu turno`.
-6. De volta como `gm`: `Próximo turno →` corre os ticks dos efeitos (popup pede valor do dano/cura) e avança o cursor.
+4. Vai ao **Hub**: vês a ordem completa no painel `⚔ Combate`, com indicador animado no combatente activo, número de iniciativa nos cards e badge `Turno N` (o "turno" é o loop completo; cada combatente joga a sua "vez" dentro do turno).
+5. Logout, login como um jogador (`zuko`, `katara`…). Hub atualiza-se sozinho via Supabase Realtime — sem refresh manual. Na tua vez aparece `Fim da minha vez`.
+6. De volta como `gm`: `Próxima vez →` corre os ticks dos efeitos (popup pede valor do dano/cura) e avança o cursor. A cada 2 turnos completos (rondas 3, 5, 7…) todos os combatentes recebem **+20 chi** automaticamente.
 
 Sem Supabase ligado (`useSupabase: false`), tudo continua a funcionar via localStorage mas o Realtime degrada para polling 3s (apenas a mesma janela vê actualizações).
 
