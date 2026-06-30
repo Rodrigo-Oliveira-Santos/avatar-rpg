@@ -2,7 +2,7 @@
  * Skill data loader.
  *
  * Source of truth: `public/data/skills/{element}[-non_bender_path].json`,
- * extracted from `docs/*_skill_tree.html` by `scripts/extract-skill-trees.mjs`.
+ * extracted from `docs/skill-trees/*.html` by `scripts/extract-skill-trees.mjs`.
  *
  * Lookup order:
  *   1. Supabase API (when enabled)

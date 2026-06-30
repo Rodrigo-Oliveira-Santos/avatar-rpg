@@ -1,11 +1,11 @@
 # Avatar RPG — Sistema de Personagem Web
 
 > **Documentação Completa:**
-> - [FEATURES.md](./FEATURES.md) — Todas as páginas e mecânicas (atuais e futuras)
-> - [DECISIONS.md](./DECISIONS.md) — Decisões aplicadas e pendentes
-> - [DIAGRAMAS-NÃO-TÉCNICOS.md](./DIAGRAMAS-NÃO-TÉCNICOS.md) — Fluxos e mecânicas do jogo
-> - [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
-> - [DEV-LOCAL.md](./DEV-LOCAL.md) — Como correr localmente (com Supabase opcional)
+> - [docs/FEATURES.md](./docs/FEATURES.md) — Todas as páginas e mecânicas (atuais e futuras)
+> - [docs/DECISIONS.md](./docs/DECISIONS.md) — Decisões aplicadas e pendentes
+> - [docs/DIAGRAMAS-NAO-TECNICOS.md](./docs/DIAGRAMAS-NAO-TECNICOS.md) — Fluxos e mecânicas do jogo
+> - [docs/DIAGRAMAS-TECNICOS.md](./docs/DIAGRAMAS-TECNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
+> - [docs/DEV-LOCAL.md](./docs/DEV-LOCAL.md) — Como correr localmente (com Supabase opcional)
 
 ## Visão Geral
 
@@ -178,64 +178,69 @@ Este projeto é o **primeiro módulo** de um portal web mais amplo. A estrutura 
 avatar-rpg/
 ├── public/                    ← Frontend
 │   ├── index.html             ← Página principal (SPA)
+│   ├── config.example.js      ← Template de config (Supabase)
+│   ├── serve.json             ← Headers COI (COOP/COEP) para o `serve` dev
 │   ├── css/
 │   │   ├── main.css           ← Variables + base styles
 │   │   └── components/        ← CSS por componente
-│   │       ├── admin.css              ← Painel admin
-│   │       ├── character-modal.css    ← Modal read-only do GM
-│   │       ├── import.css             ← Fluxo de importação JSON
-│   │       ├── trade.css              ← UI de trocas e notificações
-│   │       └── ...                    ← Restantes estilos da app
 │   └── js/
 │       ├── main.js            ← Entry point (bootstrap)
 │       ├── app.js             ← App class (orchestrator)
-│       ├── admin/             ← Admin panel, LogService, LogViewer, BackupRestore
-│       ├── api/               ← API client + endpoints
+│       ├── admin/             ← AdminPanel, LogService, LogViewer, BackupRestore
+│       ├── api/               ← API client + endpoints (incl. gm-characters helper)
 │       ├── auth/              ← AuthManager
-│       ├── character/         ← Character, stats, XP, slots
-│       ├── combat/            ← Dice, resolver, status effects
-│       ├── hub/               ← Hub page + dados reais/mocks
+│       ├── character/         ← Character, stats, XP, slots, NotesEditor
+│       ├── combat/            ← Dice, EncounterPanel, BattleLauncher, statusTicks
+│       ├── gm-control/        ← GMControlPage + delegated modals (Shop/Inventory/Skills)
+│       ├── hub/               ← HubPage (mapa interativo + grelha + ferramentas)
 │       ├── import/            ← JSON import (validators, storage, ImportPage)
-│       ├── items/             ← Item list + inventory
-│       ├── shop/              ← Shop page + compra de itens
-│       ├── skills/            ← Skill tree + cards + data loader
-│       ├── storage/           ← AutoSave, backup, import, export
-│       ├── trade/             ← Trade system (TradeManager, TradeModal, notifications)
-│       └── utils/             ← Constants, DOM helpers, validators
+│       ├── items/             ← InventoryPage + equip/unequip + scrolls
+│       ├── monsters/          ← MonstersPage (staged/library/cemetery)
+│       ├── shop/              ← Shop page (player view + GM CRUD)
+│       ├── skills/            ← Skill tree + cards + data loader + PathPicker
+│       ├── storage/           ← AutoSave
+│       ├── trade/             ← TradeManager, TradeModal, TradeHistoryPanel
+│       └── utils/             ← Constants, DOM helpers, toast, statusEffects
+├── data/skills/               ← JSONs canónicos das skill trees (por elemento)
+├── scripts/                   ← Utilitários (extract-skill-trees.mjs, …)
 ├── netlify/
-│   └── functions/             ← API serverless (Netlify Functions)
-│       ├── auth-*.js          ← Login/logout/me
-│       ├── characters*.js     ← CRUD personagens
-│       ├── skills*.js         ← Skills por elemento
-│       ├── items*.js          ← Items e shop
-│       ├── gm-*.js            ← Ferramentas GM
-│       ├── admin-*.js         ← Ferramentas Admin
-│       └── lib/               ← Helpers (supabase, cors, auth, response)
+│   └── functions/             ← API serverless (legacy, não-ativo em bypass mode)
 ├── supabase/
-│   ├── schema.sql             ← Estrutura da BD
-│   └── seed.sql               ← (vazio — dados via JSON import)
-├── Initial Files/             ← Ficheiros de referência do protótipo
-├── netlify.toml               ← Config Netlify (routes, functions)
+│   ├── migrations/            ← Schema canónico (npx supabase db reset)
+│   ├── seed.sql               ← Test data determinístico (7 users, 5 chars, 12 items, 3 monsters)
+│   └── schema.sql             ← Snapshot legado (mantido para referência)
+├── docs/                      ← Documentação markdown e HTML
+│   ├── FEATURES.md
+│   ├── DECISIONS.md
+│   ├── DEV-LOCAL.md
+│   ├── DIAGRAMAS-TECNICOS.md
+│   ├── DIAGRAMAS-NAO-TECNICOS.md
+│   └── skill-trees/           ← HTMLs originais das trees (fire.html, water.html, …)
+├── tests/                     ← Unit tests (200 tests, game logic only)
+├── Initial Files/             ← Ficheiros de referência do protótipo (legado)
+├── netlify.toml               ← Config Netlify + headers COI em produção
 ├── package.json               ← Dependencies (serve, supabase-js, vitest)
 ├── vitest.config.js           ← Test configuration
-├── tests/                     ← Unit tests (101 tests, game logic only)
 ├── .env.example               ← Template variáveis ambiente
-└── DEV-LOCAL.md               ← Como correr localmente
+├── README.md                  ← Este ficheiro (entry point)
+├── CLAUDE.md                  ← Contexto para o agente Claude Code
+└── .github/copilot-instructions.md  ← Contexto para GitHub Copilot
 ```
 
 ### Comandos
 
 ```bash
-npm run dev        # Servidor local (porta 3000)
-npm test           # Correr testes unitários
+npm run dev        # Servidor local (porta 3000) — usa serve.json (headers COI)
+npm test           # Correr testes unitários (200)
 npm run test:watch # Testes em modo watch
+npm run dev:all    # Supabase local + db:reset (seed) + dev (tudo numa linha)
 ```
 
 ---
 
 ## Schema de Importação
 
-**Documentação completa:** [DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md#9-schema-para-importação)
+**Documentação completa:** [docs/DIAGRAMAS-TECNICOS.md](./docs/DIAGRAMAS-TECNICOS.md#9-schema-para-importação)
 
 ### Schema de Habilidade (Resumo)
 

@@ -1,7 +1,7 @@
 /**
  * SkillPanel — slide-in side panel for a single skill node.
  *
- * Mirrors the behaviour of `docs/*_skill_tree.html`:
+ * Mirrors the behaviour of `docs/skill-trees/*.html`:
  *   • Tier label, name, damage summary, description
  *   • Attribute requirement pills (X/Y ✓/✗) coloured per attribute
  *   • Mastery breakdown (M0..M3) with the current level highlighted +

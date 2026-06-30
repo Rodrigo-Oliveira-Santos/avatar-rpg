@@ -973,7 +973,7 @@ Vários módulos subscrevem a `postgres_changes` (HubPage, MonstersPage, GMContr
 ### 9.1 Schema de Habilidade (skill-import-v2)
 
 > **Nota:** este schema substitui o anterior v1 para reflectir a estrutura
-> canónica documentada em `docs/*_skill_tree.html`. Os ficheiros gerados
+> canónica documentada em `docs/skill-trees/*.html`. Os ficheiros gerados
 > em `data/skills/*.json` por `scripts/extract-skill-trees.mjs` seguem
 > exactamente este formato.
 

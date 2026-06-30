@@ -21,6 +21,8 @@ npm run dev
 
 Abre o browser em **http://localhost:3000**
 
+> **Nota sobre `public/serve.json`:** este ficheiro instrui o `serve` a enviar headers de Cross-Origin Isolation (`COOP=same-origin` + `COEP=require-corp`) em todos os pedidos. É necessário para o **mapa interativo** embedido no Hub (que corre num runtime Godot e precisa de `SharedArrayBuffer`). Se removeres este ficheiro o resto da app continua a funcionar, mas o mapa vai mostrar um erro.
+
 ### Login
 
 O sistema usa autenticação simples por username (sem password). Utilizadores pré-definidos:
@@ -42,7 +44,7 @@ Podes também escrever qualquer username novo — será criado como jogador.
 ## Testes
 
 ```bash
-# Correr todos os testes (101+ testes unitários)
+# Correr todos os testes (200 testes unitários)
 npm test
 
 # Modo watch (re-corre ao guardar ficheiros)
@@ -88,7 +90,7 @@ avatar-rpg/
 | `npm run db:stop` | (opcional) Pára Supabase local |
 | `npm run db:reset` | (opcional) Reaplica migrations + seed |
 | `npm run db:status` | (opcional) Estado do Supabase local |
-| `npm run dev:all` | (opcional) Arranca Supabase **e** o frontend numa só linha |
+| `npm run dev:all` | (opcional) Arranca Supabase, **reaplica seed com perfis de teste** e o frontend numa só linha |
 
 ---
 
@@ -186,7 +188,7 @@ Sem Supabase ligado (`useSupabase: false`), tudo continua a funcionar via localS
 | `npm run db:stop` | Pára Supabase local |
 | `npm run db:reset` | Reaplica migrations + seed |
 | `npm run db:status` | Mostra portas e URLs ativos |
-| `npm run dev:all` | **Arranca Supabase local e o frontend numa só linha** (faz `db:start` e depois `dev`). Para terminar: `Ctrl+C` no servidor + `npm run db:stop`. |
+| `npm run dev:all` | **Arranca Supabase local, aplica migrations + seed (test profiles) e o frontend numa só linha** (faz `db:start`, `db:reset` e depois `dev`). ⚠️ Reseta os dados — usa `npm run db:start && npm run dev` se quiseres preservar o estado. Para terminar: `Ctrl+C` no servidor + `npm run db:stop`. |
 
 ### Alternativa sem Docker — projeto remoto
 

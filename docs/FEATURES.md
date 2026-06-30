@@ -1,6 +1,6 @@
 # Avatar RPG — Documento de Features
 
-**Última atualização:** 2026-06-26  
+**Última atualização:** 2026-06-30  
 **Status:** Documento de referência
 
 **Legenda:**
@@ -10,7 +10,42 @@
 
 ---
 
-## Notas recentes (2026-06-29)
+## Notas recentes (2026-06-30)
+
+### GM Control — modais delegados e ações cross-user
+- ✅ **`PlayerShopModal`** — botão `🛒 Comprar` em cada card de jogador; o GM faz uma compra em nome do jogador (ouro ou moedas nacionais), debitando da carteira do próprio.
+- ✅ **`PlayerInventoryModal`** — botão `🎒 Inventário`; abre o inventário do jogador com equip/unequip/usar (consumíveis decrementam 1). Reusa os helpers `equipItem`/`unequipItem` envolvendo a ficha numa `Character` temporária.
+- ✅ **`PlayerSkillsModal`** — botão `🌳 Skills`; monta a `SkillTree` normal num modal e persiste cada mudança via subscribe debounced (400ms).
+- ✅ **Nome clicável + 👤** — abrir a ficha read-only (`CharacterModal`) a partir do card do jogador no GM Control (mesma modal usada pelo Hub).
+- ✅ **`💰 Recompensas em Grupo` + `🎁 Entregar Loot`** no header — reusa os componentes do Hub, agora com persistência Supabase-first.
+- ✅ Botão `🗑 Apagar conta` no painel **Admin** — apaga via `users` cascade no Supabase + limpa trades órfãos (FK por username, sem cascade automático) + localStorage. Regras: não-self, mínimo 1 admin.
+
+### Hub — mapa interativo
+- ✅ **Mapa Avatar World** (Godot) embedido como iframe acima da grelha de jogadores (origem: [iYiyo](https://iyiyo.itch.io/avatarlastairbendermap)).
+- ✅ Toggle `▲ Esconder / ▼ Mostrar` com estado persistido em `localStorage`.
+- ✅ Iframe **cacheado na instância** — `render()` não recarrega o mapa em cada atualização de status/trade.
+- ✅ **Headers Cross-Origin Isolation** (`COOP=same-origin` + `COEP=require-corp`) em `public/serve.json` (dev) e `netlify.toml` (prod) para o runtime Godot poder usar `SharedArrayBuffer`. CDN do `supabase-js` movido para **jsdelivr.net** (que envia `CORP: cross-origin`) para não partir quando o COI fica ativo.
+
+### Skill tree — Sem Dobra: lazy + preview
+- ✅ Pop-up de escolha de caminho (chiblocker vs weapons) **deixou de aparecer no login**. Aparece apenas na primeira vez que o jogador abre a aba Sem Dobra, e é **dismissable** (botão `👁 Esconder e pré-visualizar`).
+- ✅ **Tabs de preview** no topo da árvore: `🥋 Bloqueador de Chi | ⚔ Utilizador de Armas`. Permite alternar entre as duas árvores antes de comprometer-se.
+- ✅ Tentar desbloquear uma habilidade em modo preview força o picker (também dismissable). Caminho comprometido fecha o tab oposto.
+
+### Persistência cross-user
+- ✅ Novo helper **`api/gm-characters.js`** (`loadPlayerCharacter`, `savePlayerCharacter`, `listPlayerUsernames`, `deletePlayerAccount`) — Supabase-first com fallback localStorage. `GroupRewards`, `LootDelivery`, `PlayerShopModal`, `PlayerInventoryModal`, `PlayerSkillsModal` e `AdminPanel` agora usam este helper em vez de irem direto ao localStorage (antes silenciosamente falhavam quando o seed só vivia em Supabase).
+
+### Bugfixes
+- ✅ **Nome do jogador "stale" ao re-login** — a instância `Character` é agora reposta em `teardownSession()` e ganha o nome correto quando uma conta nova sem preset faz login (antes inheritava o nome do utilizador anterior).
+- ✅ **`ouro` em `rowToCharacter`** — campo estava omisso, fazia com que GMs vissem 0 ouro ao abrir a ficha doutro jogador.
+- ✅ **`openCharacterModal` Supabase-aware** — clicar num card de jogador seedado (Sokka, Aang, …) já não mostra "ficha indisponível".
+
+### Outras melhorias
+- ✅ Admin tab passou a ser a **última opção** no header (antes era seguido pelo "Importar").
+- ✅ `npm run dev:all` faz agora `db:start && db:reset && dev` (garante seed dos perfis de teste).
+
+---
+
+## Notas anteriores (2026-06-29)
 
 ### Sistema de combate por turnos
 - ✅ Encontros centralizados em Supabase (`encounters` + `encounter_combatants`) com Realtime: o painel do combate atualiza em todos os browsers sem refresh.
@@ -129,12 +164,12 @@ Avatar RPG é um sistema de gestão de personagens web para um grupo de RPG insp
 
 **Funcionalidades implementadas:**
 - Estrutura visual organizada em 5 categorias: **Espiritualidade**, **Agilidade**, **Combate (N1-N2 partilhado)**, **Combate Preciso (N3+)**, **Combate Bruto (N3+)**
-- Tiers de 1 a **5** (N1 → N4 + **Lendário**), mapeados directamente aos ramos canónicos (`sp`, `ag`, `cb`, `pr`, `br`) dos ficheiros em `docs/*_skill_tree.html`
+- Tiers de 1 a **5** (N1 → N4 + **Lendário**), mapeados directamente aos ramos canónicos (`sp`, `ag`, `cb`, `pr`, `br`) dos ficheiros em `docs/skill-trees/*.html`
 - **Path lock**: a partir do tier 3 o jogador escolhe entre Preciso (`combat_path='precise'`) ou Bruto (`combat_path='brute'`); a árvore esconde/desativa skills do ramo oposto
 - **Sem Dobra (`element='none'`)** tem dois sub-paths: `chiblocker` (bloqueador de chi) e `weapons` (utilizador de armas), guardados em `non_bender_path`
 - **Sistema de maestria (M0–M3)**: cada skill com `mastery_levels` evolui automaticamente conforme o uso. Thresholds: 15, 50, 150 usos. Cada nível desbloqueia uma fórmula de dano/efeito diferente; o badge no card mostra `M? · uses/next`
 - Requisitos visíveis (atributos, nível, habilidades prévias, ramo)
-- Habilidades carregadas via JSON com dados reais; ficheiros canónicos em `data/skills/*.json` extraídos automaticamente de `docs/*_skill_tree.html` via `scripts/extract-skill-trees.mjs`
+- Habilidades carregadas via JSON com dados reais; ficheiros canónicos em `data/skills/*.json` extraídos automaticamente de `docs/skill-trees/*.html` via `scripts/extract-skill-trees.mjs`
 - Importação JSON a alimentar a árvore com conteúdos dos 5 elementos (+ os 2 paths de Sem Dobra)
 
 **Regras:**
@@ -418,19 +453,15 @@ Duas listas de notas separadas, cada uma com CRUD individual (cada nota tem `id`
 ### Sistema de Economia
 
 **Implementado:**
-- Tipo base: Ouro (única moeda ativa)
-- Sistema de inventário com quantidades
+- **Ouro** universal (moeda primária)
+- **Moedas nacionais** (Fogo, Água, Terra, Ar, Universal) — qualquer jogador pode usar qualquer moeda; o GM distribui via `GroupRewards`
+- Sistema de inventário com quantidades + raridade (mecânica)
 - Armaduras com bónus de defesa e penalidade de esquiva
-- Loja funcional com compras a ouro
+- Loja funcional com compras a ouro **e** a moedas nacionais (preço duplo opcional)
 - Recompensas de grupo e entrega individual de loot/ouro
-- Transações entre jogadores com sistema de troca ativo
-- Notificações de troca
-
-**Futuro (🔮):**
-- Distinção por nação (Fogo, Água, Terra, Ar)
-- Regra de nação: moedas apenas podem ser gastas na nação correspondente
-- O GM define quais moedas são aceites em cada loja
-- Sistema de "gifts" / trocas forçadas (GM)
+- Transações entre jogadores (sistema de trocas cross-browser)
+- Notificações de troca em tempo real
+- **Transferências forçadas (Gifts)** pelo GM — ouro, moedas, items, sem aceitação
 
 ---
 
@@ -439,13 +470,9 @@ Duas listas de notas separadas, cada uma com CRUD individual (cada nota tem `id`
 **Implementado:**
 - Tiers: Comum, Raro, Épico, Lendário
 - Badges/indicadores visuais na apresentação do item
-- Sem implicações mecânicas diretas
+- **Mecânica:** multiplicador de dano/defesa + bónus flat — visível no inventário
 
-**Futuro (🔮):**
-- Raridade com implicações mecânicas (bónus de stats, preço multiplicado)
-- Ver DIAGRAMAS-NÃO-TÉCNICOS.md Secção 6 para detalhes
-
-**Implementação:** Campo `rarity` no JSON do item. Balanceamento feito pelo GM através de atributos e preço.
+**Implementação:** Campo `rarity` no JSON do item. Bónus aplicados via `RARITY_BONUSES` em `utils/constants.js`.
 
 ---
 
@@ -613,8 +640,8 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 ## Diagramas
 
-- **Diagrama Não-Técnico Principal:** `DIAGRAMAS-NÃO-TÉCNICOS.md`
-- **Diagrama Técnico Principal:** `DIAGRAMAS-TÉCNICOS.md`
+- **Diagrama Não-Técnico Principal:** `DIAGRAMAS-NAO-TECNICOS.md`
+- **Diagrama Técnico Principal:** `DIAGRAMAS-TECNICOS.md`
 
 ---
 
@@ -622,6 +649,9 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 | Data | Alteração |
 |------|-----------|
+| 2026-06-30 | Documentação reorganizada para `docs/`; renames com ASCII (sem acentos). GM Control modais delegados, mapa interativo no Hub, COI headers, admin delete account, lazy non-bender path picker, bugfix nome stale ao re-login |
+| 2026-06-29 | Sistema de combate por turnos + GM Control + persistência cirúrgica + trades cross-browser + loja modo Gerir + notas duplas + sistema `.btn` |
+| 2026-06-26 | Botões MAX separados, dodge cap, GM-only XP, moedas universais, GM/admin sem ficha, hub do GM com unsaved, Supabase opcional |
 | 2026-05-31 | Adicionada Fase 6 (Features Avançadas) completa; backlog reduzido a companheiros + Supabase |
 | 2026-05-31 | Adicionada Fase 5 (Testes e Melhorias) com todas as correções documentadas |
 | 2026-05-31 | Documento atualizado para refletir Fases 1-4 como implementadas; legenda simplificada; backlog consolidado |
@@ -671,8 +701,15 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 - Página individual com stats próprios
 - Progressão de nível
 - Slots de armadura
+- Schema existe em `supabase/migrations/20260101000000_init.sql` (`companions` table); UI/regras ainda por implementar
 
-### Integração Backend
-- Supabase (PostgreSQL + Auth)
-- Migração de localStorage para BD
-- Multi-dispositivo
+### Integração Supabase Auth
+- Substituir o login só-por-username pela Supabase Auth real (email/password ou magic link)
+- Re-aplicar RLS estrito (a migration `20260628000000_relax_rls_pre_auth.sql` é removida quando isto for feito)
+- Multi-dispositivo com sessão sincronizada
+
+### Cooldowns automáticos
+- `Character.recordSkillUse` já grava `skill_last_used[id] = { encounter_id, round, turn_index }`. Falta a engine que lê esse estado e bloqueia ativação até X turnos depois.
+
+### Resolução automática de ações em combate
+- Ataques que aplicam efeitos selecionando alvos no `EncounterPanel` (em vez de o GM aplicar manualmente)

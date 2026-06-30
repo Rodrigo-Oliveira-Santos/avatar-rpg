@@ -661,7 +661,7 @@ Personagem Nível 1
 
 ## Índice de Diagramas Técnicos
 
-Os diagramas técnicos estão documentados em: **[DIAGRAMAS-TÉCNICOS.md](./DIAGRAMAS-TÉCNICOS.md)**
+Os diagramas técnicos estão documentados em: **[DIAGRAMAS-TECNICOS.md](./DIAGRAMAS-TECNICOS.md)**
 
 ---
 

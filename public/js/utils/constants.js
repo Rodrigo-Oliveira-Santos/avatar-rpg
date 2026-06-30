@@ -40,7 +40,7 @@ export const ELEMENTS = ['fire', 'water', 'earth', 'air', 'none'];
 /**
  * For `element === 'none'`, the player picks a non-bender path that
  * determines which skill tree is available. Mirrors the data in
- * docs/{chiblocker,weapons}_skill_tree.html.
+ * docs/skill-trees/{chiblocker,weapons}.html.
  */
 export const NON_BENDER_PATHS = {
   chiblocker: 'Bloqueador de Chi',

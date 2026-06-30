@@ -1,15 +1,15 @@
-// Extracts skill data from docs/*_skill_tree.html into JSON files.
+// Extracts skill data from docs/skill-trees/*.html into JSON files.
 // Run: node scripts/extract-skill-trees.mjs
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const SOURCES = [
-  { file: 'fire_skill_tree.html',       element: 'fire',     path: null },
-  { file: 'water_skill_tree.html',      element: 'water',    path: null },
-  { file: 'earth_skill_tree.html',      element: 'earth',    path: null },
-  { file: 'air_skill_tree.html',        element: 'air',      path: null },
-  { file: 'chiblocker_skill_tree.html', element: 'none',     path: 'chiblocker' },
-  { file: 'weapons_skill_tree.html',    element: 'none',     path: 'weapons' },
+  { file: 'fire.html',       element: 'fire',     path: null },
+  { file: 'water.html',      element: 'water',    path: null },
+  { file: 'earth.html',      element: 'earth',    path: null },
+  { file: 'air.html',        element: 'air',      path: null },
+  { file: 'chiblocker.html', element: 'none',     path: 'chiblocker' },
+  { file: 'weapons.html',    element: 'none',     path: 'weapons' },
 ];
 
 const BRANCH_TO_CATEGORY = {
@@ -45,7 +45,7 @@ function safeEval(jsLiteral) {
 }
 
 async function extractFile(srcFile, element, nonBenderPath) {
-  const html = await readFile(path.join('docs', srcFile), 'utf8');
+  const html = await readFile(path.join('docs', 'skill-trees', srcFile), 'utf8');
 
   const areqStr = extractBlock(html, 'AREQ');
   const maeStr  = extractBlock(html, 'MAE');

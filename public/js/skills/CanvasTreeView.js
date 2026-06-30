@@ -1,7 +1,7 @@
 /**
  * Canvas-based skill tree view.
  *
- * Mirrors the layout/visuals from `docs/*_skill_tree.html` using the
+ * Mirrors the layout/visuals from `docs/skill-trees/*.html` using the
  * `branch`, `tier`, `position.column` data we carry per skill. Renders
  * branch background bands, dependency edges (solid = same branch, dashed
  * = cross-branch) and reacts to hover / clicks. Clicking always calls
