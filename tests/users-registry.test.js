@@ -180,7 +180,11 @@ describe('users-registry — applyRoleChange', () => {
     expect(after).toEqual(before);
   });
 
-  it('syncs all active sessions with the same username', () => {
+  it('only syncs the targeted app session (no longer cross-app)', () => {
+    // Per-app accounts (post 2026-06-30 split): changing a role in
+    // Avatar must NOT bleed into the D&D or MC sessions. The Avatar
+    // admin panel is the default caller, so applyRoleChange operates
+    // on the Avatar registry + Avatar session only.
     localStorage.setItem('avatar_rpg_user', JSON.stringify({ username: 'aang', role: 'player' }));
     localStorage.setItem('dnd_user', JSON.stringify({ username: 'aang', role: 'player' }));
     localStorage.setItem('mc_user', JSON.stringify({ username: 'somebody-else', role: 'player' }));
@@ -188,10 +192,11 @@ describe('users-registry — applyRoleChange', () => {
 
     applyRoleChange({ username: 'aang', fromRole: 'player', toRole: 'gm', actor: { username: 'admin' } });
 
+    // Avatar session updated.
     expect(JSON.parse(localStorage.getItem('avatar_rpg_user')).role).toBe('gm');
-    expect(JSON.parse(localStorage.getItem('dnd_user')).role).toBe('gm');
-    expect(JSON.parse(localStorage.getItem('landing_user')).role).toBe('gm');
-    // outras sessões intactas
+    // D&D / landing / MC sessions stay put — they're separate accounts now.
+    expect(JSON.parse(localStorage.getItem('dnd_user')).role).toBe('player');
+    expect(JSON.parse(localStorage.getItem('landing_user')).role).toBe('player');
     expect(JSON.parse(localStorage.getItem('mc_user')).role).toBe('player');
   });
 });
