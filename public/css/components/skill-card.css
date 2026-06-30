@@ -340,6 +340,12 @@
   font-style: italic;
 }
 
+.sb-chi {
+  background: rgba(79, 140, 255, 0.18);
+  color: #9fc2ff;
+  font-weight: 600;
+}
+
 /* ---------- Canvas tree view ---------- */
 .skill-view-toggle {
   display: inline-flex;

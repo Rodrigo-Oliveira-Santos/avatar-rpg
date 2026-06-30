@@ -347,6 +347,36 @@
   font-size: 0.82rem;
 }
 
+.inv-detail-modifiers {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px dashed rgba(212, 168, 73, 0.45);
+  border-radius: 14px;
+  background: rgba(212, 168, 73, 0.06);
+  display: grid;
+  gap: 8px;
+}
+
+.inv-detail-modifiers-title {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--gold, #d4a849);
+}
+
+.inv-detail-modifiers-text {
+  margin: 0;
+  font-size: 0.88rem;
+  white-space: pre-wrap;
+  color: var(--text, #e8e3d4);
+}
+
+.inv-detail-modifiers-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}
+
 .inv-scroll-section {
   margin-top: 18px;
   padding: 14px;

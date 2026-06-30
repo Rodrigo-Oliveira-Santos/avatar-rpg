@@ -81,6 +81,14 @@ export function validateSkill(skill, index = 0) {
     errs.push(`${prefix} "attacks" deve ser um array`);
   }
 
+  // Skill-level chi cost (number ≥ 0). Optional — coexists with per-attack
+  // `chi_cost`. Added 2026-06-30 in preparation for the updated skill trees.
+  if (skill.chi_cost !== undefined && skill.chi_cost !== null) {
+    if (typeof skill.chi_cost !== 'number' || skill.chi_cost < 0) {
+      errs.push(`${prefix} "chi_cost" deve ser um número >= 0`);
+    }
+  }
+
   return errs;
 }
 
@@ -124,6 +132,14 @@ export function validateItem(item, index = 0) {
 
   if (item.dodge_penalty !== undefined && typeof item.dodge_penalty !== 'number') {
     errs.push(`${prefix} "dodge_penalty" deve ser um número`);
+  }
+
+  // Free-form modifiers note (e.g. "Armadura pesada: −2 AGI, +5 DEF").
+  // Calculation logic is intentionally left to the backend — we accept the
+  // field as a string today so GMs can capture intent now.
+  if (item.modifiers !== undefined && item.modifiers !== null
+      && typeof item.modifiers !== 'string') {
+    errs.push(`${prefix} "modifiers" deve ser uma string (texto livre)`);
   }
 
   if (item.attributes && typeof item.attributes === 'object') {

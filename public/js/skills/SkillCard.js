@@ -298,6 +298,15 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
       textContent: '⭐ Dominada',
     }));
   }
+  // Skill-level chi cost (e.g. for casts that cost a flat chi pool). Per-attack
+  // chi costs are still shown inside `createAttackRow` below.
+  if (Number.isFinite(skill.chi_cost) && skill.chi_cost > 0) {
+    meta.appendChild(createElement('span', {
+      class: 'sbadge sb-chi',
+      textContent: `Chi: ${skill.chi_cost}`,
+      title: `Custo de chi para usar esta habilidade: ${skill.chi_cost}`,
+    }));
+  }
   card.appendChild(meta);
 
   // Requirements

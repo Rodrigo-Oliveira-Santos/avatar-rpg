@@ -434,6 +434,26 @@ export class InventoryPage {
       panel.appendChild(statList);
     }
 
+    // Free-form modifiers (e.g. "Armadura pesada: −2 AGI, +5 DEF"). The
+    // canonical calculations live in the backend; the UI only surfaces
+    // the GM-authored note so players can read it before equipping.
+    if (typeof item.modifiers === 'string' && item.modifiers.trim()) {
+      const modBlock = createElement('div', { class: 'inv-detail-modifiers' });
+      modBlock.appendChild(createElement('h4', {
+        class: 'inv-detail-modifiers-title',
+        textContent: 'Modificadores',
+      }));
+      modBlock.appendChild(createElement('p', {
+        class: 'inv-detail-modifiers-text',
+        textContent: item.modifiers,
+      }));
+      modBlock.appendChild(createElement('p', {
+        class: 'inv-detail-modifiers-note',
+        textContent: '⚠ Cálculos automáticos ainda por implementar no backend.',
+      }));
+      panel.appendChild(modBlock);
+    }
+
     if (source === 'inventory' && item.type === 'scroll') {
       panel.appendChild(this.createScrollUsageSection(item));
     }
