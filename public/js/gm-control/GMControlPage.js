@@ -264,6 +264,13 @@ export class GMControlPage {
     // Vitals — HP, CP (Chi) and SP (Spirit) get the same +/- controls.
     card.appendChild(this._vitalsBlock(player));
 
+    // Status effects — chips coloured by polarity (green=buff, red=debuff).
+    // Hover shows the description on each chip; clicking the row opens a
+    // detail popup with the full catalog entry (description + duration +
+    // damage/tick info) so the GM has full context in one place.
+    const effectsBlock = this._effectsBlock(player);
+    if (effectsBlock) card.appendChild(effectsBlock);
+
     const skillsRow = createElement('div', { class: 'gm-skills' });
     const charSkills = player.habilidades || {};
     const activeSkills = Object.keys(charSkills).filter((id) => charSkills[id]?.active);
@@ -296,6 +303,131 @@ export class GMControlPage {
     );
     card.appendChild(actions);
     return card;
+  }
+
+  /**
+   * Render a compact row of status-effect chips below the vitals block.
+   * Returns null when the player has no effects so the caller can skip
+   * the appendChild without leaving an empty row in the DOM.
+   *
+   * Each chip:
+   *   - icon + name
+   *   - tinted background (green = buff, red = debuff) via existing
+   *     `.player-buff` styles
+   *   - `title` tooltip with the description (+ duration/damage when
+   *     present) on hover
+   *
+   * The chips' container is clickable: it opens a centered modal listing
+   * every effect with its full description, polarity, remaining duration
+   * and damage_per_turn so the GM has the complete picture in one place.
+   */
+  _effectsBlock(player) {
+    const buffs = Array.isArray(player.buffs) ? player.buffs : [];
+    const debuffs = Array.isArray(player.debuffs) ? player.debuffs : [];
+    const all = [...buffs, ...debuffs];
+    if (all.length === 0) return null;
+
+    const wrap = createElement('div', {
+      class: 'gm-effects',
+      title: 'Clica para ver descrições completas',
+    });
+
+    all.forEach((effect) => {
+      const chip = createElement('span', { class: `player-buff ${effect.type === 'positive' ? 'positive' : 'negative'}` });
+      if (effect.icon) {
+        chip.appendChild(createElement('span', { class: 'player-buff-icon', textContent: effect.icon }));
+      }
+      chip.appendChild(createElement('span', { class: 'player-buff-name', textContent: effect.name || effect.id }));
+      chip.title = this._effectTooltip(effect);
+      wrap.appendChild(chip);
+    });
+
+    on(wrap, 'click', () => this._openEffectsDetail(player, all));
+    return wrap;
+  }
+
+  /**
+   * Build a one-line tooltip for a status effect. Combines description +
+   * duration + damage_per_turn so a quick hover on the chip surfaces
+   * everything the GM needs without opening the detail modal.
+   */
+  _effectTooltip(effect) {
+    const parts = [];
+    if (effect.description) parts.push(effect.description);
+    const meta = [];
+    if (Number.isFinite(effect.duration_turns)) meta.push(`${effect.duration_turns} vez${effect.duration_turns === 1 ? '' : 'es'}`);
+    if (effect.damage_per_turn) meta.push(`${effect.damage_per_turn}/vez`);
+    if (effect.tick_when) meta.push(`tick: ${effect.tick_when === 'start' ? 'início' : 'fim'} da vez`);
+    if (meta.length) parts.push(meta.join(' · '));
+    return parts.join('\n');
+  }
+
+  /**
+   * Centered modal listing every effect on the player with full detail.
+   * Read-only: the GM can still edit via the dedicated "⚡ Efeitos"
+   * shortcut (StatusEffectManager) in the action row below.
+   */
+  _openEffectsDetail(player, effects) {
+    const overlay = createElement('div', { class: 'modal-overlay' });
+    const box = createElement('div', { class: 'modal-box gm-effects-modal' });
+    box.appendChild(createElement('h2', {
+      class: 'modal-title',
+      textContent: `Efeitos — ${player.name || player.username}`,
+    }));
+
+    const list = createElement('ul', { class: 'gm-effects-list' });
+    effects.forEach((effect) => {
+      const li = createElement('li', { class: `gm-effects-item ${effect.type === 'positive' ? 'positive' : 'negative'}` });
+
+      const head = createElement('div', { class: 'gm-effects-item-head' });
+      head.appendChild(createElement('span', {
+        class: 'gm-effects-item-icon',
+        textContent: effect.icon || '•',
+      }));
+      head.appendChild(createElement('strong', {
+        class: 'gm-effects-item-name',
+        textContent: effect.name || effect.id,
+      }));
+      head.appendChild(createElement('span', {
+        class: `gm-effects-item-tag ${effect.type === 'positive' ? 'positive' : 'negative'}`,
+        textContent: effect.type === 'positive' ? 'Buff' : 'Debuff',
+      }));
+      li.appendChild(head);
+
+      if (effect.description) {
+        li.appendChild(createElement('p', { class: 'gm-effects-item-desc', textContent: effect.description }));
+      }
+
+      const meta = [];
+      if (Number.isFinite(effect.duration_turns)) meta.push(`⏱ ${effect.duration_turns} vez${effect.duration_turns === 1 ? '' : 'es'} restante${effect.duration_turns === 1 ? '' : 's'}`);
+      else if (effect.duration_turns === null || effect.duration_turns === undefined) meta.push('⏱ Até ser removido');
+      if (effect.damage_per_turn) {
+        const isHeal = String(effect.damage_per_turn).startsWith('-');
+        meta.push(`${isHeal ? '💚' : '💥'} ${effect.damage_per_turn}/vez`);
+      }
+      if (effect.tick_when) meta.push(`🕒 Tick: ${effect.tick_when === 'start' ? 'início' : 'fim'} da vez`);
+      if (effect.attribute_mod && Object.keys(effect.attribute_mod).length) {
+        const mods = Object.entries(effect.attribute_mod)
+          .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`)
+          .join(', ');
+        meta.push(`📊 ${mods}`);
+      }
+      if (meta.length) {
+        li.appendChild(createElement('p', { class: 'gm-effects-item-meta', textContent: meta.join(' · ') }));
+      }
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+
+    const actions = createElement('div', { class: 'modal-actions' });
+    const close = createElement('button', { type: 'button', class: 'modal-btn modal-btn-confirm', textContent: 'Fechar' });
+    on(close, 'click', () => overlay.remove());
+    actions.appendChild(close);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    on(overlay, 'click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
   }
 
   /**
