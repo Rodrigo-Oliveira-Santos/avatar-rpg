@@ -228,6 +228,12 @@
 .sp-status.ok   { background: #0a2e20; color: #5DCAA5; border: 1px solid #1D9E75; }
 .sp-status.warn { background: #2e1c02; color: #EF9F27; border: 1px solid #BA7517; }
 .sp-status.err  { background: #2e0a04; color: #F0997B; border: 1px solid #D85A30; }
+.sp-status-chi  {
+  background: rgba(79, 140, 255, 0.10);
+  color: #9fc2ff;
+  border: 1px solid rgba(79, 140, 255, 0.4);
+  margin-bottom: 4px;
+}
 
 /* ---------- Skill tree legend (above canvas) ---------- */
 .skill-tree-legend {

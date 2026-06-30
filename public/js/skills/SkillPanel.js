@@ -203,6 +203,19 @@ export function createSkillPanel({ host, character, getAllSkills, callbacks = {}
 
   function renderStatus(skill, info) {
     if (info.active) {
+      // Insufficient chi gets its own dedicated banner — it's an actual
+      // blocker for the Usar button, more important right now than the
+      // mastery progress, so it shows on top with a chi-blue tint.
+      if (info.chiCost > 0 && !info.enoughChi) {
+        const chiBanner = `<div class="sp-status sp-status-chi">⚠ Chi insuficiente (${info.currentCp}/${info.chiCost})</div>`;
+        if (info.masteryLevel >= 3) return chiBanner;
+        const next = Math.min(info.masteryLevel + 1, 3);
+        const remaining = MASTERY_THRESHOLDS[next] - info.uses;
+        const masteryBanner = remaining <= 0
+          ? `<div class="sp-status ok">Pronto para subir maestria!</div>`
+          : `<div class="sp-status warn">Faltam ${remaining} usos para M${next}</div>`;
+        return `${chiBanner}${masteryBanner}`;
+      }
       if (info.masteryLevel >= 3) {
         return `<div class="sp-status ok">★ Maestria máxima atingida!</div>`;
       }
