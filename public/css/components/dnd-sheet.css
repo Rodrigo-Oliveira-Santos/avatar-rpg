@@ -82,6 +82,14 @@
   border-color: var(--dnd-accent);
 }
 
+/* Badges contextuais no nav (trade pending count, hub player count) */
+.dnd-nav-badge {
+  margin-left: 6px;
+}
+.dnd-nav-badge-hub {
+  background: #4a90e2;
+}
+
 /* Pages */
 .dnd-page { display: none; }
 .dnd-page.on { display: block; }

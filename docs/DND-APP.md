@@ -41,8 +41,8 @@ níveis 1–20.
 | Perícias   | Jogador    | 18 perícias 5e com proficiência/expertise, bónus calculados               |
 | Magias     | Jogador    | Spell slots por nível, DC e ataque mágico, picker do catálogo importado   |
 | Inventário | Jogador    | Itens (nome/quantidade/peso/notas), ouro, itens mágicos importados        |
-| Trade      | Jogador    | Propostas de troca entre jogadores (items + ouro com transferência atómica) |
-| Hub        | Todos      | Lista de jogadores e respetivas fichas                                    |
+| Trade      | Jogador    | Propostas de troca entre jogadores (items + ouro com transferência atómica). **Badge no nav** com nº de trades pendentes recebidos. |
+| Hub        | Todos      | Lista de jogadores e respetivas fichas. **Badge no nav** com nº total de fichas registadas. |
 | GM         | GM/Admin   | Atribuir XP/ouro (rows individuais + bulk com confirmação visual)         |
 | Importar   | GM/Admin   | Carregar JSON em 4 domínios: spells, subclasses, magic items, races       |
 | Admin      | Admin      | Gerir utilizadores (roles, apagar conta), editar/apagar qualquer ficha    |

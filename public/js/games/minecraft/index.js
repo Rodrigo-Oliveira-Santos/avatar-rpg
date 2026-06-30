@@ -12,7 +12,7 @@
  */
 
 import { createElement, on } from '../../utils/dom.js';
-import { toast } from '../../utils/toast.js';
+import { toast, confirmDialog } from '../../utils/toast.js';
 import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 import { createSharedAuth } from '../lib/shared-auth.js';
 
@@ -185,7 +185,11 @@ class MinecraftApp {
         textContent: `${this.user.username} (${this.user.role})`,
       }));
       const logout = createElement('button', { class: 'mc-btn', textContent: '⏻ Sair' });
-      on(logout, 'click', () => this.logout());
+      on(logout, 'click', async () => {
+        const ok = await confirmDialog('Terminar sessão Minecraft?');
+        if (!ok) return;
+        this.logout();
+      });
       actions.appendChild(logout);
     } else {
       const login = createElement('button', { class: 'mc-btn primary', textContent: '🔑 Iniciar sessão' });

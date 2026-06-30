@@ -22,8 +22,10 @@ import {
   load as loadChar,
   save as saveChar,
   ensureRegistered,
+  listAll as listAllChars,
   deleteCharacter,
 } from '../../api/dnd-characters.js';
+import { listIncomingPending } from './dnd-trade.js';
 
 import { renderCharacterPage } from './pages/CharacterPage.js';
 import { renderSkillsPage } from './pages/SkillsPage.js';
@@ -322,10 +324,55 @@ class DnDApp {
       if (t.adminOnly && !this._isAdmin()) return;
       const btn = createElement('button', { class: 'dnd-nav-btn', textContent: t.label });
       if (t.id === this.activeTab) btn.classList.add('on');
+      // Slot para badges contextuais (Trade: pending; Hub: players).
+      // Os valores são preenchidos assincronamente em `_refreshNavBadges`
+      // para não bloquear a render do nav.
+      if (t.id === 'trade' || t.id === 'hub') {
+        const badge = createElement('span', {
+          class: `nav-badge dnd-nav-badge dnd-nav-badge-${t.id}`,
+          hidden: true,
+        });
+        btn.appendChild(badge);
+      }
       on(btn, 'click', () => this.setTab(t.id));
       nav.appendChild(btn);
     });
+    // Disparar refresh assíncrono (não bloqueia o paint inicial)
+    this._refreshNavBadges(nav).catch(() => {});
     return nav;
+  }
+
+  /**
+   * Atualiza os badges do nav assincronamente:
+   *  • Trade — número de trades pendentes recebidos pelo user actual.
+   *  • Hub — número total de fichas D&D registadas.
+   * Mostra/esconde com base em `count > 0`.
+   */
+  async _refreshNavBadges(nav) {
+    if (!nav) return;
+    const me = this.user?.username;
+    if (!me) return;
+
+    // Trade pending (síncrono — read localStorage; rápido)
+    try {
+      const pending = listIncomingPending(me).length;
+      const tradeBadge = nav.querySelector('.dnd-nav-badge-trade');
+      if (tradeBadge) {
+        tradeBadge.textContent = String(pending);
+        tradeBadge.hidden = pending === 0;
+      }
+    } catch {}
+
+    // Hub player count (async — pode falar com Supabase)
+    try {
+      const all = await listAllChars();
+      const count = Array.isArray(all) ? all.length : 0;
+      const hubBadge = nav.querySelector('.dnd-nav-badge-hub');
+      if (hubBadge) {
+        hubBadge.textContent = String(count);
+        hubBadge.hidden = count === 0;
+      }
+    } catch {}
   }
 
   _renderActivePage(wrap) {
