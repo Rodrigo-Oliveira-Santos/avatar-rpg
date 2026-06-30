@@ -22,6 +22,7 @@ import {
   load as loadChar,
   save as saveChar,
   ensureRegistered,
+  deleteCharacter,
 } from '../../api/dnd-characters.js';
 
 import { renderCharacterPage } from './pages/CharacterPage.js';
@@ -31,6 +32,7 @@ import { renderInventoryPage } from './pages/InventoryPage.js';
 import { renderHubPage } from './pages/HubPage.js';
 import { renderTradePage } from './pages/TradePage.js';
 import { renderImportPage } from './pages/ImportPage.js';
+import { renderAdminPage } from './pages/AdminPage.js';
 
 const ROOT_SELECTOR = '[data-game-root="dnd"]';
 const GAME_ID = 'dnd';
@@ -54,6 +56,7 @@ const ALL_TABS = [
   { id: 'trade',     label: 'Trade' },
   { id: 'hub',       label: 'Hub' },
   { id: 'import',    label: 'Importar', gmOnly: true },
+  { id: 'admin',     label: 'Admin', adminOnly: true },
 ];
 
 // ─── DnDApp ────────────────────────────────────────────────────────
@@ -66,6 +69,11 @@ class DnDApp {
     this.activeTab = 'sheet';
     this._autosaveTimer = null;
     this._dirty = false;
+    // Quando admin clica "Editar" noutro user na tab Admin, guardamos
+    // aqui o username alvo. As tabs sheet/skills/spells/inventory
+    // editam essa ficha; saves vão para esse username.
+    this.impersonatedUsername = null;
+    this.impersonatedCharacter = null;
   }
 
   async boot(rootEl) {
@@ -94,6 +102,53 @@ class DnDApp {
     this._startAutosave();
   }
 
+  _isAdmin() {
+    return (this.user?.role || 'player') === 'admin';
+  }
+
+  /**
+   * Activa o modo "editar como outro user" (apenas admin). Carrega a
+   * ficha do alvo, troca para a tab "sheet" e re-renderiza.
+   */
+  async startImpersonation(targetUsername) {
+    if (!this._isAdmin()) return;
+    const target = String(targetUsername || '').trim().toLowerCase();
+    if (!target || target === this.user.username) {
+      this.stopImpersonation();
+      return;
+    }
+    await this.flush(); // grava o que estiver pendente antes de trocar
+    const raw = await loadChar(target);
+    this.impersonatedCharacter = new DnDCharacter(raw || { identity: { name: capitalize(target) } });
+    if (!this.impersonatedCharacter.identity.name) {
+      this.impersonatedCharacter.identity.name = capitalize(target);
+    }
+    this.impersonatedUsername = target;
+    this.activeTab = 'sheet';
+    this._dirty = false;
+    this.render();
+  }
+
+  async stopImpersonation() {
+    if (!this.impersonatedUsername) return;
+    await this.flush();
+    this.impersonatedUsername = null;
+    this.impersonatedCharacter = null;
+    this.activeTab = 'admin';
+    this._dirty = false;
+    this.render();
+  }
+
+  /** Username alvo de saves & XP/ouro nas tabs de edição. */
+  _editTargetUsername() {
+    return this.impersonatedUsername || this.user?.username;
+  }
+
+  /** Ficha actualmente exposta às tabs de edição. */
+  _editTargetCharacter() {
+    return this.impersonatedCharacter || this.character;
+  }
+
   _startAutosave() {
     if (this._autosaveTimer) clearInterval(this._autosaveTimer);
     this._autosaveTimer = setInterval(() => this.flush(), 3000);
@@ -105,10 +160,13 @@ class DnDApp {
   }
 
   async flush() {
-    if (!this._dirty || !this.user || !this.character) return;
+    if (!this._dirty) return;
+    const username = this._editTargetUsername();
+    const character = this._editTargetCharacter();
+    if (!username || !character) return;
     this._dirty = false;
     try {
-      await saveChar(this.user.username, this.character.toJSON());
+      await saveChar(username, character.toJSON());
     } catch (err) {
       console.warn('[dnd] autosave failed', err);
     }
@@ -121,8 +179,14 @@ class DnDApp {
     if (xp) c.addXp(xp);
     if (gold) c.addGold(gold);
     await saveChar(targetUsername, c.toJSON());
+    // Se for o user da sessão ou o alvo de impersonate, recarrega.
     if (targetUsername === this.user?.username) {
       this.character = c;
+    }
+    if (targetUsername === this.impersonatedUsername) {
+      this.impersonatedCharacter = c;
+    }
+    if (targetUsername === this.user?.username || targetUsername === this.impersonatedUsername) {
       this.render();
     }
   }
@@ -131,6 +195,7 @@ class DnDApp {
     const tab = ALL_TABS.find((t) => t.id === id);
     if (!tab) return;
     if (tab.gmOnly && !this._isGm()) return;
+    if (tab.adminOnly && !this._isAdmin()) return;
     this.activeTab = id;
     this.render();
   }
@@ -145,12 +210,26 @@ class DnDApp {
     return {
       currentUser: this.user,
       isGm,
+      isAdmin: this._isAdmin(),
       canEditXp: isGm,
       canEditGold: isGm,
       requestRender: () => { this._dirty = true; this.render(); },
       touch: () => { this._dirty = true; },
       grantReward: (target, payload) => this.grantReward(target, payload),
       onAddXp: () => this._askAddXp(),
+      // Impersonate helpers (admin):
+      impersonatedUsername: this.impersonatedUsername,
+      startImpersonation: (u) => this.startImpersonation(u),
+      stopImpersonation: () => this.stopImpersonation(),
+      deleteCharacter: async (u) => {
+        const removed = await deleteCharacter(u);
+        // Se apagamos a ficha do user impersonado, sair desse modo.
+        if (removed && u === this.impersonatedUsername) {
+          this.impersonatedUsername = null;
+          this.impersonatedCharacter = null;
+        }
+        return removed;
+      },
       // helpers expostos para páginas que precisam
       loadChar,
       saveChar,
@@ -166,7 +245,7 @@ class DnDApp {
     if (v == null) return;
     const n = parseInt(v, 10);
     if (!Number.isFinite(n)) return;
-    this.character.addXp(n);
+    this._editTargetCharacter().addXp(n);
     this._dirty = true;
     this.render();
   }
@@ -178,6 +257,9 @@ class DnDApp {
 
     const app = createElement('section', { class: 'dnd-app' });
     app.appendChild(this._renderHeader());
+    if (this.impersonatedUsername) {
+      app.appendChild(this._renderImpersonationBanner());
+    }
     app.appendChild(this._renderNav());
 
     const pageWrap = createElement('div');
@@ -187,14 +269,25 @@ class DnDApp {
     this.root.appendChild(app);
   }
 
+  _renderImpersonationBanner() {
+    const banner = createElement('div', { class: 'dnd-impersonate-banner' });
+    banner.appendChild(createElement('span', {
+      textContent: `👁 A editar como ${this.impersonatedUsername} (modo admin)`,
+    }));
+    const back = createElement('button', { class: 'dnd-btn', textContent: '← Voltar a mim' });
+    on(back, 'click', () => this.stopImpersonation());
+    banner.appendChild(back);
+    return banner;
+  }
+
   _renderHeader() {
-    const c = this.character;
+    const c = this._editTargetCharacter();
     const head = createElement('header', { class: 'dnd-header' });
 
     const idBox = createElement('div', { class: 'dnd-header-id' });
     idBox.appendChild(createElement('div', {
       class: 'name',
-      textContent: c.identity.name || this.user.username,
+      textContent: c.identity.name || (this.impersonatedUsername || this.user.username),
     }));
     const metaText = [
       c.identity.race,
@@ -226,6 +319,7 @@ class DnDApp {
     const nav = createElement('nav', { class: 'dnd-nav' });
     ALL_TABS.forEach((t) => {
       if (t.gmOnly && !this._isGm()) return;
+      if (t.adminOnly && !this._isAdmin()) return;
       const btn = createElement('button', { class: 'dnd-nav-btn', textContent: t.label });
       if (t.id === this.activeTab) btn.classList.add('on');
       on(btn, 'click', () => this.setTab(t.id));
@@ -236,18 +330,19 @@ class DnDApp {
 
   _renderActivePage(wrap) {
     const ctx = this.ctx();
+    const editChar = this._editTargetCharacter();
     switch (this.activeTab) {
       case 'sheet':
-        wrap.appendChild(renderCharacterPage(this.character, ctx));
+        wrap.appendChild(renderCharacterPage(editChar, ctx));
         break;
       case 'skills':
-        wrap.appendChild(renderSkillsPage(this.character, ctx));
+        wrap.appendChild(renderSkillsPage(editChar, ctx));
         break;
       case 'spells':
-        wrap.appendChild(renderSpellsPage(this.character, ctx));
+        wrap.appendChild(renderSpellsPage(editChar, ctx));
         break;
       case 'inventory':
-        wrap.appendChild(renderInventoryPage(this.character, ctx));
+        wrap.appendChild(renderInventoryPage(editChar, ctx));
         break;
       case 'trade':
         renderTradePage(this.character, ctx).then((el) => wrap.appendChild(el));
@@ -258,6 +353,9 @@ class DnDApp {
       case 'import':
         wrap.appendChild(renderImportPage(ctx));
         break;
+      case 'admin':
+        renderAdminPage(ctx).then((el) => wrap.appendChild(el));
+        break;
     }
   }
 
@@ -266,6 +364,8 @@ class DnDApp {
     auth.clearUser();
     this.user = null;
     this.character = null;
+    this.impersonatedUsername = null;
+    this.impersonatedCharacter = null;
     this.activeTab = 'sheet';
     if (this.root) this.root.innerHTML = '';
     auth.showLogin(async (user) => {
@@ -281,6 +381,8 @@ class DnDApp {
     auth.hideLogin();
     this.user = null;
     this.character = null;
+    this.impersonatedUsername = null;
+    this.impersonatedCharacter = null;
   }
 }
 
@@ -296,6 +398,12 @@ function root() {
   return document.querySelector(ROOT_SELECTOR);
 }
 
+function hideOtherGameRoots(self) {
+  document.querySelectorAll('.game-root').forEach((node) => {
+    if (node !== self) node.classList.remove('on');
+  });
+}
+
 export const dndGame = {
   id: GAME_ID,
   label: GAME_LABEL,
@@ -303,6 +411,7 @@ export const dndGame = {
   async mount() {
     const el = root();
     if (!el) return;
+    hideOtherGameRoots(el);
     el.classList.add('on');
     el.innerHTML = '';
     appInstance = new DnDApp();
@@ -313,15 +422,21 @@ export const dndGame = {
     const el = root();
     if (!el) return;
 
+    // Tornar o jogo invisível imediatamente — antes de qualquer
+    // `await`. Caso contrário o router (que pode não esperar pela
+    // promessa) já mounta a landing e ficam dois roots `.on` ao mesmo
+    // tempo (Avatar/D&D a aparecer por baixo da landing).
+    el.classList.remove('on');
+    el.innerHTML = '';
+    unmountBackWidget(GAME_ID);
+
     if (appInstance) {
       try { await appInstance.teardown(); } catch {}
       appInstance = null;
     }
-    auth.clearUser();
-
-    el.classList.remove('on');
-    el.innerHTML = '';
-    unmountBackWidget(GAME_ID);
+    // NÃO limpar a sessão aqui — o user pode estar a voltar à landing
+    // (via "← Início") e queremos preservar o estado de admin/login.
+    // O logout explícito (botão "⏻ Sair") é que limpa.
   },
 };
 

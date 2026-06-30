@@ -101,6 +101,143 @@
 
 .landing-card-btn:hover { filter: brightness(1.1); }
 
+/* ---------- Landing — top bar (sessões + auth) ---------- */
+.landing-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+}
+
+.landing-sessions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.landing-sessions-empty {
+  color: var(--text2, #aaa);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.landing-session-chip {
+  --chip-accent: #888;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chip-accent);
+  background: color-mix(in srgb, var(--chip-accent) 12%, transparent);
+  color: var(--text, #eee);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.landing-session-chip .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--chip-accent);
+  box-shadow: 0 0 6px var(--chip-accent);
+}
+
+.landing-auth-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.landing-auth-btn {
+  background: var(--bg3, #222);
+  color: var(--text, #eee);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.landing-auth-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.landing-auth-btn.primary {
+  background: linear-gradient(90deg, #7a70e0, #5b8def);
+  border-color: rgba(122, 112, 224, 0.6);
+  color: #fff;
+}
+
+/* ---------- Landing — Admin Global CTA (banner destacado) ---------- */
+.landing-admin-cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: linear-gradient(90deg, rgba(224, 48, 48, 0.16), rgba(122, 112, 224, 0.16));
+  border: 1px solid rgba(224, 48, 48, 0.45);
+  border-left: 4px solid #e03030;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(224, 48, 48, 0.12);
+}
+
+.landing-admin-cta-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.landing-admin-cta-title {
+  color: #f099d9;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.landing-admin-cta-sub {
+  color: var(--text2, #aaa);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.landing-admin-cta-btn {
+  background: linear-gradient(90deg, #e03030, #7a70e0);
+  border: none;
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.landing-admin-cta-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(224, 48, 48, 0.35);
+}
+
+.admin-landing {
+  padding-top: 32px;
+}
+
 /* ---------- Back-to-landing widget (inside each game) ---------- */
 .game-back-widget {
   --game-accent: var(--accent, #f97316);

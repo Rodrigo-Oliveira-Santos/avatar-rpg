@@ -36,6 +36,7 @@ describe('router', () => {
     router.register('landing', landing);
     router.register('avatar', avatar);
     router.start();
+    await router._transition;
     expect(landing.mount).toHaveBeenCalledTimes(1);
     expect(avatar.mount).not.toHaveBeenCalled();
   });
@@ -48,6 +49,7 @@ describe('router', () => {
     router.register('avatar', avatar);
     router.register('dnd', dnd);
     router.start();
+    await router._transition;
     expect(dnd.mount).toHaveBeenCalledTimes(1);
     expect(avatar.mount).not.toHaveBeenCalled();
   });
@@ -61,10 +63,12 @@ describe('router', () => {
 
     window.location.hash = '#/avatar';
     router.start();
+    await router._transition;
     expect(avatar.mount).toHaveBeenCalledTimes(1);
 
     window.location.hash = '#/dnd';
     window._fireHashChange();
+    await router._transition;
 
     expect(avatar.unmount).toHaveBeenCalledTimes(1);
     expect(dnd.mount).toHaveBeenCalledTimes(1);
@@ -76,6 +80,7 @@ describe('router', () => {
     const dnd = mockModule();
     router.register('dnd', dnd);
     router.start();
+    await router._transition;
     expect(dnd.mount).toHaveBeenCalledWith({ game: 'dnd', page: 'sheet', params: ['abc-123'] });
   });
 
@@ -88,5 +93,44 @@ describe('router', () => {
   it('throws when registering a module without mount()', async () => {
     const { router } = await import('../public/js/router.js');
     expect(() => router.register('broken', {})).toThrow(/mount/);
+  });
+
+  it('serializes async unmount → mount: previous unmount fully completes before next mount starts', async () => {
+    const { router } = await import('../public/js/router.js');
+    let unmountResolve;
+    const events = [];
+    const avatar = {
+      mount: vi.fn(() => { events.push('avatar.mount'); }),
+      unmount: vi.fn(() => {
+        events.push('avatar.unmount.start');
+        return new Promise((res) => { unmountResolve = () => { events.push('avatar.unmount.end'); res(); }; });
+      }),
+    };
+    const dnd = {
+      mount: vi.fn(() => { events.push('dnd.mount'); }),
+      unmount: vi.fn(),
+    };
+    router.register('avatar', avatar);
+    router.register('dnd', dnd);
+
+    window.location.hash = '#/avatar';
+    router.start();
+    await router._transition;
+
+    window.location.hash = '#/dnd';
+    window._fireHashChange();
+
+    // unmount started; mount of dnd must NOT have run yet
+    await Promise.resolve();
+    expect(events).toEqual(['avatar.mount', 'avatar.unmount.start']);
+
+    unmountResolve();
+    await router._transition;
+    expect(events).toEqual([
+      'avatar.mount',
+      'avatar.unmount.start',
+      'avatar.unmount.end',
+      'dnd.mount',
+    ]);
   });
 });

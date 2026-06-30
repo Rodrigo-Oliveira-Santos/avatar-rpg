@@ -259,3 +259,84 @@ export async function deleteBuild(id) {
 
   return true;
 }
+
+/**
+ * Transfere a build para outro utilizador (apenas admin pode chamar
+ * — a permissão é validada aqui mesmo). Actualiza `owner_username` e
+ * `owner_id` em localStorage; em modo Supabase faz lookup do `id` do
+ * novo dono na tabela `users` e actualiza a row de `mc_builds`.
+ *
+ * Devolve `{ ok, reason }`.
+ */
+export async function transferBuild(buildId, toUsername) {
+  const actor = readCurrentUser();
+  if (!actor?.username) return { ok: false, reason: 'Precisas de iniciar sessão.' };
+  if (actor.role !== 'admin') return { ok: false, reason: 'Apenas admins podem transferir builds.' };
+
+  const target = String(toUsername || '').trim().toLowerCase();
+  if (!target) return { ok: false, reason: 'Username destino inválido.' };
+
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { data: u, error: ue } = await client
+        .from('users').select('id').eq('username', target).maybeSingle();
+      if (ue) throw ue;
+      if (!u?.id) return { ok: false, reason: `Utilizador "${target}" não existe.` };
+
+      const { error } = await client.from('mc_builds')
+        .update({ owner_id: u.id, updated_at: nowIso() })
+        .eq('id', buildId);
+      if (error) throw error;
+      return { ok: true, reason: '' };
+    } catch (err) {
+      console.warn('[mc-builds.transferBuild] Supabase failed, falling back to local', err);
+    }
+  }
+
+  const all = readAllLocal();
+  const idx = all.findIndex((b) => b.id === buildId);
+  if (idx < 0) return { ok: false, reason: 'Build não encontrada.' };
+  if (all[idx].owner_username === target) {
+    return { ok: false, reason: `Esta build já pertence a "${target}".` };
+  }
+
+  all[idx] = {
+    ...all[idx],
+    owner_username: target,
+    owner_id: `user-${target}`,
+    updated_at: nowIso(),
+  };
+  writeAllLocal(all);
+  return { ok: true, reason: '' };
+}
+
+/**
+ * Transfere TODAS as builds de `fromUsername` para `toUsername`.
+ * Usa `transferBuild` por build para reutilizar a validação.
+ * Devolve `{ ok, transferred, failed }`.
+ */
+export async function transferAllBuildsFromUser(fromUsername, toUsername) {
+  const from = String(fromUsername || '').trim().toLowerCase();
+  const to = String(toUsername || '').trim().toLowerCase();
+  if (!from || !to) return { ok: false, transferred: 0, failed: 0, reason: 'Usernames inválidos.' };
+  if (from === to) return { ok: false, transferred: 0, failed: 0, reason: 'Source e destino são o mesmo user.' };
+
+  const builds = await listBuilds({ owner: from });
+  let transferred = 0;
+  let failed = 0;
+  const errors = [];
+
+  for (const b of builds) {
+    const r = await transferBuild(b.id, to);
+    if (r.ok) transferred += 1;
+    else { failed += 1; errors.push(`${b.id}: ${r.reason}`); }
+  }
+
+  return {
+    ok: failed === 0,
+    transferred,
+    failed,
+    reason: failed ? `Algumas builds falharam: ${errors[0]}` : '',
+  };
+}

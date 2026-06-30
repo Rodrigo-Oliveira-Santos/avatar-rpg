@@ -20,6 +20,7 @@ import { renderGalleryPage } from './pages/GalleryPage.js';
 import { renderMyPanelPage } from './pages/MyPanelPage.js';
 import { renderListsPage } from './pages/ListsPage.js';
 import { renderBuildForm } from './pages/BuildFormPage.js';
+import { renderAdminPage } from './pages/AdminPage.js';
 import { createBuild, updateBuild } from '../../api/mc-builds.js';
 
 const ROOT_SELECTOR = '[data-game-root="minecraft"]';
@@ -40,6 +41,7 @@ const TABS = [
   { id: 'gallery', label: 'Galeria' },
   { id: 'panel',   label: 'Painel Pessoal', authRequired: true },
   { id: 'lists',   label: 'Minhas Listas',  authRequired: true },
+  { id: 'admin',   label: 'Admin',          authRequired: true, adminOnly: true },
 ];
 
 class MinecraftApp {
@@ -66,6 +68,7 @@ class MinecraftApp {
       });
       return;
     }
+    if (tab.adminOnly && this.user?.role !== 'admin') return;
     this.activeTab = id;
     this.subView = null;
     this.render();
@@ -139,7 +142,6 @@ class MinecraftApp {
     } else if (this.activeTab === 'panel') {
       const ctx = {
         user: this.user,
-        isAdmin: this.user?.role === 'admin',
         onAdd: () => { this.subView = 'form-new'; this.render(); },
         onEdit: (b) => { this.subView = { mode: 'edit', build: b }; this.render(); },
         requestRender: () => this.render(),
@@ -152,6 +154,21 @@ class MinecraftApp {
         requestRender: () => this.render(),
       };
       const node = await renderListsPage(ctx);
+      body.appendChild(node);
+    } else if (this.activeTab === 'admin') {
+      if (this.user?.role !== 'admin') {
+        body.appendChild(createElement('div', {
+          class: 'mc-empty',
+          textContent: 'Acesso restrito a administradores.',
+        }));
+        return;
+      }
+      const ctx = {
+        user: this.user,
+        onEdit: (b) => { this.subView = { mode: 'edit', build: b }; this.render(); },
+        requestRender: () => this.render(),
+      };
+      const node = await renderAdminPage(ctx);
       body.appendChild(node);
     }
   }
@@ -184,6 +201,7 @@ class MinecraftApp {
   _renderNav() {
     const nav = createElement('nav', { class: 'mc-nav' });
     TABS.forEach((t) => {
+      if (t.adminOnly && this.user?.role !== 'admin') return;
       const btn = createElement('button', { class: 'mc-nav-btn', textContent: t.label });
       if (t.id === this.activeTab && !this.subView) btn.classList.add('on');
       on(btn, 'click', () => this.setTab(t.id));
@@ -206,6 +224,12 @@ function root() {
   return document.querySelector(ROOT_SELECTOR);
 }
 
+function hideOtherGameRoots(self) {
+  document.querySelectorAll('.game-root').forEach((node) => {
+    if (node !== self) node.classList.remove('on');
+  });
+}
+
 export const minecraftGame = {
   id: GAME_ID,
   label: GAME_LABEL,
@@ -213,6 +237,7 @@ export const minecraftGame = {
   mount() {
     const el = root();
     if (!el) return;
+    hideOtherGameRoots(el);
     el.classList.add('on');
     el.innerHTML = '';
     appInstance = new MinecraftApp();
@@ -227,7 +252,9 @@ export const minecraftGame = {
       try { appInstance.teardown(); } catch {}
       appInstance = null;
     }
-    auth.clearUser();
+    // NÃO limpar a sessão aqui — o user pode estar a voltar à landing
+    // (via "← Início") e queremos preservar o estado de admin/login.
+    // O logout explícito (botão "⏻ Sair") é que limpa.
 
     el.classList.remove('on');
     el.innerHTML = '';

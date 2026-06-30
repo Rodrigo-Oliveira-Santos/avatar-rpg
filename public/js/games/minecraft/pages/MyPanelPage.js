@@ -1,10 +1,9 @@
 /**
  * Minecraft — painel pessoal (auth obrigatória).
  *
- * Lista as builds do utilizador autenticado, com botões para Editar e
- * Apagar cada uma, e um botão "Adicionar Build" no topo.
- *
- * Admins veem todas as builds (com indicação do dono).
+ * Mostra **apenas** as builds do utilizador autenticado (mesmo para
+ * admins). A vista cross-user vive na tab "Admin" — manter o painel
+ * pessoal estritamente pessoal evita confusão entre as duas vistas.
  */
 
 import { createElement, on } from '../../../utils/dom.js';
@@ -18,24 +17,21 @@ export async function renderMyPanelPage(ctx) {
 
   const head = createElement('div', { style: 'display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px' });
   head.appendChild(createElement('h2', {
-    textContent: ctx.isAdmin ? 'Painel Pessoal (admin — vê tudo)' : `Painel Pessoal — ${ctx.user.username}`,
+    textContent: `Painel Pessoal — ${ctx.user.username}`,
   }));
   const addBtn = createElement('button', { class: 'mc-btn primary', textContent: '+ Adicionar Build' });
   on(addBtn, 'click', () => ctx.onAdd?.());
   head.appendChild(addBtn);
   wrap.appendChild(head);
 
-  // Lista
-  const builds = ctx.isAdmin
-    ? await listBuilds()
-    : await listBuilds({ owner: ctx.user.username });
+  // Sempre filtrado pelo utilizador autenticado — admins usam a tab
+  // "Admin" para ver/gerir as builds de outros utilizadores.
+  const builds = await listBuilds({ owner: ctx.user.username });
 
   if (!builds.length) {
     wrap.appendChild(createElement('div', {
       class: 'mc-empty',
-      textContent: ctx.isAdmin
-        ? 'Ainda não há builds.'
-        : 'Ainda não adicionaste nenhuma build. Clica "+ Adicionar Build" para começar.',
+      textContent: 'Ainda não adicionaste nenhuma build. Clica "+ Adicionar Build" para começar.',
     }));
     return wrap;
   }
@@ -74,9 +70,6 @@ function renderRow(b, ctx) {
   }
   if (detectPlatform(b.video_url)) subParts.push('▶ vídeo');
   if (detectPlatform(b.social_url)) subParts.push('🔗 social');
-  if (ctx.isAdmin && b.owner_username && b.owner_username !== ctx.user.username) {
-    subParts.push(`por ${b.owner_username}`);
-  }
   info.appendChild(createElement('div', { class: 'sub', textContent: subParts.join(' · ') }));
   row.appendChild(info);
 

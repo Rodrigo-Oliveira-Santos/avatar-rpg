@@ -436,3 +436,20 @@
 .dnd-xp-bg { height: 6px; background: var(--bg, #0d0d0d); border-radius: 3px; overflow: hidden; margin: 4px 0; }
 .dnd-xp-fill { height: 100%; background: var(--dnd-accent); transition: width 0.3s; }
 .dnd-xp-hd { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2, #aaa); }
+
+/* Impersonation banner (admin "editar como ...") */
+.dnd-impersonate-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(122, 112, 224, 0.45);
+  border-left: 3px solid #7a70e0;
+  background: linear-gradient(90deg, rgba(122, 112, 224, 0.12), rgba(122, 112, 224, 0.04));
+  border-radius: 6px;
+  color: #cbb8ff;
+  font-size: 12px;
+  font-weight: 600;
+}

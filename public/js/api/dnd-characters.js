@@ -154,3 +154,45 @@ export function ensureRegistered(username, role = 'player') {
   reg[username] = { role, updated_at: new Date().toISOString() };
   writeRegistry(reg);
 }
+
+/**
+ * Apaga a ficha D&D de um utilizador (uso admin). Remove do
+ * Supabase (se disponível), do localStorage e da registry.
+ *
+ * Devolve true se algo foi efectivamente removido.
+ */
+export async function deleteCharacter(username) {
+  const target = String(username || '').trim().toLowerCase();
+  if (!target) return false;
+
+  let removed = false;
+
+  if (isSupabaseEnabled()) {
+    try {
+      const client = await getSupabaseClient();
+      const { data: u } = await client.from('users').select('id').eq('username', target).maybeSingle();
+      if (u?.id) {
+        const { error } = await client.from('dnd_characters').delete().eq('user_id', u.id);
+        if (error) throw error;
+        removed = true;
+      }
+    } catch (err) {
+      console.warn('[dnd-characters.deleteCharacter] Supabase failed', err);
+    }
+  }
+
+  const key = storageKey(target);
+  if (localStorage.getItem(key) != null) {
+    localStorage.removeItem(key);
+    removed = true;
+  }
+
+  const reg = readRegistry();
+  if (reg[target]) {
+    delete reg[target];
+    writeRegistry(reg);
+    removed = true;
+  }
+
+  return removed;
+}

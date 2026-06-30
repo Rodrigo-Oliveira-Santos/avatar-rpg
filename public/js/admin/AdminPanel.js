@@ -1,6 +1,13 @@
 /**
- * Admin Panel
- * Local user role management for admin accounts.
+ * Admin Panel (Avatar app)
+ *
+ * Painel local de gestão de utilizadores. Apesar de existir um módulo
+ * partilhado em `games/lib/users-registry.js` para o mesmo registry,
+ * este painel mantém uma vista própria (com `BackupRestore` + `LogViewer`
+ * acoplados) que é específica do Avatar. As mudanças de role são
+ * delegadas ao módulo partilhado para garantir que as 4 chaves de
+ * sessão (`avatar_rpg_user`, `dnd_user`, `mc_user`, `landing_user`)
+ * são sincronizadas em conjunto.
  */
 
 import { on } from '../utils/dom.js';
@@ -9,10 +16,17 @@ import { getPlayerUsernames } from '../hub/data.js';
 import { log } from './LogService.js';
 import { LogViewer } from './LogViewer.js';
 import { BackupRestore } from './BackupRestore.js';
+import { confirmAndDeleteUser } from '../games/lib/delete-user-ui.js';
+import {
+  validateDeleteUser,
+  applyRoleChange,
+  STORAGE_KEY as REGISTRY_STORAGE_KEY,
+  MAX_ADMINS as SHARED_MAX_ADMINS,
+} from '../games/lib/users-registry.js';
 
-const STORAGE_KEY = 'avatar_rpg_users_registry';
+const STORAGE_KEY = REGISTRY_STORAGE_KEY;
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
-const MAX_ADMINS = 3;
+const MAX_ADMINS = SHARED_MAX_ADMINS;
 const DEFAULT_USERS = {
   zuko: 'player',
   katara: 'player',
@@ -169,7 +183,7 @@ export class AdminPanel {
     }
 
     if (fromRole === 'gm' && toRole === 'admin' && adminCount >= MAX_ADMINS) {
-      return { allowed: false, reason: 'Já existem 3 contas admin.' };
+      return { allowed: false, reason: `Já existem ${MAX_ADMINS} contas admin.` };
     }
 
     if (fromRole === 'admin' && toRole === 'gm' && adminCount <= 1) {
@@ -200,11 +214,27 @@ export class AdminPanel {
 
   renderActions(username, role, registry) {
     const actions = this.getActionDefinitions(username, role, registry);
+    const actor = { username: this.getCurrentUsername() };
+    const deleteValidation = validateDeleteUser({ username, actor });
+    const deleteDisabled = deleteValidation.allowed ? '' : ' disabled';
+    const deleteTitle = deleteValidation.reason ? ` title="${escapeHtml(deleteValidation.reason)}"` : '';
+    const deleteBtn = `
+      <button
+        type="button"
+        class="admin-action-btn danger"
+        data-action="delete-account"
+        data-username="${escapeHtml(username)}"
+        ${deleteDisabled}${deleteTitle}
+      >
+        🗑 Apagar conta
+      </button>
+    `;
+
     if (actions.length === 0) {
-      return '<span class="admin-empty-actions">—</span>';
+      return `<span class="admin-empty-actions">—</span>${deleteBtn}`;
     }
 
-    return actions.map(action => {
+    const roleBtns = actions.map(action => {
       const validation = this.validateRoleChange(username, role, action.toRole, registry);
       const disabledAttr = validation.allowed ? '' : ' disabled';
       const titleAttr = validation.reason ? ` title="${escapeHtml(validation.reason)}"` : '';
@@ -221,6 +251,8 @@ export class AdminPanel {
         </button>
       `;
     }).join('');
+
+    return roleBtns + deleteBtn;
   }
 
   render() {
@@ -311,6 +343,25 @@ export class AdminPanel {
         await this.handleRoleChange(username, fromRole, toRole);
       });
     });
+
+    this.container.querySelectorAll('.admin-action-btn[data-action="delete-account"]').forEach(button => {
+      on(button, 'click', async () => {
+        const username = normalizeUsername(button.dataset.username);
+        const actor = { username: this.getCurrentUsername() };
+        const ok = await confirmAndDeleteUser({
+          username,
+          actor,
+          onDone: (res) => {
+            log('admin_action', {
+              action: 'delete_account',
+              target: username,
+              removed: res?.removed,
+            }, actor.username);
+          },
+        });
+        if (ok) this.render();
+      });
+    });
   }
 
   syncCharacterRole(username, nextRole) {
@@ -342,21 +393,9 @@ export class AdminPanel {
     }
   }
 
-  syncSessionRole(username, nextRole) {
-    try {
-      const stored = JSON.parse(localStorage.getItem('avatar_rpg_user') || 'null');
-      if (!stored || normalizeUsername(stored.username) !== username) return;
-      const nextUser = { ...stored, role: nextRole };
-      localStorage.setItem('avatar_rpg_user', JSON.stringify(nextUser));
-      if (this.authManager) {
-        this.authManager.currentUser = nextUser;
-      }
-    } catch {
-      // Ignore malformed session data
-    }
-  }
-
   async handleRoleChange(username, fromRole, toRole) {
+    // Validação local primeiro (para a mensagem de erro contextualizada
+    // já existente). O `applyRoleChange` partilhado revalida na mesma.
     const registry = this.ensureRegistry();
     const validation = this.validateRoleChange(username, fromRole, toRole, registry);
 
@@ -372,16 +411,28 @@ export class AdminPanel {
 
     if (!confirmed) return;
 
-    const currentEntry = registry[username] || { created_at: new Date().toISOString() };
-    registry[username] = {
-      ...currentEntry,
-      role: toRole,
-      created_at: currentEntry.created_at || new Date().toISOString(),
-    };
+    // Delega ao módulo partilhado: escreve no registry, sincroniza
+    // `avatar_rpg_user`, `dnd_user`, `mc_user` e `landing_user` se
+    // qualquer sessão activa for deste username.
+    const actor = { username: this.getCurrentUsername() };
+    const result = applyRoleChange({ username, fromRole, toRole, actor });
+    if (!result.ok) {
+      toast(result.reason || 'Falha ao alterar role.', 'warning');
+      return;
+    }
 
-    writeRegistry(registry);
+    // Sync auxiliar específico do Avatar (campo `role` dentro do save
+    // do personagem, que o módulo partilhado não conhece).
     this.syncCharacterRole(username, toRole);
-    this.syncSessionRole(username, toRole);
+
+    // Garantir que o `authManager` em memória reflecte a mudança da
+    // sessão Avatar (o applyRoleChange já actualizou o localStorage).
+    if (this.authManager && this.getCurrentUsername() === username) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('avatar_rpg_user') || 'null');
+        if (stored) this.authManager.currentUser = stored;
+      } catch {}
+    }
 
     log('admin_action', {
       action: 'role_change',
