@@ -354,9 +354,24 @@ export async function deleteUser(username, { actor } = {}) {
   }
 
   // 2) Ficha Avatar
+  //    Em modo localStorage, apaga directamente. Se Supabase estiver
+  //    activo, delega ao helper dedicado (`api/gm-characters.deletePlayerAccount`)
+  //    que apaga a row em `users` (cascade trata da ficha) e limpa
+  //    trades órfãs (que usam usernames text, não FK).
   const avatarKey = `${AVATAR_CHARACTER_PREFIX}${target}`;
+  const hadAvatarCharacter = localStorage.getItem(avatarKey) != null;
+  try {
+    const mod = await import('../../api/gm-characters.js');
+    await mod.deletePlayerAccount(target);
+  } catch (err) {
+    console.warn('[users-registry.deleteUser] avatar cleanup failed', err);
+  }
+  // Fallback local: garantir que a ficha Avatar foi removida mesmo
+  // se o helper falhou (operação destrutiva — best-effort).
   if (localStorage.getItem(avatarKey) != null) {
     localStorage.removeItem(avatarKey);
+  }
+  if (hadAvatarCharacter) {
     removed.avatarCharacter = true;
   }
 

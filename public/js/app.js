@@ -3,19 +3,22 @@
  * Global state and initialization
  */
 
-import { Character, getSubclassesForElement } from './character/index.js';
+import { Character, getSubclassesForElement, mountAttributeStrip, NotesEditor } from './character/index.js';
 import { AutoSave, exportToJSON, createFileInput } from './storage/index.js';
 import { createElement, on, $, $$ } from './utils/dom.js';
 import { ATTRIBUTES, NATION_CURRENCIES } from './utils/constants.js';
 import { toast, confirmDialog, promptDialog } from './utils/toast.js';
-import { SkillTree } from './skills/index.js';
+import { SkillTree, loadSkills } from './skills/index.js';
 import { InventoryPage } from './items/index.js';
 import { unequipItem } from './items/inventory.js';
-import { ShopPage } from './shop/index.js';
+import { ShopPage, loadShopItemsFromSupabase } from './shop/index.js';
+import { TradeHistoryPanel } from './trade/index.js';
 import { HubPage } from './hub/index.js';
 import { AuthManager } from './auth/index.js';
 import { AdminPanel } from './admin/index.js';
 import { ImportPage } from './import/index.js';
+import { MonstersPage } from './monsters/index.js';
+import { GMControlPage } from './gm-control/index.js';
 import * as API from './api/index.js';
 
 const ELEMENT_NAMES = {
@@ -35,6 +38,36 @@ const REQUIREMENT_LABELS = {
   RES: 'RES',
   ESP: 'ESP',
 };
+
+/**
+ * Reverse the convention used by skill ids in `data/skills/*.json`:
+ *   - bender skills:   `<element>-<branch><tier><col>` (e.g. `fire-cb1a`)
+ *   - non-benders:     `none-<path>-<branch><tier><col>` (e.g. `none-weapons-cb1a`)
+ *
+ * Returns `{ element, nonBenderPath | null }` or `null` if the id doesn't
+ * match a known prefix (custom imports, malformed ids, etc.).
+ */
+function inferSkillElementFromId(id) {
+  if (typeof id !== 'string') return null;
+  if (id.startsWith('none-weapons-'))    return { element: 'none', nonBenderPath: 'weapons' };
+  if (id.startsWith('none-chiblocker-')) return { element: 'none', nonBenderPath: 'chiblocker' };
+  const elementMatch = id.match(/^(fire|water|earth|air|none)-/);
+  if (!elementMatch) return null;
+  return { element: elementMatch[1], nonBenderPath: null };
+}
+
+/** Accent colour for the active-skills chip border, by branch (and tier 5 → gold). */
+function branchAccentColor(branch, tier) {
+  if (tier >= 5) return '#EF9F27';
+  switch (branch) {
+    case 'sp': return '#7F77DD';
+    case 'ag': return '#1D9E75';
+    case 'cb': return '#D88840';
+    case 'pr': return '#E8844A';
+    case 'br': return '#C03020';
+    default:   return null;
+  }
+}
 
 /**
  * Application Class
@@ -102,42 +135,78 @@ export class App {
   }
 
   async loadCharacter() {
+    let loadedFromRemote = false;
     try {
       const characters = await API.characters.list();
       if (characters?.length > 0) {
         const charData = characters[0];
         this.character.load(charData);
-        const stats = this.character.getStats();
-        this.currentHp = stats.maxHP;
-        this.currentSp = stats.maxSP;
-        this.currentCp = stats.maxCP;
+        this._restoreVitalsFromCharacter();
         return;
       }
     } catch (err) {
       console.warn('[App] API unavailable, using localStorage:', err.message);
     }
 
-    // Fallback: per-user localStorage
+    // No remote character: try localStorage, then bootstrap from preset.
     try {
       const saved = API.characters.loadLocal();
       if (saved) {
         this.character.load(saved);
       } else {
-        // First login: check for preset
         const user = this.authManager.getUser();
         const preset = user ? API.characters.getPreset(user.username) : null;
         if (preset) {
           this.character.load(preset);
           API.characters.saveLocal(this.character.serialize());
+          try {
+            await API.characters.create(this.character.serialize());
+            loadedFromRemote = true;
+          } catch (err) {
+            console.warn('[App] preset bootstrap could not reach Supabase, kept local copy', err);
+          }
+        } else if (user?.username) {
+          // Brand-new account with no preset and no saved data anywhere.
+          // Reset to defaults and seed identidade.nome with the username
+          // so the Hub doesn't render the *previous* logged-in user's
+          // name (which was leaking from the persistent Character
+          // instance) and the AutoSave persists a clean baseline.
+          this.character.reset();
+          this.character.data.identidade.nome = user.username;
+          this.character.notify();
+          API.characters.saveLocal(this.character.serialize());
+          try {
+            await API.characters.create(this.character.serialize());
+            loadedFromRemote = true;
+          } catch (err) {
+            console.warn('[App] new-account bootstrap could not reach Supabase, kept local copy', err);
+          }
         }
       }
     } catch (e) {
       console.error('[App] localStorage load failed:', e);
     }
+    this._restoreVitalsFromCharacter();
+    if (loadedFromRemote) console.log('[App] preset bootstrapped to Supabase');
+  }
+
+  /**
+   * Pull HP/CP/SP from the persisted columns when present; otherwise
+   * default to the max stats. Called after each character load so a
+   * page refresh respects whatever state the player or GM left behind.
+   */
+  _restoreVitalsFromCharacter() {
     const stats = this.character.getStats();
-    this.currentHp = stats.maxHP;
-    this.currentSp = stats.maxSP;
-    this.currentCp = stats.maxCP;
+    const data = this.character.getData();
+    this.currentHp = Number.isFinite(data.hp_current) && data.hp_current !== null
+      ? Math.max(0, Math.min(stats.maxHP, data.hp_current)) : stats.maxHP;
+    this.currentSp = Number.isFinite(data.sp_current) && data.sp_current !== null
+      ? Math.max(0, Math.min(stats.maxSP, data.sp_current)) : stats.maxSP;
+    this.currentCp = Number.isFinite(data.cp_current) && data.cp_current !== null
+      ? Math.max(0, Math.min(stats.maxCP, data.cp_current)) : stats.maxCP;
+    this.character.data.hp_current = this.currentHp;
+    this.character.data.sp_current = this.currentSp;
+    this.character.data.cp_current = this.currentCp;
   }
 
   setupUI() {
@@ -149,10 +218,15 @@ export class App {
       this.bindIdentityFields();
       this.setupElementSelector();
       this.initSkillTrees();
+      this.initAttributeStrip();
+      this.initPlayerNotes();
+      this.initTradeHistory();
       this.initInventory();
       this.initShop();
       this.initHub();
       this.initImport();
+      this.initMonsters();
+      this.initGmControl();
       this.initAdmin();
       this.updateUI(this.character.getData());
 
@@ -175,16 +249,93 @@ export class App {
     this.bindImportExport();
     this.setupElementSelector();
     this.initSkillTrees();
+    this.initAttributeStrip();
+    this.initPlayerNotes();
+    this.initTradeHistory();
     this.initInventory();
     this.initShop();
     this.initHub();
     this.initImport();
+    this.initMonsters();
+    this.initGmControl();
     this.initAdmin();
 
     this.character.subscribe((data) => this.updateUI(data));
     this.updateUI(this.character.getData());
 
     this.autoSave = new AutoSave(this.character, { debounceMs: 2000 });
+
+    // Subscribe to Supabase realtime updates on `characters` so HP/CP/SP
+    // changes from the GM Control panel propagate to the player's screen
+    // without a refresh. Best-effort: failures degrade to "refresh manually".
+    this._subscribeToCharacterRealtime();
+  }
+
+  async _subscribeToCharacterRealtime() {
+    if (this._charsRealtimeUnsub) {
+      try { this._charsRealtimeUnsub(); } catch {}
+      this._charsRealtimeUnsub = null;
+    }
+    const username = this.authManager?.getUser?.()?.username;
+    if (!username) return;
+
+    // Sequence counter — if a later call (or teardownSession) supersedes
+    // this one before subscribe() resolves, we know to immediately drop
+    // the channel instead of letting it fire into a stale `this`.
+    this._charsRealtimeSeq = (this._charsRealtimeSeq || 0) + 1;
+    const mySeq = this._charsRealtimeSeq;
+
+    try {
+      const { subscribeToCharacters } = await import('./api/supabase-characters.js');
+
+      // Resolve my own user_id once so realtime callbacks can filter
+      // strictly by it. Without this, a falsy `myUserId` would fall
+      // through and overwrite my HP/CP/SP with anyone else's row.
+      let myUserId = this.character?.getData?.()?.user_id || null;
+      if (!myUserId) {
+        try {
+          const { isSupabaseEnabled } = await import('./api/config.js');
+          if (isSupabaseEnabled()) {
+            const { getSupabaseClient } = await import('./api/supabase-client.js');
+            const client = await getSupabaseClient();
+            const { data } = await client.from('users').select('id').eq('username', username).maybeSingle();
+            myUserId = data?.id || null;
+            if (myUserId && this.character?.data) this.character.data.user_id = myUserId;
+          }
+        } catch (err) {
+          console.warn('[App] could not resolve user_id for realtime filter', err);
+        }
+      }
+      // If we still don't know our id, we cannot safely accept any
+      // realtime update — bail rather than risk cross-user corruption.
+      if (!myUserId) return;
+
+      let destroyed = false;
+      const unsub = await subscribeToCharacters((row) => {
+        if (destroyed) return;
+        if (!row || row.user_id !== myUserId) return;
+        let touched = false;
+        ['hp_current', 'sp_current', 'cp_current'].forEach((col) => {
+          if (Number.isFinite(row[col]) && this.character.data[col] !== row[col]) {
+            this.character.data[col] = row[col];
+            const stateKey = col === 'hp_current' ? 'currentHp' : col === 'sp_current' ? 'currentSp' : 'currentCp';
+            this[stateKey] = row[col];
+            touched = true;
+          }
+        });
+        if (touched) this.updateCombatBars();
+      });
+
+      // teardownSession() or a re-login may have bumped the sequence
+      // while we were awaiting — drop the channel immediately if so.
+      if (this._charsRealtimeSeq !== mySeq) {
+        unsub?.();
+        return;
+      }
+      this._charsRealtimeUnsub = () => { destroyed = true; unsub?.(); };
+    } catch (err) {
+      console.warn('[App] realtime subscribe failed', err);
+    }
   }
 
   /**
@@ -214,8 +365,42 @@ export class App {
       this.inventoryPage.destroy?.();
       this.inventoryPage = null;
     }
+    if (this.monstersPage) {
+      this.monstersPage.destroy?.();
+      this.monstersPage = null;
+    }
+    if (this.gmControlPage) {
+      this.gmControlPage.destroy?.();
+      this.gmControlPage = null;
+    }
+    if (this._attrStrip) {
+      this._attrStrip.destroy();
+      this._attrStrip = null;
+    }
+    if (this._playerNotes) {
+      this._playerNotes.destroy();
+      this._playerNotes = null;
+    }
+    if (this._tradeHistory) {
+      this._tradeHistory.destroy();
+      this._tradeHistory = null;
+    }
+    if (typeof this._charsRealtimeUnsub === 'function') {
+      this._charsRealtimeUnsub();
+      this._charsRealtimeUnsub = null;
+    }
+    // Bump the sequence so any in-flight _subscribeToCharacterRealtime
+    // that hasn't resolved yet drops its channel on arrival instead of
+    // attaching to this disposed App instance.
+    this._charsRealtimeSeq = (this._charsRealtimeSeq || 0) + 1;
     this.shopPage = null;
     this.skillTrees = {};
+
+    // Reset the Character so any stale data from the previous session
+    // (e.g. identidade.nome) doesn't leak into the next login. Without
+    // this, a brand-new account with no preset would inherit the prior
+    // user's name in the Hub until first edit.
+    this.character?.reset?.();
   }
 
   showLoading(show) {
@@ -248,9 +433,13 @@ export class App {
     if (logoutBtn) {
       on(logoutBtn, 'click', async () => {
         const confirmed = await confirmDialog('Sair da sessão?');
-        if (confirmed) {
-          this.authManager?.logout();
+        if (!confirmed) return;
+        try {
+          if (this.autoSave) await this.autoSave.flush();
+        } catch (err) {
+          console.warn('[App] flush on logout failed', err);
         }
+        this.authManager?.logout();
       });
     }
   }
@@ -260,8 +449,19 @@ export class App {
     $$('.page').forEach(page => page.classList.toggle('on', page.id === `${pageId}-page`));
     this.activeTab = pageId;
 
+    // Show the read-only attribute strip only on skill-tree pages.
+    const SKILL_PAGES = new Set(['fire', 'water', 'earth', 'air', 'none']);
+    document.body.classList.toggle('on-skill-page', SKILL_PAGES.has(pageId));
+
     if (pageId === 'shop') {
       this.shopPage?.refresh();
+    }
+
+    // Skill-tree pages: let the tree know it just became visible. Used
+    // by the Sem Dobra tree to lazy-prompt the non-bender path picker
+    // (the picker no longer fires on login).
+    if (SKILL_PAGES.has(pageId)) {
+      this.skillTrees?.[pageId]?.notifyShown?.();
     }
   }
 
@@ -320,73 +520,38 @@ export class App {
   }
 
   bindHPControls() {
-    const hpDeltas = [
-      { id: 'hp-dec-5', delta: -5 },
-      { id: 'hp-dec-1', delta: -1 },
-      { id: 'hp-inc-1', delta: +1 },
-      { id: 'hp-inc-5', delta: +5 },
-    ];
+    const apply = async (kind, deltaOrMax) => {
+      const stats = this.character.getStats();
+      const map = {
+        hp: { stat: 'maxHP', state: 'currentHp', col: 'hp_current' },
+        sp: { stat: 'maxSP', state: 'currentSp', col: 'sp_current' },
+        cp: { stat: 'maxCP', state: 'currentCp', col: 'cp_current' },
+      };
+      const conf = map[kind];
+      const max = stats[conf.stat];
+      const next = deltaOrMax === 'max'
+        ? max
+        : Math.max(0, Math.min(max, this[conf.state] + deltaOrMax));
+      this[conf.state] = next;
+      this.character.data[conf.col] = next;
+      this.updateCombatBars();
+      // Persist via targeted column update so AutoSave never overwrites.
+      this._persistVital(conf.col, next);
+    };
 
-    hpDeltas.forEach(({ id, delta }) => {
+    [['hp', 'hp-dec-5', -5], ['hp', 'hp-dec-1', -1], ['hp', 'hp-inc-1', +1], ['hp', 'hp-inc-5', +5],
+     ['sp', 'sp-dec-5', -5], ['sp', 'sp-dec-1', -1], ['sp', 'sp-inc-1', +1], ['sp', 'sp-inc-5', +5],
+     ['cp', 'cp-dec-5', -5], ['cp', 'cp-dec-1', -1], ['cp', 'cp-inc-1', +1], ['cp', 'cp-inc-5', +5],
+    ].forEach(([kind, id, delta]) => {
       const btn = $(`#${id}`);
       if (!btn) return;
-      on(btn, 'click', () => {
-        const max = this.character.getStats().maxHP;
-        this.currentHp = Math.max(0, Math.min(max, this.currentHp + delta));
-        this.updateCombatBars();
-      });
+      on(btn, 'click', () => apply(kind, delta));
     });
 
-    // SP (Spirit) controls
-    const spDeltas = [
-      { id: 'sp-dec-5', delta: -5 },
-      { id: 'sp-dec-1', delta: -1 },
-      { id: 'sp-inc-1', delta: +1 },
-      { id: 'sp-inc-5', delta: +5 },
-    ];
-
-    spDeltas.forEach(({ id, delta }) => {
+    [['hp', 'hp-max'], ['sp', 'sp-max'], ['cp', 'cp-max']].forEach(([kind, id]) => {
       const btn = $(`#${id}`);
       if (!btn) return;
-      on(btn, 'click', () => {
-        const max = this.character.getStats().maxSP;
-        this.currentSp = Math.max(0, Math.min(max, this.currentSp + delta));
-        this.updateCombatBars();
-      });
-    });
-
-    // CP (Chi) controls
-    const cpDeltas = [
-      { id: 'cp-dec-5', delta: -5 },
-      { id: 'cp-dec-1', delta: -1 },
-      { id: 'cp-inc-1', delta: +1 },
-      { id: 'cp-inc-5', delta: +5 },
-    ];
-
-    cpDeltas.forEach(({ id, delta }) => {
-      const btn = $(`#${id}`);
-      if (!btn) return;
-      on(btn, 'click', () => {
-        const max = this.character.getStats().maxCP;
-        this.currentCp = Math.max(0, Math.min(max, this.currentCp + delta));
-        this.updateCombatBars();
-      });
-    });
-
-    const maxButtons = [
-      { id: 'hp-max', statKey: 'maxHP', currentKey: 'currentHp' },
-      { id: 'sp-max', statKey: 'maxSP', currentKey: 'currentSp' },
-      { id: 'cp-max', statKey: 'maxCP', currentKey: 'currentCp' },
-    ];
-
-    maxButtons.forEach(({ id, statKey, currentKey }) => {
-      const btn = $(`#${id}`);
-      if (!btn) return;
-      on(btn, 'click', () => {
-        const stats = this.character.getStats();
-        this[currentKey] = stats[statKey];
-        this.updateCombatBars();
-      });
+      on(btn, 'click', () => apply(kind, 'max'));
     });
   }
 
@@ -457,6 +622,9 @@ export class App {
   }
 
   setupElementSelector() {
+    // GMs don't play a character → no element to select, no skill tabs to show.
+    if (this.authManager?.hasRole?.('gm')) return;
+
     const elemButtons = $$('.esbtn');
     const current = this.character.data.identidade.elemento;
 
@@ -464,12 +632,27 @@ export class App {
     if (!this._elementSelectorBound) {
       this._elementSelectorBound = true;
       elemButtons.forEach(btn => {
-        on(btn, 'click', () => {
+        on(btn, 'click', async () => {
           const newElement = btn.dataset.element;
           const oldElement = this.character.data.identidade.elemento;
+          if (newElement === oldElement) return;
+
+          // Element change wipes the subclass and may invalidate skill
+          // progress — confirm to prevent accidental clicks.
+          const hasProgress = Boolean(
+            this.character.data.identidade.subclasse ||
+            Object.keys(this.character.data.habilidades || {}).some(
+              (id) => this.character.data.habilidades[id]?.active
+            )
+          );
+          const message = hasProgress
+            ? `Trocar o elemento para "${ELEMENT_NAMES[newElement] || newElement}"? A subclasse e as habilidades activas vão ser limpas.`
+            : `Trocar o elemento para "${ELEMENT_NAMES[newElement] || newElement}"?`;
+          const ok = await confirmDialog(message, { confirmText: 'Trocar elemento' });
+          if (!ok) return;
 
           // Clear incompatible subclass when element changes
-          if (newElement !== oldElement && this.character.data.identidade.subclasse) {
+          if (this.character.data.identidade.subclasse) {
             this.character.data.identidade.subclasse = '';
             this.character.data.subclass_bonus = {};
           }
@@ -491,11 +674,14 @@ export class App {
   }
 
   updateElementTabs(element) {
+    // Skip entirely for GM/Admin: their nav already hides skill tabs and
+    // re-showing 'none'/current element here would override that.
+    if (this.authManager?.hasRole?.('gm')) return;
+
     const elementPages = ['fire', 'water', 'earth', 'air', 'none'];
     elementPages.forEach(el => {
       const tab = $(`.nav-btn.${el}`);
       if (tab) {
-        // Show the selected element + "none" (sem dobra) always visible
         const visible = (el === element || el === 'none');
         tab.style.display = visible ? '' : 'none';
       }
@@ -645,7 +831,84 @@ export class App {
     container.appendChild(picker);
   }
 
+  /**
+   * Targeted Supabase column update for hp/cp/sp_current. Falls back to a
+   * no-op when Supabase is off (the value is still kept in `character.data`
+   * and persisted on the next full AutoSave-less round-trip).
+   */
+  async _persistVital(column, value) {
+    if (!this.authManager) return;
+    const username = this.authManager.getUser?.()?.username;
+    if (!username) return;
+    try {
+      const { isSupabaseEnabled } = await import('./api/config.js');
+      if (!isSupabaseEnabled()) return;
+      const { updateVitals } = await import('./api/supabase-characters.js');
+      await updateVitals(username, { [column]: value });
+    } catch (err) {
+      console.warn('[App._persistVital]', err);
+    }
+  }
+
+  initAttributeStrip() {
+    const host = $('#attr-strip-host');
+    if (!host) return;
+    // Re-mount cleanly on re-login so it tracks the new character instance.
+    if (this._attrStrip) this._attrStrip.destroy();
+    host.innerHTML = '';
+    this._attrStrip = mountAttributeStrip({ host, character: this.character });
+  }
+
+  initPlayerNotes() {
+    const host = $('#player-notes-host');
+    if (!host) return;
+    if (this.authManager?.hasRole?.('gm')) {
+      host.innerHTML = ''; // GM doesn't have their own player notes UI.
+      if (this._playerNotes) { this._playerNotes.destroy(); this._playerNotes = null; }
+      return;
+    }
+    if (this._playerNotes) this._playerNotes.destroy();
+    host.innerHTML = '';
+    this._playerNotes = new NotesEditor({
+      host,
+      title: 'As tuas notas',
+      placeholder: 'Nova nota (Enter para guardar)…',
+      notes: this.character.getData().player_notes || [],
+      emptyText: 'Sem notas ainda — adiciona a primeira acima.',
+      onChange: (notes) => {
+        this.character.data.player_notes = notes;
+        this.character.notify();
+      },
+    });
+    if (!this._playerNotesUnsub) {
+      this._playerNotesUnsub = this.character.subscribe((data) => {
+        const remote = data?.player_notes || [];
+        const a = this._playerNotes?.notes || [];
+        if (a.length !== remote.length || a[0]?.id !== remote[0]?.id) {
+          this._playerNotes?.setNotes(remote);
+        }
+      });
+    }
+  }
+
+  initTradeHistory() {
+    const host = $('#trade-history-host');
+    if (!host) return;
+    if (this._tradeHistory) { this._tradeHistory.destroy(); this._tradeHistory = null; }
+    host.innerHTML = '';
+    if (this.authManager?.hasRole?.('gm')) return; // GM doesn't have an own history.
+    const username = this.authManager?.getUser?.()?.username;
+    if (!username) return;
+    this._tradeHistory = new TradeHistoryPanel({ host, username });
+  }
+
   initSkillTrees() {
+    // GM/Admin don't play a character → skip the entire skill-tree pipeline
+    // (it would otherwise launch the non-bender path picker when element='none').
+    if (this.authManager?.hasRole?.('gm')) {
+      this.skillTrees = {};
+      return;
+    }
     ['fire', 'water', 'earth', 'air', 'none'].forEach(element => {
       const container = $(`#${element}-skills-container`);
       if (container) {
@@ -656,16 +919,24 @@ export class App {
 
   initInventory() {
     const container = $('#items-container');
-    if (container) {
-      if (this.inventoryPage) this.inventoryPage.destroy();
-      this.inventoryPage = new InventoryPage(container, this.character);
+    if (!container) return;
+    if (this.authManager?.hasRole?.('gm')) {
+      // GM doesn't have a personal inventory tab.
+      if (this.inventoryPage) { this.inventoryPage.destroy(); this.inventoryPage = null; }
+      container.innerHTML = '';
+      return;
     }
+    if (this.inventoryPage) this.inventoryPage.destroy();
+    this.inventoryPage = new InventoryPage(container, this.character);
   }
 
   initShop() {
     const container = $('#shop-container');
     if (container) {
       this.shopPage = new ShopPage(container, this.character, this.authManager);
+      // Warm the Supabase cache once, then refresh the shop so the new
+      // items show up without a tab switch.
+      loadShopItemsFromSupabase().then(() => this.shopPage?.refresh?.());
     }
   }
 
@@ -698,6 +969,48 @@ export class App {
     }
   }
 
+  initMonsters() {
+    const tab = $('#monsters-tab');
+    const container = $('#monsters-container');
+    const canAccess = this.authManager?.hasRole('gm');
+
+    if (tab) {
+      tab.style.display = canAccess ? '' : 'none';
+    }
+
+    if (!canAccess && this.activeTab === 'monsters') {
+      this.switchTab(this.authManager?.hasRole('gm') ? 'hub' : 'character');
+    }
+
+    if (container && canAccess) {
+      this.monstersPage?.destroy?.();
+      this.monstersPage = new MonstersPage(container, this.authManager);
+    } else {
+      this.monstersPage = null;
+      if (container) container.innerHTML = '';
+    }
+  }
+
+  initGmControl() {
+    const tab = $('#gm-control-tab');
+    const container = $('#gm-control-container');
+    const canAccess = this.authManager?.hasRole('gm');
+
+    if (tab) tab.style.display = canAccess ? '' : 'none';
+
+    if (!canAccess && this.activeTab === 'gm-control') {
+      this.switchTab('character');
+    }
+
+    if (container && canAccess) {
+      this.gmControlPage?.destroy?.();
+      this.gmControlPage = new GMControlPage(container, this.authManager);
+    } else {
+      this.gmControlPage = null;
+      if (container) container.innerHTML = '';
+    }
+  }
+
   initAdmin() {
     const tab = $('#admin-tab');
     const container = $('#admin-container');
@@ -719,21 +1032,31 @@ export class App {
     }
   }
 
+  /**
+   * Build the currency chips for the character profile.
+   *
+   * Lists *all* nation currencies so the player can see what they have
+   * (and what they're missing) regardless of element. The character's
+   * native currency is flagged `primary` (used by the CSS for the
+   * coloured ring) and rendered first.
+   */
   getVisibleCurrencies(data) {
     const balances = data.moedas || {};
-    const nativeCurrency = NATION_CURRENCIES[data.identidade.elemento] || NATION_CURRENCIES.none;
-    const visible = [{ ...nativeCurrency, amount: balances[nativeCurrency.id] || 0, primary: true }];
-
-    const orderedExtras = [NATION_CURRENCIES.none, ...Object.values(NATION_CURRENCIES).filter(currency => currency.id !== nativeCurrency.id && currency.id !== NATION_CURRENCIES.none.id)];
-    orderedExtras.forEach(currency => {
-      if (!currency || currency.id === nativeCurrency.id) return;
-      const amount = balances[currency.id] || 0;
-      if (amount > 0) {
-        visible.push({ ...currency, amount, primary: false });
-      }
-    });
-
-    return visible;
+    const nativeId = (NATION_CURRENCIES[data.identidade.elemento] || NATION_CURRENCIES.none).id;
+    const ordered = Object.values(NATION_CURRENCIES);
+    return ordered
+      .map((currency) => ({
+        ...currency,
+        amount: balances[currency.id] || 0,
+        primary: currency.id === nativeId,
+      }))
+      .sort((a, b) => {
+        // Primary first, then non-zero balances, then the rest (alphabetical).
+        if (a.primary !== b.primary) return a.primary ? -1 : 1;
+        const aHas = a.amount > 0, bHas = b.amount > 0;
+        if (aHas !== bHas) return aHas ? -1 : 1;
+        return a.label.localeCompare(b.label);
+      });
   }
 
   renderCurrencyBar(data) {
@@ -743,16 +1066,20 @@ export class App {
     const currencies = this.getVisibleCurrencies(data);
     bar.innerHTML = '';
 
-    currencies.forEach(currency => {
+    currencies.forEach((currency) => {
       const chip = createElement('div', {
-        className: `currency-chip${currency.primary ? ' primary' : ''}`,
+        className: `currency-chip${currency.primary ? ' primary' : ' compact'}`,
+        title: currency.primary ? currency.label : `${currency.label}: ${currency.amount}`,
       });
       chip.style.setProperty('--currency-color', currency.color);
       chip.append(
-        createElement('span', { className: 'currency-icon', textContent: currency.icon }),
-        createElement('span', { className: 'currency-label', textContent: currency.label }),
-        createElement('span', { className: 'currency-value', textContent: String(currency.amount) })
+        createElement('span', { className: 'currency-icon', textContent: currency.icon })
       );
+      if (currency.primary) {
+        // Full label only on the native currency to keep the bar compact.
+        chip.append(createElement('span', { className: 'currency-label', textContent: currency.label }));
+      }
+      chip.append(createElement('span', { className: 'currency-value', textContent: String(currency.amount) }));
       bar.appendChild(chip);
     });
   }
@@ -875,6 +1202,16 @@ export class App {
     });
   }
 
+  /**
+   * Render the "Habilidades Ativas" chips on the character profile.
+   *
+   * Resolves human-readable names from `window.__SKILL_DEFINITIONS__`
+   * (populated by each `SkillTree` after fetching its JSON). When a
+   * skill id is unknown (e.g. the user hasn't visited that element's
+   * tab yet), we lazy-load the relevant JSON via `loadSkills(...)` and
+   * re-render once the cache is warm — so the chip never shows the raw
+   * `fire-cb1a` style id to the player.
+   */
   updateActiveSkills(data) {
     const container = $('#active-skills');
     if (!container) return;
@@ -885,15 +1222,82 @@ export class App {
       return;
     }
 
-    // Lookup skill names from loaded skill trees
-    container.innerHTML = active.map(([id]) => {
-      let name = id;
-      for (const tree of Object.values(this.skillTrees)) {
-        const skill = tree.skills?.find(s => s.id === id);
-        if (skill) { name = skill.name; break; }
+    const defs = window.__SKILL_DEFINITIONS__;
+    const resolved = active.map(([id]) => {
+      const def = defs?.get?.(id) || null;
+      return { id, def };
+    });
+
+    // Trigger background loads for elements we don't yet have cached.
+    const missingByElement = new Map();
+    resolved
+      .filter((entry) => !entry.def)
+      .forEach((entry) => {
+        const target = inferSkillElementFromId(entry.id);
+        if (!target) return;
+        const key = target.nonBenderPath ? `${target.element}:${target.nonBenderPath}` : target.element;
+        missingByElement.set(key, target);
+      });
+    if (missingByElement.size > 0) {
+      this._kickActiveSkillsLazyLoad(missingByElement, data);
+    }
+
+    container.innerHTML = '';
+    resolved.forEach(({ id, def }) => {
+      const name = def?.name || (defs?.get?.(id)?.name) || '…';
+      const branchColor = def ? branchAccentColor(def.branch, def.tier) : null;
+
+      const chip = createElement('span', { class: `skill-chip${def ? ' resolved' : ' loading'}` });
+      if (branchColor) chip.style.setProperty('--chip-color', branchColor);
+
+      if (def?.tier_label) {
+        chip.title = `${def.tier_label}${def.description ? ' — ' + def.description : ''}`;
+      } else if (!def) {
+        chip.title = 'A carregar nome da habilidade…';
       }
-      return `<span class="skill-chip">${name}</span>`;
-    }).join('');
+
+      chip.appendChild(createElement('span', { class: 'skill-chip-name', textContent: name }));
+
+      // Mastery dots reuse the same threshold logic as the side panel.
+      const uses = Number(data.skill_uses?.[id]) || 0;
+      const masteryLevel = typeof this.character?.getMasteryLevel === 'function'
+        ? this.character.getMasteryLevel(id)
+        : 0;
+      if (def && (uses > 0 || masteryLevel > 0)) {
+        const dots = createElement('span', { class: 'skill-chip-mastery' });
+        for (let i = 0; i < 3; i++) {
+          dots.appendChild(createElement('i', {
+            class: `skill-chip-dot${i < masteryLevel ? ' on' : ''}`,
+          }));
+        }
+        chip.appendChild(dots);
+      }
+
+      container.appendChild(chip);
+    });
+  }
+
+  /**
+   * Lazy load the canonical JSON for any element whose skill defs we don't
+   * have yet. Re-renders the active skills section when the cache warms
+   * (debounced — multiple loads share a single re-render).
+   */
+  _kickActiveSkillsLazyLoad(missingByElement, data) {
+    if (this._activeSkillsLoading) return;
+    this._activeSkillsLoading = true;
+
+    const tasks = Array.from(missingByElement.values()).map((target) =>
+      loadSkills(target.element, { nonBenderPath: target.nonBenderPath }).then((res) => {
+        if (Array.isArray(res?.skills) && window.__SKILL_DEFINITIONS__ instanceof Map) {
+          res.skills.forEach((s) => { if (s?.id) window.__SKILL_DEFINITIONS__.set(s.id, s); });
+        }
+      }).catch(() => { /* silent: the chip stays as "…" */ })
+    );
+
+    Promise.allSettled(tasks).then(() => {
+      this._activeSkillsLoading = false;
+      this.updateActiveSkills(this.character.getData());
+    });
   }
 
   updateEquipment(data) {

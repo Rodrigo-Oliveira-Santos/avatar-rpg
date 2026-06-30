@@ -1,0 +1,235 @@
+/* ============================================================
+   GM Control Panel — central dashboard
+   ============================================================ */
+
+.gm-encounter-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  margin-bottom: 12px;
+}
+
+.gm-control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.gm-control-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.gm-control-header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.gm-card-initiative {
+  /* Inherit the player-card badge style (gold circle) but shift left a bit. */
+  left: 10px;
+  top: -10px;
+}
+
+.gm-card-initiative.on-turn {
+  box-shadow: 0 0 0 3px rgba(212, 168, 73, 0.35);
+  animation: encounter-on-turn 1.8s ease-in-out infinite;
+}
+
+.gm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.gm-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gm-card.kind-monster {
+  border-color: rgba(196, 48, 48, 0.4);
+  background: linear-gradient(180deg, var(--bg2), rgba(196, 48, 48, 0.04));
+}
+
+.gm-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gm-card-name-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.gm-card-name-wrap h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.gm-card-name-btn {
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.gm-card-name-btn:hover {
+  color: var(--gold, #c0a030);
+  text-decoration: underline;
+}
+
+.gm-card-sheet-btn {
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.gm-card-sub {
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: .04em;
+}
+
+.gm-vitals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gm-vital {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gm-vital-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.gm-vital-label { color: var(--text2); }
+.gm-vital-text  { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.gm-vital-bar {
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gm-vital-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2a7a30, #4abc55);
+  transition: width .2s ease;
+}
+
+.gm-vital-cp .gm-vital-fill {
+  background: linear-gradient(90deg, #1d5fa0, #4a90e2);
+}
+.gm-vital-sp .gm-vital-fill {
+  background: linear-gradient(90deg, #5a3aa0, #9070e0);
+}
+
+/* Reuse the existing button grid styles. Keep `.gm-hp` legacy class as alias. */
+.gm-hp { display: contents; }
+
+.gm-hp-buttons {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+}
+
+.gm-hp-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 0;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background .12s, color .12s, border-color .12s;
+}
+
+.gm-hp-btn:hover { color: var(--text); border-color: var(--text2); }
+.gm-hp-btn.minus:hover { background: rgba(180, 50, 50, 0.18); color: #f08070; border-color: #f08070; }
+.gm-hp-btn.plus:hover  { background: rgba(48, 192, 96, 0.16); color: #6fd99c; border-color: #6fd99c; }
+.gm-hp-btn.set         { background: transparent; }
+
+.gm-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gm-skill-chip {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.gm-skill-chip:hover { color: var(--text); border-color: var(--text2); }
+.gm-skill-chip.monster { color: #f08070; border-color: rgba(196, 48, 48, 0.5); }
+
+.gm-empty-row {
+  font-size: 10px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+.gm-card-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.gm-action-btn {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+
+.gm-action-btn:hover {
+  color: var(--gold, #d4a849);
+  border-color: var(--gold, #d4a849);
+  background: rgba(212, 168, 73, 0.08);
+}

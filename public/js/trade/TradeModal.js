@@ -149,19 +149,55 @@ export class TradeModal {
     this.handleEscape = this.handleEscape.bind(this);
   }
 
-  showCreate(targetUsername) {
-    const ownCharacter = readCharacter(this.currentUsername);
-    const targetCharacter = readCharacter(targetUsername);
+  /**
+   * Load a character snapshot from any source. Supabase first (when
+   * enabled), localStorage second. Returns `null` only when nothing is
+   * available — proposing a trade does NOT require the target's full
+   * sheet to be locally cached anymore.
+   */
+  async _loadCharacterAnyway(username) {
+    try {
+      const { isSupabaseEnabled } = await import('../api/config.js');
+      if (isSupabaseEnabled()) {
+        const { loadCharacter } = await import('../api/supabase-characters.js');
+        const remote = await loadCharacter(username);
+        if (remote) return remote;
+      }
+    } catch (err) {
+      console.warn('[TradeModal] Supabase load failed', err);
+    }
+    return readCharacter(username);
+  }
 
-    if (!ownCharacter || !targetCharacter) {
-      toast('Os dois personagens têm de existir neste navegador.', 'error');
+  async showCreate(targetUsername) {
+    if (!this.currentUsername) {
+      toast('Sem sessão ativa.', 'error');
+      return;
+    }
+    if (normalizeName(this.currentUsername) === normalizeName(targetUsername)) {
+      toast('Não podes propor uma troca a ti próprio.', 'warning');
+      return;
+    }
+
+    const [ownCharacter, targetCharacter] = await Promise.all([
+      this._loadCharacterAnyway(this.currentUsername),
+      this._loadCharacterAnyway(targetUsername),
+    ]);
+
+    if (!ownCharacter) {
+      toast('A tua ficha não foi encontrada — entra primeiro como esse jogador.', 'error');
       return;
     }
 
     this.close();
 
     const ownItems = collapseInventory(Array.isArray(ownCharacter.inventario) ? ownCharacter.inventario : []);
-    const targetItems = collapseInventory(Array.isArray(targetCharacter.inventario) ? targetCharacter.inventario : []);
+    // Target inventory is best-effort: if we don't have it (e.g. Supabase
+    // off and target never logged in here) we render an empty list with
+    // a free-text field, so the proposer can still send gold / unspecified.
+    const targetItems = collapseInventory(
+      Array.isArray(targetCharacter?.inventario) ? targetCharacter.inventario : []
+    );
 
     const content = document.createElement('div');
     content.className = 'trade-modal';
@@ -212,9 +248,9 @@ export class TradeModal {
     submitButton.type = 'button';
     submitButton.className = 'btn btn-primary';
     submitButton.textContent = 'Propor Troca';
-    submitButton.addEventListener('click', () => {
+    submitButton.addEventListener('click', async () => {
       try {
-        this.tradeManager.createTrade(
+        await this.tradeManager.createTrade(
           this.currentUsername,
           targetUsername,
           {
@@ -254,8 +290,16 @@ export class TradeModal {
 
     this.close();
 
-    const isTarget = normalizeName(trade.to) === normalizeName(this.currentUsername);
-    const counterpart = isTarget ? trade.from : trade.to;
+    // The trade row coming from Supabase uses `from_username` /
+    // `to_username` + flat `offer_items|gold` / `request_items|gold`.
+    // Map to the legacy shape this modal renders.
+    const fromName = trade.from_username || trade.from;
+    const toName   = trade.to_username   || trade.to;
+    const offer    = trade.offer    || { items: trade.offer_items   || [], gold: trade.offer_gold   || 0 };
+    const request  = trade.request  || { items: trade.request_items || [], gold: trade.request_gold || 0 };
+
+    const isTarget = normalizeName(toName) === normalizeName(this.currentUsername);
+    const counterpart = isTarget ? fromName : toName;
 
     const content = document.createElement('div');
     content.className = 'trade-modal';
@@ -268,7 +312,7 @@ export class TradeModal {
 
     const subtitle = document.createElement('p');
     subtitle.className = 'trade-modal-subtitle';
-    subtitle.textContent = `de ${trade.from} para ${trade.to}`;
+    subtitle.textContent = `de ${fromName} para ${toName}`;
 
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
@@ -290,8 +334,8 @@ export class TradeModal {
     const body = document.createElement('div');
     body.className = 'trade-modal-body';
     body.append(
-      renderTradeSide(`${trade.from} oferece`, trade.offer, 'Nada oferecido.'),
-      renderTradeSide(`${trade.from} pede`, trade.request, 'Nada pedido.')
+      renderTradeSide(`${fromName} oferece`, offer, 'Nada oferecido.'),
+      renderTradeSide(`${fromName} pede`, request, 'Nada pedido.')
     );
 
     const footer = document.createElement('div');
@@ -317,7 +361,7 @@ export class TradeModal {
         if (!confirmed) return;
 
         try {
-          this.tradeManager.rejectTrade(trade.id, this.currentUsername);
+          await this.tradeManager.rejectTrade(trade.id, this.currentUsername);
           toast('Proposta recusada.', 'success');
           this.close();
         } catch (error) {
@@ -337,7 +381,7 @@ export class TradeModal {
         if (!confirmed) return;
 
         try {
-          this.tradeManager.acceptTrade(trade.id, this.currentUsername);
+          await this.tradeManager.acceptTrade(trade.id, this.currentUsername);
           toast('Troca concluída com sucesso.', 'success');
           this.close();
         } catch (error) {
@@ -359,7 +403,7 @@ export class TradeModal {
         if (!confirmed) return;
 
         try {
-          this.tradeManager.cancelTrade(trade.id, this.currentUsername);
+          await this.tradeManager.cancelTrade(trade.id, this.currentUsername);
           toast('Proposta cancelada.', 'success');
           this.close();
         } catch (error) {

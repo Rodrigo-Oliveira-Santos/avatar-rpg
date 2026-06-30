@@ -3,11 +3,28 @@
  * Main character state management with reactive updates
  */
 
-import { GAME, NATION_CURRENCIES } from '../utils/constants.js';
+import { GAME, NATION_CURRENCIES, MASTERY_THRESHOLDS } from '../utils/constants.js';
 import { calculateAllStats } from './stats.js';
 import { getMilestone, getXPProgress, calculateXPForLevel } from './xp.js';
 import { getAvailableSlots } from './slots.js';
 import { findSubclassDefinition, getSubclassesForElement } from './subclasses.js';
+
+/**
+ * Map a usage counter (number of times a skill was used in play) to the
+ * unlocked mastery level (0..3). Thresholds come from the canonical
+ * skill trees: 15 / 50 / 150 uses.
+ *
+ * @param {number} uses
+ * @returns {number} mastery level 0-3
+ */
+export function masteryLevelForUses(uses) {
+  const n = Number(uses) || 0;
+  let level = 0;
+  for (let i = 0; i < MASTERY_THRESHOLDS.length; i++) {
+    if (n >= MASTERY_THRESHOLDS[i]) level = i;
+  }
+  return level;
+}
 
 /**
  * Create default character structure
@@ -60,6 +77,20 @@ function createDefaultCharacter() {
     scrolls: {},
     anotacoes: '',
     subclass_bonus: {},
+    /** 'precise' | 'brute' | null — locked at tier 3 in each skill tree. */
+    combat_path: null,
+    /** 'chiblocker' | 'weapons' | null — used when elemento === 'none'. */
+    non_bender_path: null,
+    /** { [skill_id]: usage_count } — drives mastery level (see masteryLevelForUses). */
+    skill_uses: {},
+    /** Own notes — list of { id, text, created_at, updated_at? }. Player-owned. */
+    player_notes: [],
+    /** GM's notes about this character — same shape. GM-only writes via targeted column. */
+    gm_notes: [],
+    /** Current vitals; null means "not set" (recompute from max stats). */
+    hp_current: null,
+    cp_current: null,
+    sp_current: null,
   };
 }
 
@@ -93,6 +124,11 @@ function normalizeCharacterData(data = {}) {
       ...(data.moedas || {}),
     },
     scrolls: data.scrolls || defaults.scrolls,
+    player_notes: data.player_notes || defaults.player_notes,
+    gm_notes: data.gm_notes || defaults.gm_notes,
+    hp_current: Number.isFinite(data.hp_current) ? data.hp_current : defaults.hp_current,
+    cp_current: Number.isFinite(data.cp_current) ? data.cp_current : defaults.cp_current,
+    sp_current: Number.isFinite(data.sp_current) ? data.sp_current : defaults.sp_current,
     subclass_bonus: {
       ...defaults.subclass_bonus,
       ...(data.subclass_bonus || {}),
@@ -253,6 +289,85 @@ export class Character {
       };
     }
     this.data.habilidades[skillId].active = active;
+    this.notify();
+  }
+
+  /**
+   * Increment the usage counter for a skill. Drives the mastery system
+   * (M0..M3 unlocked at MASTERY_THRESHOLDS).
+   *
+   * Also stamps `last_used_on_turn` with the current encounter snapshot
+   * (round + turn index). This is the anchor future cooldown logic will
+   * use so a "1 turn cooldown" stays tied to the turn the skill was
+   * cast — even if it was cast on someone else's turn (bonus action).
+   *
+   * @param {string} skillId
+   * @param {number} amount
+   * @returns {number} new use count
+   */
+  recordSkillUse(skillId, amount = 1) {
+    if (!this.data.skill_uses || typeof this.data.skill_uses !== 'object') {
+      this.data.skill_uses = {};
+    }
+    const current = Number(this.data.skill_uses[skillId]) || 0;
+    const next = Math.max(0, current + amount);
+    this.data.skill_uses[skillId] = next;
+
+    // Cooldown anchor: store the encounter snapshot at cast time. Reads
+    // from `window.__ACTIVE_ENCOUNTER__` which the EncounterPanel keeps
+    // in sync — no hard import to avoid coupling the character module to
+    // the combat module. We also store `encounter_status` so future
+    // cooldown checks can treat any anchor whose encounter is no longer
+    // active (or whose id doesn't match the current encounter) as expired.
+    if (typeof window !== 'undefined' && window.__ACTIVE_ENCOUNTER__) {
+      this.data.skill_last_used ||= {};
+      const enc = window.__ACTIVE_ENCOUNTER__;
+      if (enc.status === 'active') {
+        this.data.skill_last_used[skillId] = {
+          encounter_id: enc.id,
+          encounter_status: enc.status,
+          round: enc.current_round,
+          turn_index: enc.current_turn_index,
+          at: new Date().toISOString(),
+        };
+      }
+    }
+
+    this.notify();
+    return next;
+  }
+
+  /**
+   * Compute the current mastery level (0..3) for a skill from its use count.
+   * @param {string} skillId
+   * @returns {number}
+   */
+  getMasteryLevel(skillId) {
+    return masteryLevelForUses(this.data.skill_uses?.[skillId] || 0);
+  }
+
+  /**
+   * Lock the combat path (precise vs brute). Once set, the player cannot
+   * unlock tier 3+ skills from the other branch.
+   * @param {'precise'|'brute'|null} path
+   */
+  setCombatPath(path) {
+    if (path !== null && path !== 'precise' && path !== 'brute') {
+      throw new Error(`Invalid combat_path: ${path}`);
+    }
+    this.data.combat_path = path;
+    this.notify();
+  }
+
+  /**
+   * Choose a non-bender path (only meaningful when elemento === 'none').
+   * @param {'chiblocker'|'weapons'|null} path
+   */
+  setNonBenderPath(path) {
+    if (path !== null && path !== 'chiblocker' && path !== 'weapons') {
+      throw new Error(`Invalid non_bender_path: ${path}`);
+    }
+    this.data.non_bender_path = path;
     this.notify();
   }
 

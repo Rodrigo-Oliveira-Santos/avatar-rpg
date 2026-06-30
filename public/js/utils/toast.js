@@ -4,6 +4,36 @@
  */
 
 let toastContainer = null;
+let clearAllBtn = null;
+
+function refreshClearAllButton() {
+  if (!toastContainer) return;
+  const toastCount = toastContainer.querySelectorAll('.toast').length;
+  if (toastCount >= 2 && !clearAllBtn) {
+    clearAllBtn = document.createElement('button');
+    clearAllBtn.type = 'button';
+    clearAllBtn.className = 'toast-clear-all';
+    clearAllBtn.textContent = 'Limpar tudo';
+    clearAllBtn.addEventListener('click', () => {
+      toastContainer.querySelectorAll('.toast').forEach((el) => dismissToast(el));
+    });
+    toastContainer.insertBefore(clearAllBtn, toastContainer.firstChild);
+  } else if (toastCount < 2 && clearAllBtn) {
+    clearAllBtn.remove();
+    clearAllBtn = null;
+  }
+}
+
+function dismissToast(el) {
+  if (!el || el.dataset.dismissed === '1') return;
+  el.dataset.dismissed = '1';
+  el.classList.remove('show');
+  el.classList.add('hide');
+  setTimeout(() => {
+    el.remove();
+    refreshClearAllButton();
+  }, 300);
+}
 
 function getToastContainer() {
   if (!toastContainer) {
@@ -18,7 +48,7 @@ function getToastContainer() {
  * Show a toast notification
  * @param {string} message - Message text
  * @param {'success'|'error'|'warning'|'info'} type - Toast type
- * @param {number} duration - Auto-dismiss in ms (default 3000)
+ * @param {number} duration - Auto-dismiss in ms (default 3000). Pass 0 to keep it sticky.
  */
 export function toast(message, type = 'info', duration = 3000) {
   const container = getToastContainer();
@@ -30,19 +60,21 @@ export function toast(message, type = 'info', duration = 3000) {
   el.innerHTML = `
     <span class="toast-icon">${icons[type] || 'ℹ'}</span>
     <span class="toast-msg">${escapeHtml(message)}</span>
+    <button type="button" class="toast-close" aria-label="Fechar">×</button>
   `;
 
+  el.querySelector('.toast-close').addEventListener('click', () => dismissToast(el));
+
   container.appendChild(el);
+  refreshClearAllButton();
 
   // Trigger animation
   requestAnimationFrame(() => el.classList.add('show'));
 
-  // Auto-dismiss
-  setTimeout(() => {
-    el.classList.remove('show');
-    el.classList.add('hide');
-    setTimeout(() => el.remove(), 300);
-  }, duration);
+  // Auto-dismiss (skip when duration <= 0 for sticky toasts)
+  if (duration > 0) {
+    setTimeout(() => dismissToast(el), duration);
+  }
 }
 
 /**
@@ -83,7 +115,7 @@ export function confirmDialog(message, options = {}) {
     });
 
     document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('modal-open'));
+    requestAnimationFrame(() => { overlay.classList.remove('modal-closing'); overlay.classList.add('modal-open'); });
     confirmBtn.focus();
   });
 }
@@ -137,7 +169,7 @@ export function promptDialog(message, options = {}) {
     });
 
     document.body.appendChild(overlay);
-    requestAnimationFrame(() => overlay.classList.add('modal-open'));
+    requestAnimationFrame(() => { overlay.classList.remove('modal-closing'); overlay.classList.add('modal-open'); });
     input.focus();
     input.select();
   });
@@ -147,7 +179,11 @@ export function promptDialog(message, options = {}) {
 
 function createOverlay() {
   const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
+  // Start in `modal-closing` so opacity is 0; toast.js dialogs flip to
+  // `modal-open` on requestAnimationFrame to fade-in. Ad-hoc modals that
+  // bypass this helper (e.g. StatusEffectManager) just use the bare
+  // `.modal-overlay` class and appear immediately.
+  overlay.className = 'modal-overlay modal-closing';
   return overlay;
 }
 

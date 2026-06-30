@@ -7,8 +7,13 @@ import { getPlayerUsernames } from './data.js';
 import { getShopItems } from '../shop/data.js';
 import { toast, confirmDialog } from '../utils/toast.js';
 import { log } from '../admin/LogService.js';
+import {
+  loadPlayerCharacter,
+  savePlayerCharacter,
+  listPlayerUsernames,
+} from '../api/gm-characters.js';
+import { isSupabaseEnabled } from '../api/config.js';
 
-const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
 const TYPE_LABELS = {
   weapon: 'Arma',
   armor: 'Armadura',
@@ -46,17 +51,6 @@ function toInventoryItem(item, quantity) {
     rarity: item.rarity || 'common',
     quantity,
   };
-}
-
-function parseCharacter(rawCharacter) {
-  if (!rawCharacter) return null;
-
-  try {
-    const parsed = JSON.parse(rawCharacter);
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
 }
 
 function normalizeQuantity(value) {
@@ -140,12 +134,21 @@ export class LootDelivery {
     });
     select.appendChild(createElement('option', { value: '', textContent: 'Selecionar jogador' }));
 
+    // Local list first (renders synchronously); refreshed with the
+    // Supabase roster as soon as it resolves.
     getPlayerUsernames().forEach(username => {
-      select.appendChild(createElement('option', {
-        value: username,
-        textContent: username,
-      }));
+      select.appendChild(createElement('option', { value: username, textContent: username }));
     });
+
+    listPlayerUsernames().then((remote) => {
+      if (!Array.isArray(remote) || remote.length === 0) return;
+      const seen = new Set(Array.from(select.options).map((o) => o.value));
+      remote.forEach((username) => {
+        if (!seen.has(username)) {
+          select.appendChild(createElement('option', { value: username, textContent: username }));
+        }
+      });
+    }).catch(() => {});
 
     on(select, 'change', () => {
       this.selectedPlayer = select.value;
@@ -341,13 +344,12 @@ export class LootDelivery {
     const confirmed = await confirmDialog(`Entregar ${quantity} x ${item.name} a ${username}?`);
     if (!confirmed) return;
 
-    if (typeof localStorage === 'undefined') {
-      toast('Armazenamento local indisponível.', 'error');
-      return;
+    let character = null;
+    try {
+      character = await loadPlayerCharacter(username);
+    } catch (err) {
+      console.warn('[LootDelivery.handleDeliver] load failed', err);
     }
-
-    const storageKey = `${CHARACTER_STORAGE_PREFIX}${username}`;
-    const character = parseCharacter(localStorage.getItem(storageKey));
 
     if (!character) {
       toast('Não foi possível carregar a ficha do jogador.', 'error');
@@ -370,10 +372,15 @@ export class LootDelivery {
       character.inventario.push(inventoryItem);
     }
 
-    localStorage.setItem(storageKey, JSON.stringify(character));
+    try {
+      await savePlayerCharacter(username, character);
+    } catch (err) {
+      toast(`Falha a gravar ficha: ${err.message}`, 'error');
+      return;
+    }
 
     const gmUsername = this.authManager?.getUser()?.username || 'gm';
-    log('loot_delivery', { item: item.name, quantity, target: username }, gmUsername);
+    log('loot_delivery', { item: item.name, quantity, target: username, backend: isSupabaseEnabled() ? 'supabase' : 'local' }, gmUsername);
     toast(`${quantity} x ${item.name} entregue a ${username}.`, 'success');
     this.resetSelection();
   }

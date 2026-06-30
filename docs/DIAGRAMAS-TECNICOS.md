@@ -158,7 +158,7 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: character_skills (📋 Fase 2)                                    │
+│  TABELA: character_skills (📋 Fase 2 — actualizada em 2026-06-29)        │
 │──────────────────────────────────────────────────────────────────────────│
 │  id              UUID PRIMARY KEY                                        │
 │  character_id    UUID REFERENCES characters(id) ON DELETE CASCADE        │
@@ -166,6 +166,8 @@
 │  unlocked_at     TIMESTAMP DEFAULT NOW()                                 │
 │  level           INT DEFAULT 1                                           │
 │  sub_skills      INT DEFAULT 0                                           │
+│  uses            INT DEFAULT 0       -- contagem para sistema de maestria│
+│  mastery_level   INT DEFAULT 0 CHECK (0..3)  -- M0..M3                   │
 │  UNIQUE(character_id, skill_id)                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 
@@ -183,20 +185,38 @@
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  TABELA: skills (📋 Fase 2 — Global, carregado via JSON)                 │
+│  TABELA: skills (📋 actualizada em 2026-06-29 — skill_system_v2)         │
 │──────────────────────────────────────────────────────────────────────────│
-│  id              UUID PRIMARY KEY                                        │
-│  name            VARCHAR(100) UNIQUE                                     │
-│  element         VARCHAR(20)                                             │
-│  category        VARCHAR(30)                                             │
-│  tier            INT CHECK (1-4)                                         │
-│  description     TEXT                                                    │
-│  requirements    JSONB  -- {FOR, AGI, CHI, PER, RES, ESP}                │
-│  prerequisites   JSONB  -- ["skill_name_1", "skill_name_2"]             │
-│  position        VARCHAR(10) CHECK (off, def, any, pass)                 │
-│  attacks         JSONB                                                   │
-│  passive_effect  JSONB                                                   │
-│  created_at      TIMESTAMP DEFAULT NOW()                                 │
+│  id                 UUID PRIMARY KEY                                     │
+│  name               VARCHAR(100)                                         │
+│  element            VARCHAR(20) IN (fire,water,earth,air,none)           │
+│  non_bender_path    VARCHAR(20) IN (chiblocker, weapons) -- só p/ 'none' │
+│  category           VARCHAR(30) IN (spirit, agility, combat,             │
+│                                     precise, brute)                      │
+│  branch             VARCHAR(2)  IN (sp, ag, cb, pr, br)                  │
+│  tier               INT CHECK (1..5)         -- 5 = Lendário             │
+│  tier_label         TEXT                     -- ex: 'Espírito N1'        │
+│  is_legendary       BOOLEAN DEFAULT FALSE                                │
+│  description        TEXT                                                 │
+│  damage_summary     TEXT                                                 │
+│  requirements_text  TEXT       -- texto livre dos pre-reqs               │
+│  requirements       JSONB      -- {FOR, AGI, CHI, PER, RES, ESP}         │
+│  prerequisites      JSONB      -- ["skill_id_1", "skill_id_2"]           │
+│  mastery_levels     JSONB      -- ["M0 desc", "M1 desc", "M2", "M3"]     │
+│  position_meta      JSONB      -- {column, y_offset}  (canvas layout)    │
+│  position           VARCHAR(10) CHECK (off, def, any, pass)              │
+│  attacks            JSONB                                                │
+│  passive_effect     JSONB                                                │
+│  created_at         TIMESTAMP DEFAULT NOW()                              │
+│                                                                          │
+│  UNIQUE INDEX (element, COALESCE(non_bender_path, ''), name)             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  TABELA: characters — colunas adicionadas em skill_system_v2             │
+│──────────────────────────────────────────────────────────────────────────│
+│  combat_path        VARCHAR(10) IN (precise, brute)  -- escolha no T3    │
+│  non_bender_path    VARCHAR(20) IN (chiblocker, weapons) -- só p/ 'none' │
 └──────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────┐
@@ -294,6 +314,223 @@
 │  created_at      TIMESTAMP DEFAULT NOW()                                 │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
+
+### 2.x Tabela: `monsters` (GM catalogue de NPCs)
+
+Adicionada na migração `20260629150000_monsters.sql`. Espelha o shape do `Hub` para um NPC, com payloads ricos em JSONB para evolução sem novas migrações.
+
+```sql
+create table monsters (
+  id              uuid primary key default uuid_generate_v4(),
+  name            text not null,
+  level           int  not null default 1 check (level between 1 and 99),
+
+  -- Combat resources (mutáveis durante o jogo)
+  hp_current      int  not null default 10,
+  hp_max          int  not null default 10,
+  defense         int  not null default 10,
+  dodge           int  not null default 10,
+
+  -- 6 atributos (mesma escala dos personagens)
+  attr_for/agi/chi/per/res/esp int not null default 8,
+
+  -- Payloads ricos (ver shapes abaixo)
+  attacks         jsonb default '[]',   -- [{ id, name, damage, range, effect, notes }]
+  loot_table      jsonb default '[]',   -- [{ kind: 'item'|'custom', item_id?, name?, quantity, drop_rate? }]
+  status_effects  jsonb default '[]',   -- [{ id, name, type, icon?, description?, custom? }]
+
+  notes           text,
+  in_play         boolean not null default false,
+  created_by      uuid references users(id) on delete set null,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+-- Índices: filtro frequente por in_play (encontro em curso) e por criador (GM).
+create index idx_monsters_in_play   on monsters (in_play) where in_play = true;
+create index idx_monsters_created_by on monsters (created_by);
+
+-- Trigger touch-updated-at em cada UPDATE.
+```
+
+**Shape de `attacks` (JSONB):**
+
+```jsonc
+[
+  { "id": "a1", "name": "Espada em chamas", "damage": "3d8 + 1d6 fogo",
+    "range": "corpo a corpo", "effect": "Queimadura" }
+]
+```
+
+**Shape de `loot_table` (JSONB):** suporta dois tipos por entrada.
+
+```jsonc
+[
+  { "kind": "item",   "item_id": "<uuid de items>", "quantity": 1, "drop_rate": 1.0 },
+  { "kind": "custom", "name": "Insígnia da Nação do Fogo", "quantity": 1, "drop_rate": 1.0 }
+]
+```
+
+**Shape de `status_effects` (JSONB):** o mesmo array que `characters.status_effects`. Cada entrada referencia o catálogo do frontend (`public/js/utils/statusEffects.js`) por `id`, ou inclui o blob completo se for custom.
+
+### 2.y Coluna: `characters.status_effects` (promovida)
+
+Promovida de dentro de `equipment_data` para coluna dedicada na migração `20260629160000_status_effects_column.sql`. Permite que o GM atualize só este campo via `UPDATE status_effects = …` sem correr risco de race com o AutoSave do próprio jogador (que escreve tudo *excepto* esta coluna ao passar `omitStatusEffects: true`).
+
+```sql
+alter table characters add column status_effects jsonb not null default '[]';
+```
+
+Shape de cada entrada — ver §2.z (campos da instância em combate).
+
+### 2.z Tabelas: `encounters` + `encounter_combatants` (sistema de turnos)
+
+Adicionadas na migração `20260629170000_encounters.sql`. Modelam uma batalha singleton (`status='active'` mostra a única em curso) com a sua lista ordenada de combatentes.
+
+```sql
+create table encounters (
+  id                  uuid primary key default uuid_generate_v4(),
+  name                text not null default 'Combate',
+  status              text not null default 'pending'
+                          check (status in ('pending', 'active', 'ended')),
+  current_round       int  not null default 1,
+  current_turn_index  int  not null default 0,
+  notes               text,
+  created_by          uuid references users(id) on delete set null,
+  started_at          timestamptz,
+  ended_at            timestamptz,
+  created_at/updated_at timestamptz default now()
+);
+
+create table encounter_combatants (
+  id              uuid primary key default uuid_generate_v4(),
+  encounter_id    uuid not null references encounters(id) on delete cascade,
+  kind            text not null check (kind in ('character','monster')),
+  ref_id          uuid,                              -- characters.id / monsters.id (snapshot)
+  name            text not null,                    -- username (jogador) ou nome (monstro)
+  initiative      int  not null default 0,
+  initiative_mod  int  not null default 0,
+  turn_order      int  not null default 0,          -- 0-indexed slot na ordem
+  has_acted       boolean not null default false,
+  joined_at       timestamptz default now(),
+  unique (encounter_id, kind, ref_id)
+);
+```
+
+**Realtime:** ambas as tabelas estão na publication `supabase_realtime`. O `combat/EncounterPanel` subscreve `postgres_changes` em ambas e re-renderiza sem refresh.
+
+**Fluxo de uma batalha:**
+
+```
+GM clica "⚔ Iniciar batalha" (MonstersPage)
+  → BattleLauncher modal: checkbox de jogadores + monstros in_play
+  → promptRoll(1d20+mod) por combatente (manual default; toggle 🎲)
+  → Encounters.start({ name, combatants })
+     → fecha encontros 'active' anteriores
+     → INSERT encounters {status:'active'}
+     → INSERT encounter_combatants (turn_order = ordenado por initiative DESC)
+  → EncounterPanel renderiza no Hub a todos os jogadores
+
+GM clica "Próximo turno →"
+  → applyTickFor(combatente actual, 'end', encounter)   ← tick_when='end'
+  → Encounters.advanceTurn(id)                          ← cursor++, has_acted=true
+  → applyTickFor(novo combatente, 'start', encounter)   ← tick_when='start'
+
+Jogador clica "Fim do meu turno" (no seu próprio combatente)
+  → Encounters.markActed(combatantId)                   ← has_acted=true (avisa GM)
+
+GM clica "Terminar batalha"
+  → Encounters.end(id) → status='ended'
+```
+
+**Shape de `status_effects` (instância em combate):** estende o shape básico já documentado em §2.y com campos populados pelo `StatusEffectManager` ao aplicar:
+
+```jsonc
+{
+  "id": "sangrando",
+  "type": "negative",
+  "duration_turns": 3,         // decrementa a cada tick; remove a 0
+  "tick_when": "start",        // herda do catálogo ou override por aplicação
+  "damage_per_turn": "1d4",    // expressão de dados
+  "applied_at_turn": 2         // current_turn_index no momento da aplicação
+}
+```
+
+---
+
+Sem alteração de schema (já existia o blob `equipment_data` JSONB). O frontend escreve um array deste shape:
+
+```jsonc
+[
+  { "id": "sangrando", "type": "negative" },                        // built-in
+  { "id": "custom-marcado", "name": "Marcado pelo Espírito",
+    "type": "negative", "icon": "🌑", "custom": true }              // custom
+]
+```
+
+A normalização para a UI vive em `public/js/utils/statusEffects.js → normalizeStatusEffect(raw)`. Persistência feita pelo `StatusEffectManager` via `api/supabase-characters.saveCharacter(username, char)`.
+
+---
+
+### 2.zz Tabela: `shop_profiles` (bundles named de items)
+
+Adicionada na migração `20260629210000_shop_profiles.sql`.
+
+```sql
+create table shop_profiles (
+  id          uuid primary key default uuid_generate_v4(),
+  name        text not null,
+  description text,
+  item_ids    uuid[] not null default '{}',
+  created_by  uuid references users(id) on delete set null,
+  created_at/updated_at timestamptz default now()
+);
+```
+
+`api/shopProfiles.apply(profileId)` faz dois UPDATEs em sequência: `items.in_shop=false` em todos, depois `items.in_shop=true` para os ids do perfil. Race-prone sem transação mas aceitável para uso de GM coordenado.
+
+### 2.zzz Vitals + Realtime de characters
+
+Migração `20260629200000_vitals_realtime.sql`:
+- Adiciona `hp_current`, `cp_current`, `sp_current` (int, nullable) a `characters`.
+- Adiciona `characters` à publication `supabase_realtime`.
+
+Frontend: `api/supabase-characters.updateVitals(username, patch)` faz UPDATE cirúrgico. `subscribeToCharacters(cb)` regista canal `postgres_changes`. AutoSave passa `omitVitals: true`.
+
+---
+
+### 2.zzzz Tabela: `trades`
+
+Adicionada na migração `20260629230000_trades.sql`. Substitui o storage local-only que assumia ambos os jogadores no mesmo browser.
+
+```sql
+create table trades (
+  id              uuid primary key default uuid_generate_v4(),
+  from_username   text not null,
+  to_username     text not null,
+  offer_items     jsonb default '[]',  offer_gold   int default 0,
+  request_items   jsonb default '[]',  request_gold int default 0,
+  status          text check (status in ('pending','accepted','rejected','cancelled','forced')),
+  kind            text check (kind in ('trade','forced','loot','reward')),
+  note            text,
+  created_at      timestamptz default now(),
+  decided_at      timestamptz
+);
+```
+
+Realtime: tabela na publication `supabase_realtime`. Subscrição em `Hub` + `TradeHistoryPanel` para refresh sem reload.
+
+Forced (GM): `GiftTransfer` regista uma row `status='forced'` para o transfer aparecer no histórico do destinatário.
+
+---
+
+## 2.99 Subscriptions Realtime — padrão de uso seguro
+
+Vários módulos subscrevem a `postgres_changes` (HubPage, MonstersPage, GMControlPage, TradeHistoryPanel, App). Padrão obrigatório para evitar leaks ou cross-user data corruption:
+
+1. **Resolver o filter key antes de subscrever.** No App, `_subscribeToCharacterRealtime` resolve `users.id` para o utilizador actual ANTES de criar o canal e filtra estritamente por esse id (sem fallback — bail out se a resolução falhar). Antes a falta de `user_id` no objecto local fazia as actualizações de qualquer jogador sobrescreverem as minhas barras de HP.
+2. **Sequence/destroyed flag.** Cada classe que subscreve carrega um `_destroyed` (ou um `_realtimeSeq` no caso de reentrada) que é flipado no `destroy()`. O callback do subscribe verifica esse flag antes de mexer no estado, e o `.then(unsub => …)` que executa depois do `destroy()` ainda chama `unsub?.()` imediatamente para libertar o canal.
+3. **Read-only `resolveUserId`.** A função `resolveUserId(username)` em `api/supabase-characters.js` é read-only por defeito. Só o caminho de saveCharacter (first-login bootstrap) passa `{ createIfMissing: true }`. Os outros writers (`updateVitals`, `updateStatusEffects`, `updateGmNotes`) recebem `null` e lançam erro explícito quando o user não existe — evita criar ghost users por typos / mocks do Hub.
 
 ---
 
@@ -733,26 +970,39 @@
 
 ## 9. Schema JSON para Importação
 
-### 9.1 Schema de Habilidade
+### 9.1 Schema de Habilidade (skill-import-v2)
+
+> **Nota:** este schema substitui o anterior v1 para reflectir a estrutura
+> canónica documentada em `docs/skill-trees/*.html`. Os ficheiros gerados
+> em `data/skills/*.json` por `scripts/extract-skill-trees.mjs` seguem
+> exactamente este formato.
 
 ```json
 {
-  "$schema": "skill-import-v1",
-  "element": "fogo|agua|terra|ar|non_bending",
-  "category": "spirit|agility|precise_combat|brute_combat",
-  "tier": 1|2|3|4,
+  "$schema": "skill-import-v2",
+  "element": "fire|water|earth|air|none",
+  "non_bender_path": "chiblocker|weapons",  // obrigatório quando element='none'
+  "category": "spirit|agility|combat|precise|brute",
+  "branch": "sp|ag|cb|pr|br",
+  "tier": 1|2|3|4|5,                         // 5 = Lendário
+  "is_legendary": false,
+  "tier_label": "Espírito N1",               // ex: 'Lendário — Bruto'
   "name": "Nome da Habilidade",
   "description": "Descrição curta da habilidade (1-2 frases)",
-  "requirements": {
-    "FOR": 0,
-    "AGI": 0,
-    "CHI": 0,
-    "PER": 0,
-    "RES": 0,
-    "ESP": 0
+  "damage_summary": "1d6 chi/turno",         // resumo do efeito principal
+  "requirements_text": "Resp. Dragão + Chama Med.",
+  "attribute_requirements": {
+    "FOR": 0, "AGI": 0, "CHI": 0, "PER": 0, "RES": 0, "ESP": 0
   },
-  "prerequisites": ["Nome Habilidade 1", "Nome Habilidade 2"],
+  "prerequisites": ["fire-sp1a", "fire-sp1b"],   // por id de skill
+  "mastery_levels": [                            // 4 strings ou null se lendária
+    "1d6 chi/turno",
+    "2d6 + Regeneração",
+    "3d6",
+    "5d6"
+  ],
   "position": "off|def|any|pass",
+  "position_meta": { "column": 0, "y_offset": 0 },
   "attacks": [
     {
       "name": "Nome do Ataque",

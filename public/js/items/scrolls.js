@@ -4,7 +4,6 @@
  */
 
 import { getImportedSkills } from '../import/storage.js';
-import { MOCK_SKILLS } from '../skills/mock-data.js';
 import { log } from '../admin/LogService.js';
 
 const ELEMENTS = ['fire', 'water', 'earth', 'air', 'none'];
@@ -54,15 +53,24 @@ function formatSkillName(skillId = '') {
 function getSkillDefinitions() {
   const definitions = new Map();
 
+  // GM-imported overrides win over canonical when both define the same id.
   ELEMENTS.forEach(element => {
-    const imported = getImportedSkills(element);
-    const skills = [...(MOCK_SKILLS[element] || []), ...imported];
-    skills.forEach(skill => {
-      if (skill?.id) {
-        definitions.set(skill.id, skill);
-      }
+    getImportedSkills(element).forEach(skill => {
+      if (skill?.id) definitions.set(skill.id, skill);
     });
   });
+
+  // Canonical JSONs ship synchronously via a require-like fetch path is
+  // unavailable in this static build; scrolls run in the browser where
+  // the SkillTree has already populated `window.__SKILL_DEFINITIONS__`
+  // (set by SkillTree on first load). If empty, the formatter fallback
+  // takes over via getSkillName().
+  const registry = (typeof window !== 'undefined' && window.__SKILL_DEFINITIONS__) || null;
+  if (registry instanceof Map) {
+    registry.forEach((skill, id) => {
+      if (!definitions.has(id)) definitions.set(id, skill);
+    });
+  }
 
   return definitions;
 }

@@ -1,0 +1,1568 @@
+{
+  "element": "none",
+  "non_bender_path": "weapons",
+  "skills": [
+    {
+      "id": "none-weapons-sp1a",
+      "raw_id": "sp1a",
+      "name": "Leitura do Campo",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Analisa o ambiente e inimigos antes de agir.",
+      "damage_summary": "Percepção CD 11 — +2 próx. ataque/esquiva",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp1b",
+      "raw_id": "sp1b",
+      "name": "Instinto Sobrev.",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Reação involuntária a perigo imediato.",
+      "damage_summary": "Intuição CD 11 — evita 1º golpe surpresa",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 1,
+        "RES": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp2a",
+      "raw_id": "sp2a",
+      "name": "Foco Tático",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Mantém a calma sob pressão.",
+      "damage_summary": "Imune a intimidação e medo",
+      "requirements_text": "Leitura do Campo",
+      "attribute_requirements": {
+        "PER": 6,
+        "RES": 3
+      },
+      "prerequisites": [
+        "none-weapons-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp2b",
+      "raw_id": "sp2b",
+      "name": "Resist. Mental",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Resistência a manipulação e efeitos psicológicos.",
+      "damage_summary": "Vantagem saves manipulação/ilusão",
+      "requirements_text": "Instinto + Leitura",
+      "attribute_requirements": {
+        "PER": 5,
+        "RES": 5
+      },
+      "prerequisites": [
+        "none-weapons-sp1b",
+        "none-weapons-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1b",
+        "sp1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp2c",
+      "raw_id": "sp2c",
+      "name": "Leitura Intenção",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Percebe intenção de ataque pela postura e olhar.",
+      "damage_summary": "Intuição CD 12 — percebe ataque antecipado",
+      "requirements_text": "Leitura do Campo",
+      "attribute_requirements": {
+        "PER": 6
+      },
+      "prerequisites": [
+        "none-weapons-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp3a",
+      "raw_id": "sp3a",
+      "name": "Mente de Guerreiro",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Prevê movimentos inimigos com base em micro-expressões.",
+      "damage_summary": "Intuição CD 14 — prevê próx. ataque",
+      "requirements_text": "Foco + Resist. Mental",
+      "attribute_requirements": {
+        "PER": 13,
+        "RES": 8
+      },
+      "prerequisites": [
+        "none-weapons-sp2a",
+        "none-weapons-sp2b"
+      ],
+      "prerequisites_raw": [
+        "sp2a",
+        "sp2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp3b",
+      "raw_id": "sp3b",
+      "name": "Análise Fraqueza",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Identifica pontos fracos de armaduras e estilos de luta.",
+      "damage_summary": "Investigação CD 13 — ignora 2 CA",
+      "requirements_text": "Leit. Intenção + Foco",
+      "attribute_requirements": {
+        "PER": 12
+      },
+      "prerequisites": [
+        "none-weapons-sp2c",
+        "none-weapons-sp2a"
+      ],
+      "prerequisites_raw": [
+        "sp2c",
+        "sp2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp3c",
+      "raw_id": "sp3c",
+      "name": "Chi Natural",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Canaliza o próprio chi para fortalecer golpes físicos.",
+      "damage_summary": "+1d4 a todos os ataques físicos (passivo)",
+      "requirements_text": "Resist. Mental + Instinto",
+      "attribute_requirements": {
+        "PER": 11,
+        "RES": 7,
+        "ESP": 6
+      },
+      "prerequisites": [
+        "none-weapons-sp2b",
+        "none-weapons-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp2b",
+        "sp1b"
+      ],
+      "mastery_levels": [
+        "+1d4 todos ataques físicos (passivo)",
+        "+2d4",
+        "+3d4",
+        "+5d4"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp4a",
+      "raw_id": "sp4a",
+      "name": "Maestro do Campo",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Controla o ritmo do combate, fazendo o inimigo reagir sempre.",
+      "damage_summary": "Inimigos têm desvant. em ataques contra si",
+      "requirements_text": "Mente Guerreiro + Análise",
+      "attribute_requirements": {
+        "PER": 20,
+        "RES": 11
+      },
+      "prerequisites": [
+        "none-weapons-sp3a",
+        "none-weapons-sp3b"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp4b",
+      "raw_id": "sp4b",
+      "name": "Golpe de Chi",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Canaliza chi num único golpe que ignora parte da armadura.",
+      "damage_summary": "+2d6 ignora armadura — Atordoado CD 14",
+      "requirements_text": "Chi Natural + Análise",
+      "attribute_requirements": {
+        "PER": 18,
+        "RES": 10,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "none-weapons-sp3c",
+        "none-weapons-sp3b"
+      ],
+      "prerequisites_raw": [
+        "sp3c",
+        "sp3b"
+      ],
+      "mastery_levels": [
+        "+2d6 ignora armadura — Atord. CD14",
+        "+3d6",
+        "+5d6",
+        "+8d6"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp4c",
+      "raw_id": "sp4c",
+      "name": "Visão de Batalha",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Processa múltiplos inimigos em simultâneo sem perder foco.",
+      "damage_summary": "Processa múltiplos inimigos sem desvant.",
+      "requirements_text": "Mente Guerreiro + Leit. Intenção",
+      "attribute_requirements": {
+        "PER": 19,
+        "RES": 11
+      },
+      "prerequisites": [
+        "none-weapons-sp3a",
+        "none-weapons-sp2c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp5a",
+      "raw_id": "sp5a",
+      "name": "Transcend. Marcial",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Estado de fluxo onde cada ação é perfeitamente calculada.",
+      "damage_summary": "Ação bónus extra + 1d8 a todos os ataques",
+      "requirements_text": "Maestro + Visão Batalha",
+      "attribute_requirements": {
+        "PER": 27,
+        "RES": 16
+      },
+      "prerequisites": [
+        "none-weapons-sp4a",
+        "none-weapons-sp4c"
+      ],
+      "prerequisites_raw": [
+        "sp4a",
+        "sp4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp5b",
+      "raw_id": "sp5b",
+      "name": "Golpe do Vazio",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Golpe de chi puro que afeta inimigos resistentes a dano físico.",
+      "damage_summary": "4d10 chi puro — afeta dobradores",
+      "requirements_text": "Golpe Chi + Chi Natural",
+      "attribute_requirements": {
+        "PER": 26,
+        "RES": 15,
+        "ESP": 17
+      },
+      "prerequisites": [
+        "none-weapons-sp4b",
+        "none-weapons-sp3c"
+      ],
+      "prerequisites_raw": [
+        "sp4b",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag1a",
+      "raw_id": "ag1a",
+      "name": "Acrobacia Combate",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Saltos, esquivas e rolamentos melhorados em combate.",
+      "damage_summary": "Acrobacia CD 11 — saltos e rolamentos",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "Acrobacia CD 11 — saltos/rolamentos",
+        "CD 9",
+        "CD 7",
+        "CD 5"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag1b",
+      "raw_id": "ag1b",
+      "name": "Postura Baixa",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Reduz o perfil de alvo em combate.",
+      "damage_summary": "Ataques área têm desvant. contra si",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 1,
+        "PER": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag2a",
+      "raw_id": "ag2a",
+      "name": "Parkour Tático",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Usa o ambiente para manobrar em combate.",
+      "damage_summary": "Atletismo CD 12 — usa paredes/telhados",
+      "requirements_text": "Acrobacia Combate",
+      "attribute_requirements": {
+        "AGI": 6
+      },
+      "prerequisites": [
+        "none-weapons-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag2b",
+      "raw_id": "ag2b",
+      "name": "Corrida Sprint",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Acelera a velocidade de movimento em explosão.",
+      "damage_summary": "Velocidade +9m por 1 turno (1×/combate)",
+      "requirements_text": "Postura + Acrobacia",
+      "attribute_requirements": {
+        "AGI": 5,
+        "FOR": 3
+      },
+      "prerequisites": [
+        "none-weapons-ag1b",
+        "none-weapons-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1b",
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag2c",
+      "raw_id": "ag2c",
+      "name": "Desengaj. Perfeito",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Sai de qualquer agarrão ou posição desfavorável.",
+      "damage_summary": "Reação — sai de agarrão automaticamente",
+      "requirements_text": "Postura Baixa",
+      "attribute_requirements": {
+        "AGI": 6,
+        "PER": 3
+      },
+      "prerequisites": [
+        "none-weapons-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag3a",
+      "raw_id": "ag3a",
+      "name": "Sombra Fugaz",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Move-se tão rápido que parece teletransportar-se.",
+      "damage_summary": "Acrobacia CD 14 — sem ataques oportunidade",
+      "requirements_text": "Parkour + Corrida Sprint",
+      "attribute_requirements": {
+        "AGI": 13,
+        "PER": 7
+      },
+      "prerequisites": [
+        "none-weapons-ag2a",
+        "none-weapons-ag2b"
+      ],
+      "prerequisites_raw": [
+        "ag2a",
+        "ag2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag3b",
+      "raw_id": "ag3b",
+      "name": "Dança de Espadas",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Combina ataques com movimentos de dança imprevisíveis.",
+      "damage_summary": "Acrobacia CD 13 — ataques com vantagem",
+      "requirements_text": "Acrobacia + Desengaj.",
+      "attribute_requirements": {
+        "AGI": 11,
+        "PER": 7
+      },
+      "prerequisites": [
+        "none-weapons-ag1a",
+        "none-weapons-ag2c"
+      ],
+      "prerequisites_raw": [
+        "ag1a",
+        "ag2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag3c",
+      "raw_id": "ag3c",
+      "name": "Escalada Mestre",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Sobe e move-se em superfícies verticais sem equipamento.",
+      "damage_summary": "Atletismo CD 12 — superfícies verticais",
+      "requirements_text": "Parkour Tático",
+      "attribute_requirements": {
+        "AGI": 12,
+        "FOR": 6
+      },
+      "prerequisites": [
+        "none-weapons-ag2a"
+      ],
+      "prerequisites_raw": [
+        "ag2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag4a",
+      "raw_id": "ag4a",
+      "name": "Fantasma Batalha",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Combina velocidade e imprevisibilidade em combate.",
+      "damage_summary": "Acrobacia CD 16 — impossível de rastrear",
+      "requirements_text": "Sombra Fugaz + Dança Espadas",
+      "attribute_requirements": {
+        "AGI": 20,
+        "PER": 13
+      },
+      "prerequisites": [
+        "none-weapons-ag3a",
+        "none-weapons-ag3b"
+      ],
+      "prerequisites_raw": [
+        "ag3a",
+        "ag3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag4b",
+      "raw_id": "ag4b",
+      "name": "Corredor Telhados",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Usa alturas como campo de batalha com vantagem.",
+      "damage_summary": "Vantagem em ataques de posição elevada",
+      "requirements_text": "Escalada + Sombra Fugaz",
+      "attribute_requirements": {
+        "AGI": 18,
+        "PER": 11
+      },
+      "prerequisites": [
+        "none-weapons-ag3c",
+        "none-weapons-ag3a"
+      ],
+      "prerequisites_raw": [
+        "ag3c",
+        "ag3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag4c",
+      "raw_id": "ag4c",
+      "name": "Inversão Perfeita",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Converte a força do inimigo contra ele mesmo.",
+      "damage_summary": "Reação — converte força em +2d6 contra-atq.",
+      "requirements_text": "Desengaj. + Dança Espadas",
+      "attribute_requirements": {
+        "AGI": 19,
+        "PER": 11,
+        "FOR": 8
+      },
+      "prerequisites": [
+        "none-weapons-ag2c",
+        "none-weapons-ag3b"
+      ],
+      "prerequisites_raw": [
+        "ag2c",
+        "ag3b"
+      ],
+      "mastery_levels": [
+        "Reação +2d6 contra-ataque",
+        "+3d6",
+        "+5d6",
+        "+8d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag5a",
+      "raw_id": "ag5a",
+      "name": "Forma do Vento",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Velocidade e fluidez que rivaliza com dobradores de ar.",
+      "damage_summary": "Vel. 18m — nunca provoca atq. oportunidade",
+      "requirements_text": "Fantasma Batalha + Maestro do Campo",
+      "attribute_requirements": {
+        "AGI": 27,
+        "PER": 18
+      },
+      "prerequisites": [
+        "none-weapons-ag4a",
+        "none-weapons-sp4a"
+      ],
+      "prerequisites_raw": [
+        "ag4a",
+        "sp4a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-ag5b",
+      "raw_id": "ag5b",
+      "name": "Predador Alturas",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "ag",
+      "category": "agility",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Ataca de posições elevadas com precisão absoluta, nunca visto.",
+      "damage_summary": "+3d6 furtivo + Sangramento+Atordoado",
+      "requirements_text": "Corredor Telhados + Análise Fraqueza",
+      "attribute_requirements": {
+        "AGI": 26,
+        "PER": 20
+      },
+      "prerequisites": [
+        "none-weapons-ag4b",
+        "none-weapons-sp3b"
+      ],
+      "prerequisites_raw": [
+        "ag4b",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb1a",
+      "raw_id": "cb1a",
+      "name": "Arremesso Certeiro",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Lança facas ou projéteis com grande precisão.",
+      "damage_summary": "1d6+Des — ataque à distância",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2,
+        "AGI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d6+Des — ataque distância",
+        "2d6",
+        "3d6",
+        "5d6"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb1b",
+      "raw_id": "cb1b",
+      "name": "Golpe Rápido",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Ataque de espada ou faca rápido e difícil de bloquear.",
+      "damage_summary": "1d6 como ação bónus — ataque rápido",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 1,
+        "AGI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d6 ação bónus — ataque rápido",
+        "2d6",
+        "3d6",
+        "5d6"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb2a",
+      "raw_id": "cb2a",
+      "name": "Ponto Vital",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Atinge pontos críticos do corpo inimigo.",
+      "damage_summary": "+1d8 em ponto crítico — Atordoado CD 13",
+      "requirements_text": "Arremesso + Golpe Rápido",
+      "attribute_requirements": {
+        "PER": 6,
+        "AGI": 5
+      },
+      "prerequisites": [
+        "none-weapons-cb1a",
+        "none-weapons-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb1a",
+        "cb1b"
+      ],
+      "mastery_levels": [
+        "+1d8 ponto crítico — Atord. CD13",
+        "+2d8",
+        "+3d8",
+        "+5d8"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb2b",
+      "raw_id": "cb2b",
+      "name": "Chuva de Lâminas",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Lança múltiplos projéteis em sequência rápida.",
+      "damage_summary": "1d4 a até 3 alvos",
+      "requirements_text": "Arremesso Certeiro",
+      "attribute_requirements": {
+        "PER": 7,
+        "AGI": 4
+      },
+      "prerequisites": [
+        "none-weapons-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb2c",
+      "raw_id": "cb2c",
+      "name": "Estocada Precisa",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Ataque perfurante que passa entre peças de armadura.",
+      "damage_summary": "1d8 ignora 2 CA + Sangramento CD 13",
+      "requirements_text": "Golpe Rápido",
+      "attribute_requirements": {
+        "PER": 6,
+        "AGI": 4
+      },
+      "prerequisites": [
+        "none-weapons-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb1b"
+      ],
+      "mastery_levels": [
+        "1d8 ignora 2 CA + Sangramento",
+        "2d8",
+        "3d8",
+        "5d8"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb2d",
+      "raw_id": "cb2d",
+      "name": "Golpe Devastador",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Ataque físico de enorme força com arma pesada.",
+      "damage_summary": "1d10+FOR — arma pesada",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 3,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-cb2e",
+      "raw_id": "cb2e",
+      "name": "Investida Escudo",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Usa o escudo como arma ofensiva.",
+      "damage_summary": "1d6 + Derrubado (Sal. FOR CD 12)",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 1,
+        "RES": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 4,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr3a",
+      "raw_id": "pr3a",
+      "name": "Corrente Combate",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Usa correntes para imobilizar membros com precisão.",
+      "damage_summary": "Sal. For CD 14 — membro imobilizado",
+      "requirements_text": "Ponto Vital + Golpe Rápido",
+      "attribute_requirements": {
+        "PER": 13,
+        "AGI": 8
+      },
+      "prerequisites": [
+        "none-weapons-cb2a",
+        "none-weapons-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "cb1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr3b",
+      "raw_id": "pr3b",
+      "name": "Disparo Guiado",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Disparo único que não falha com o alvo em linha de visão.",
+      "damage_summary": "2d8 c/ vantagem — nunca falha com LDV",
+      "requirements_text": "Ponto Vital + Chuva Lâminas",
+      "attribute_requirements": {
+        "PER": 14,
+        "AGI": 7
+      },
+      "prerequisites": [
+        "none-weapons-cb2a",
+        "none-weapons-cb2b"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "cb2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr3c",
+      "raw_id": "pr3c",
+      "name": "Série Punhaladas",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Sequência de golpes rápidos em pontos vitais consecutivos.",
+      "damage_summary": "1d6×3 no mesmo turno + Sangramento acum.",
+      "requirements_text": "Estocada + Ponto Vital",
+      "attribute_requirements": {
+        "PER": 12,
+        "AGI": 8
+      },
+      "prerequisites": [
+        "none-weapons-cb2c",
+        "none-weapons-cb2a"
+      ],
+      "prerequisites_raw": [
+        "cb2c",
+        "cb2a"
+      ],
+      "mastery_levels": [
+        "1d6×3 turnos + Sangramento acum.",
+        "2d6×3",
+        "3d6×3",
+        "5d6×3"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr4a",
+      "raw_id": "pr4a",
+      "name": "Fio da Morte",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Fio monofilamento invisível colocado estrategicamente.",
+      "damage_summary": "Armadilha — 3d8 ao cortar + Sangramento",
+      "requirements_text": "Corrente + Análise Fraqueza",
+      "attribute_requirements": {
+        "PER": 20,
+        "AGI": 13
+      },
+      "prerequisites": [
+        "none-weapons-pr3a",
+        "none-weapons-sp3b"
+      ],
+      "prerequisites_raw": [
+        "pr3a",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr4b",
+      "raw_id": "pr4b",
+      "name": "Chuva de Flechas",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Múltiplos disparos de arco que cobrem uma área.",
+      "damage_summary": "3d6 em área 6m + Sangramento+Lentidão",
+      "requirements_text": "Disparo Guiado + Chuva Lâminas",
+      "attribute_requirements": {
+        "PER": 19,
+        "AGI": 12
+      },
+      "prerequisites": [
+        "none-weapons-pr3b",
+        "none-weapons-cb2b"
+      ],
+      "prerequisites_raw": [
+        "pr3b",
+        "cb2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr4c",
+      "raw_id": "pr4c",
+      "name": "Golpe de Ruptura",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Golpe único que rompe armaduras e desequilibra dobradores.",
+      "damage_summary": "2d10 + destrói armadura — Lentidão",
+      "requirements_text": "Série Punhaladas + Análise Fraqueza",
+      "attribute_requirements": {
+        "PER": 18,
+        "AGI": 11,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "none-weapons-pr3c",
+        "none-weapons-sp3b"
+      ],
+      "prerequisites_raw": [
+        "pr3c",
+        "sp3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr5a",
+      "raw_id": "pr5a",
+      "name": "Assassino Perfeito",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Combina armadilhas, invisibilidade e precisão num ataque fatal.",
+      "damage_summary": "5d8+Des surpresa — não pode ser evitado",
+      "requirements_text": "Fio Morte + Fantasma Batalha",
+      "attribute_requirements": {
+        "PER": 27,
+        "AGI": 20
+      },
+      "prerequisites": [
+        "none-weapons-pr4a",
+        "none-weapons-ag4a"
+      ],
+      "prerequisites_raw": [
+        "pr4a",
+        "ag4a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-pr5b",
+      "raw_id": "pr5b",
+      "name": "Tempestade de Aço",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Cobre uma área com projéteis de aço impenetráveis.",
+      "damage_summary": "6d6 em 9m + Sangramento+Lentidão",
+      "requirements_text": "Chuva Flechas + Chuva Lâminas",
+      "attribute_requirements": {
+        "PER": 26,
+        "AGI": 18
+      },
+      "prerequisites": [
+        "none-weapons-pr4b",
+        "none-weapons-cb2b"
+      ],
+      "prerequisites_raw": [
+        "pr4b",
+        "cb2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br3a",
+      "raw_id": "br3a",
+      "name": "Ruptura Armadura",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Golpe que parte armaduras e escudos.",
+      "damage_summary": "2d8 + reduz CA inimigo em 2 (permanente)",
+      "requirements_text": "Espiral Lâminas + Ponto Vital",
+      "attribute_requirements": {
+        "FOR": 13,
+        "PER": 7
+      },
+      "prerequisites": [
+        "none-weapons-cb2d",
+        "none-weapons-cb2a"
+      ],
+      "prerequisites_raw": [
+        "cb2d",
+        "cb2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br3b",
+      "raw_id": "br3b",
+      "name": "Muralha de Aço",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Usa o escudo como barreira sólida ao avançar.",
+      "damage_summary": "CA +4 ao avançar em linha reta",
+      "requirements_text": "Carga Escudo + Investida",
+      "attribute_requirements": {
+        "FOR": 11,
+        "RES": 11
+      },
+      "prerequisites": [
+        "none-weapons-cb2e",
+        "none-weapons-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2e",
+        "cb2d"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br3c",
+      "raw_id": "br3c",
+      "name": "Terremoto de Aço",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Sequência de golpes no solo que criam ondas de choque em série.",
+      "damage_summary": "3d6 em 6m + Atordoado+Lentidão",
+      "requirements_text": "Esmaga-Solo + Espiral",
+      "attribute_requirements": {
+        "FOR": 12,
+        "RES": 7
+      },
+      "prerequisites": [
+        "none-weapons-cb2d",
+        "none-weapons-cb2e"
+      ],
+      "prerequisites_raw": [
+        "cb2d",
+        "cb2e"
+      ],
+      "mastery_levels": [
+        "3d6 em 6m + Atord.+Lent. (ondas)",
+        "5d6",
+        "8d6",
+        "13d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br4a",
+      "raw_id": "br4a",
+      "name": "Modo Berserk",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Rajada frenética de ataques alimentados por chi.",
+      "damage_summary": "+2d6 todos ataques / CA -2 — Medo CD 14",
+      "requirements_text": "Chi Natural + Ruptura",
+      "attribute_requirements": {
+        "FOR": 19,
+        "ESP": 8,
+        "RES": 10
+      },
+      "prerequisites": [
+        "none-weapons-sp3c",
+        "none-weapons-br3a"
+      ],
+      "prerequisites_raw": [
+        "sp3c",
+        "br3a"
+      ],
+      "mastery_levels": [
+        "+2d6 todos ataques / CA-2 (Medo)",
+        "+3d6",
+        "+5d6",
+        "+8d6"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br4b",
+      "raw_id": "br4b",
+      "name": "Fortaleza Ambulante",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Torna-se praticamente imparável em linha reta.",
+      "damage_summary": "Imune empurrão/derrube/área ao avançar",
+      "requirements_text": "Muralha + Ruptura Armadura",
+      "attribute_requirements": {
+        "FOR": 18,
+        "RES": 18
+      },
+      "prerequisites": [
+        "none-weapons-br3b",
+        "none-weapons-br3a"
+      ],
+      "prerequisites_raw": [
+        "br3b",
+        "br3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br4c",
+      "raw_id": "br4c",
+      "name": "Devastação em Área",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Combinação de ondas de choque e lâminas giratórias.",
+      "damage_summary": "4d8 em 9m + Atordoado+Lentidão",
+      "requirements_text": "Terremoto + Espiral",
+      "attribute_requirements": {
+        "FOR": 20,
+        "RES": 12
+      },
+      "prerequisites": [
+        "none-weapons-br3c",
+        "none-weapons-cb2d"
+      ],
+      "prerequisites_raw": [
+        "br3c",
+        "cb2d"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br5a",
+      "raw_id": "br5a",
+      "name": "Fúria do Berserker",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Estado de guerra total com chi e cálculo tático combinados.",
+      "damage_summary": "3 ataques/turno cada +2d8 chi",
+      "requirements_text": "Modo Berserk + Maestro do Campo",
+      "attribute_requirements": {
+        "FOR": 27,
+        "ESP": 13,
+        "RES": 16
+      },
+      "prerequisites": [
+        "none-weapons-br4a",
+        "none-weapons-sp4a"
+      ],
+      "prerequisites_raw": [
+        "br4a",
+        "sp4a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-br5b",
+      "raw_id": "br5b",
+      "name": "Titan de Aço",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Combina defesa impenetrável com ofensiva devastadora.",
+      "damage_summary": "5d10 + empurra 6m + CA 20 neste turno",
+      "requirements_text": "Fortaleza + Devastação Área",
+      "attribute_requirements": {
+        "FOR": 28,
+        "RES": 26
+      },
+      "prerequisites": [
+        "none-weapons-br4b",
+        "none-weapons-br4c"
+      ],
+      "prerequisites_raw": [
+        "br4b",
+        "br4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    }
+  ]
+}

@@ -3,14 +3,29 @@
  */
 
 /**
- * Create element with attributes and children
- * @param {string} tag - HTML tag name
- * @param {object} attrs - Attributes and properties
- * @param {array} children - Child nodes
+ * Create element with attributes and children.
+ *
+ * - Properties (`className`, `value`, `textContent`…) are set directly via
+ *   `Object.assign` so they behave like JS properties.
+ * - Hyphenated attributes such as `aria-label`, `data-*` and `role` go
+ *   through `setAttribute` because the JS property names differ
+ *   (`ariaLabel`, `dataset.*`) and `Object.assign` would silently create
+ *   an expando JS property instead of a real DOM attribute.
+ * - The convenience keys `class` and `html` are handled separately.
  */
 export function createElement(tag, attrs = {}, children = []) {
   const el = document.createElement(tag);
-  Object.assign(el, attrs);
+  const directProps = {};
+  Object.entries(attrs || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (key === 'class' || key === 'html') return;
+    if (key.includes('-') || key === 'role' || key.startsWith('aria')) {
+      el.setAttribute(key, String(value));
+    } else {
+      directProps[key] = value;
+    }
+  });
+  Object.assign(el, directProps);
   if (attrs.class) el.classList.add(...attrs.class.split(' ').filter(Boolean));
   if (attrs.html) el.innerHTML = attrs.html;
   children.forEach(child => {

@@ -1,9 +1,40 @@
 /**
- * Shop Mock Data
- * Hardcoded items for Phase 1 demo + imported items from localStorage
+ * Shop data source.
+ *
+ * Resolution order when a render asks for items:
+ *   1. Supabase items (warmed by `loadShopItemsFromSupabase()` on app start)
+ *   2. GM-imported items (localStorage)
+ *   3. MOCK_SHOP_ITEMS (only ones not already provided by sources 1 or 2)
+ *
+ * The async warmer is best-effort — when Supabase is off (or unreachable)
+ * the sync path keeps working with imported + mock data exactly as before.
  */
 
 import { getImportedItems } from '../import/storage.js';
+import { listAll as listSupabaseItems } from '../api/items.js';
+
+// Items fetched from Supabase, cached for the session.
+let _supabaseItems = [];
+let _supabaseLoaded = false;
+
+/**
+ * Warm the Supabase item cache. Safe to call multiple times; subsequent
+ * calls only refresh when forced. Returns the cached array.
+ */
+export async function loadShopItemsFromSupabase({ force = false } = {}) {
+  if (_supabaseLoaded && !force) return _supabaseItems;
+  try {
+    const items = await listSupabaseItems();
+    _supabaseItems = Array.isArray(items) ? items : [];
+    _supabaseLoaded = true;
+  } catch (err) {
+    console.warn('[shop.loadShopItemsFromSupabase] failed', err);
+    _supabaseItems = [];
+    _supabaseLoaded = true;
+  }
+  return _supabaseItems;
+}
+
 
 export const MOCK_SHOP_ITEMS = [
   {
@@ -164,27 +195,28 @@ export const MOCK_SHOP_ITEMS = [
 ];
 
 /**
- * Get shop items: imported items (if any) merged with mock data
- * Priority: imported items supplement mock items (both shown)
+ * Get shop items: Supabase (warmed) → imported → mock.
+ * Sources are merged by `name` (later sources don't override earlier ones).
  * @param {string} [category] - Filter by type
  * @param {string} [search] - Search by name/description
  * @returns {object[]}
  */
 export function getShopItems(category = 'all', search = '') {
-  const imported = getImportedItems().filter(i => i.in_shop !== false);
-  // Merge: imported items override mock items with same name
-  const mockFiltered = MOCK_SHOP_ITEMS.filter(
-    mock => !imported.some(imp => imp.name === mock.name)
-  );
-  let items = [...imported, ...mockFiltered];
+  const supabase = (_supabaseItems || []).filter((i) => i.in_shop !== false);
+  const importedRaw = getImportedItems().filter((i) => i.in_shop !== false);
+  const supabaseNames = new Set(supabase.map((i) => i.name));
+  const imported = importedRaw.filter((i) => !supabaseNames.has(i.name));
+  const knownNames = new Set([...supabaseNames, ...imported.map((i) => i.name)]);
+  const mockFiltered = MOCK_SHOP_ITEMS.filter((m) => !knownNames.has(m.name));
+  let items = [...supabase, ...imported, ...mockFiltered];
 
   if (category && category !== 'all') {
-    items = items.filter(i => i.type === category);
+    items = items.filter((i) => i.type === category);
   }
 
   if (search) {
     const q = search.toLowerCase();
-    items = items.filter(i =>
+    items = items.filter((i) =>
       i.name.toLowerCase().includes(q) ||
       (i.description || '').toLowerCase().includes(q)
     );

@@ -30,9 +30,24 @@ function normalizeCardOptions(options = {}) {
  */
 function createTierBadge(tier) {
   const badge = createElement('span', { class: 'sbadge' });
-  const tierClass = tier === 4 ? 'sb-leg' : `sb-t${tier}`;
+  const tierClass = tier >= 5 ? 'sb-leg' : `sb-t${tier}`;
   badge.classList.add(tierClass);
   badge.textContent = TIERS[tier] || `Tier ${tier}`;
+  return badge;
+}
+
+/**
+ * Mastery badge — shows the M0..M3 progression for an unlocked skill.
+ * @param {number} level - 0..3
+ * @param {number} uses
+ * @param {number} nextThreshold - uses required for the next level (null if maxed)
+ */
+function createMasteryBadge(level, uses, nextThreshold) {
+  const badge = createElement('span', { class: `sbadge sb-mastery sb-m${level}` });
+  badge.textContent = nextThreshold
+    ? `M${level} · ${uses}/${nextThreshold}`
+    : `M${level} (máx.)`;
+  badge.title = `Maestria atual: ${level}. Total de usos: ${uses}.`;
   return badge;
 }
 
@@ -224,8 +239,9 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
 
   const hasGlobalSlots = (slotsAvailable?.available ?? Number.POSITIVE_INFINITY) > 0;
   const showSlotsFull = !hasGlobalSlots && !active;
+  const isLegendary = skill.tier >= 5 || skill.is_legendary === true;
   const card = createElement('div', {
-    class: `sc ${skill.category} ${skill.tier === 4 ? 'legend' : ''} ${active ? 'on' : ''} ${!unlocked ? 'locked' : ''} ${showSlotsFull ? 'slots-full' : ''}`,
+    class: `sc ${skill.category} ${isLegendary ? 'legend' : ''} ${active ? 'on' : ''} ${!unlocked ? 'locked' : ''} ${showSlotsFull ? 'slots-full' : ''}`,
   });
 
   // Status indicator
@@ -251,10 +267,25 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
     textContent: skill.description,
   }));
 
-  // Meta (tier + position)
+  // Meta (tier + position + optional mastery)
   const meta = createElement('div', { class: 'smeta' });
   meta.appendChild(createTierBadge(skill.tier));
   meta.appendChild(createPositionBadge(skill.position));
+
+  if (skill.tier_label && skill.tier_label !== TIERS[skill.tier]) {
+    meta.appendChild(createElement('span', {
+      class: 'sbadge sb-branch',
+      textContent: skill.tier_label,
+      title: 'Ramo · Tier',
+    }));
+  }
+
+  if (unlocked && skill.mastery_levels && Array.isArray(skill.mastery_levels)) {
+    const uses = Number(options.skillUses) || 0;
+    const level = Math.min(3, options.masteryLevel ?? 0);
+    const nextThreshold = level < 3 ? [15, 50, 150][level] : null;
+    meta.appendChild(createMasteryBadge(level, uses, nextThreshold));
+  }
   if (scrollSlots > 0) {
     meta.appendChild(createElement('span', {
       class: 'sbadge sb-scroll',

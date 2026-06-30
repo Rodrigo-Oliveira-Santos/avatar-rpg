@@ -109,7 +109,15 @@ export class AutoSave {
       }
 
       try {
-        await saveCharacterToSupabase(username, payload);
+        // `status_effects` and `gm_notes` are owned by GM tooling. Skipping
+        // these columns here prevents the player's AutoSave from
+        // overwriting the GM's edits with stale snapshots. `player_notes`
+        // IS written because the player owns it.
+        await saveCharacterToSupabase(username, payload, {
+          omitStatusEffects: true,
+          omitGmNotes: true,
+          omitVitals: true,
+        });
         log('info', 'Synced to Supabase', { username });
       } catch (err) {
         log('error', 'Supabase save failed (kept localStorage copy)', err);
@@ -213,6 +221,20 @@ export class AutoSave {
    */
   hasPendingChanges() {
     return this.pendingChanges || this.hasChanges();
+  }
+
+  /**
+   * Cancel debounced timer and immediately flush any pending changes.
+   * Returns a promise that resolves once the save (local + remote) completes.
+   * Used by the logout handler so the user's last edits survive a sign-out.
+   */
+  async flush() {
+    if (this.timerId) {
+      clearTimeout(this.timerId);
+      this.timerId = null;
+    }
+    if (!this.hasChanges()) return;
+    await this.save();
   }
 
   /**

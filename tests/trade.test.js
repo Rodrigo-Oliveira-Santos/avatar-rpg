@@ -20,6 +20,13 @@ globalThis.CustomEvent = class CustomEvent {
 
 const { TradeManager } = await import('../public/js/trade/TradeManager.js');
 
+/**
+ * The TradeManager refactor moved trades to Supabase, falling back to
+ * localStorage when the client is disabled. In Node tests there's no
+ * Supabase client, so every call goes through the local fallback and
+ * the API now returns Promises.
+ */
+
 describe('TradeManager', () => {
   let tm;
   let storage;
@@ -28,7 +35,6 @@ describe('TradeManager', () => {
     storage = setupLocalStorage();
     tm = new TradeManager();
 
-    // Setup two characters
     const char1 = createMockCharacterData({
       identidade: { nome: 'Zuko', elemento: 'fire', nivel: 10 },
       ouro: 500,
@@ -50,92 +56,90 @@ describe('TradeManager', () => {
   });
 
   describe('createTrade', () => {
-    it('creates a pending trade', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 50, items: [] }, { items: [] });
+    it('creates a pending trade', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 50, items: [] }, { items: [] });
       expect(trade.status).toBe('pending');
-      expect(trade.from).toBe('zuko');
-      expect(trade.to).toBe('katara');
+      expect(trade.from_username).toBe('zuko');
+      expect(trade.to_username).toBe('katara');
     });
 
-    it('sanitizes offer gold', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 100 }, { gold: 0 });
-      expect(trade.offer.gold).toBe(100);
+    it('sanitizes offer gold', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 100 }, { gold: 0 });
+      expect(trade.offer_gold).toBe(100);
     });
 
-    it('throws on self-trade', () => {
-      expect(() => tm.createTrade('zuko', 'zuko', { gold: 10 }, {})).toThrow();
+    it('throws on self-trade', async () => {
+      await expect(tm.createTrade('zuko', 'zuko', { gold: 10 }, {})).rejects.toThrow();
     });
 
-    it('throws if proposer lacks gold', () => {
-      expect(() => tm.createTrade('zuko', 'katara', { gold: 9999 }, {})).toThrow();
+    it('throws if proposer lacks gold', async () => {
+      await expect(tm.createTrade('zuko', 'katara', { gold: 9999 }, {})).rejects.toThrow();
     });
 
-    it('throws if proposer lacks items', () => {
-      expect(() => tm.createTrade('zuko', 'katara', {
+    it('throws if proposer lacks items', async () => {
+      await expect(tm.createTrade('zuko', 'katara', {
         items: [{ name: 'Espada de Fogo', quantity: 5 }],
-      }, {})).toThrow();
+      }, {})).rejects.toThrow();
     });
 
-    it('throws on empty trade (no items or gold)', () => {
-      expect(() => tm.createTrade('zuko', 'katara', {}, {})).toThrow();
+    it('throws on empty trade (no items or gold)', async () => {
+      await expect(tm.createTrade('zuko', 'katara', {}, {})).rejects.toThrow();
     });
   });
 
   describe('acceptTrade', () => {
-    it('transfers gold between players', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 100 }, { gold: 50 });
-      tm.acceptTrade(trade.id, 'katara');
+    it('transfers gold between players', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 100 }, { gold: 50 });
+      await tm.acceptTrade(trade.id, 'katara');
 
       const zuko = JSON.parse(storage.getItem('avatar_rpg_character_zuko'));
       const katara = JSON.parse(storage.getItem('avatar_rpg_character_katara'));
 
-      expect(zuko.ouro).toBe(450); // 500 - 100 + 50
+      expect(zuko.ouro).toBe(450);   // 500 - 100 + 50
       expect(katara.ouro).toBe(350); // 300 - 50 + 100
     });
 
-    it('transfers items between players', () => {
-      const trade = tm.createTrade(
+    it('transfers items between players', async () => {
+      const trade = await tm.createTrade(
         'zuko', 'katara',
         { items: [{ name: 'Poção', quantity: 2 }] },
         { items: [{ name: 'Cajado de Gelo', quantity: 1 }] },
       );
-      tm.acceptTrade(trade.id, 'katara');
+      await tm.acceptTrade(trade.id, 'katara');
 
       const zuko = JSON.parse(storage.getItem('avatar_rpg_character_zuko'));
       const katara = JSON.parse(storage.getItem('avatar_rpg_character_katara'));
 
-      // Zuko gave 2 potions, received staff
-      const zukoPotion = zuko.inventario.find(i => i.name === 'Poção');
-      expect(zukoPotion.quantity).toBe(3); // had 5, gave 2
-      const zukoStaff = zuko.inventario.find(i => i.name === 'Cajado de Gelo');
+      const zukoPotion = zuko.inventario.find((i) => i.name === 'Poção');
+      expect(zukoPotion.quantity).toBe(3);
+      const zukoStaff = zuko.inventario.find((i) => i.name === 'Cajado de Gelo');
       expect(zukoStaff).toBeTruthy();
 
-      // Katara received 2 potions, gave staff
-      const kataraPotion = katara.inventario.find(i => i.name === 'Poção');
+      const kataraPotion = katara.inventario.find((i) => i.name === 'Poção');
       expect(kataraPotion.quantity).toBe(2);
-      const kataraStaff = katara.inventario.find(i => i.name === 'Cajado de Gelo');
+      const kataraStaff = katara.inventario.find((i) => i.name === 'Cajado de Gelo');
       expect(kataraStaff).toBeFalsy();
     });
 
-    it('marks trade as accepted', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 10 }, {});
-      tm.acceptTrade(trade.id, 'katara');
-      const trades = tm.getTrades();
-      expect(trades.find(t => t.id === trade.id).status).toBe('accepted');
+    it('marks trade as accepted', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 10 }, {});
+      await tm.acceptTrade(trade.id, 'katara');
+      const trades = await tm.getAllTradesAsync('katara');
+      expect(trades.find((t) => t.id === trade.id).status).toBe('accepted');
     });
 
-    it('only target can accept', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 10 }, {});
-      expect(() => tm.acceptTrade(trade.id, 'zuko')).toThrow();
+    it('only target can accept', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 10 }, {});
+      await expect(tm.acceptTrade(trade.id, 'zuko')).rejects.toThrow();
     });
   });
 
   describe('rejectTrade', () => {
-    it('marks trade as rejected', () => {
-      const trade = tm.createTrade('zuko', 'katara', { gold: 10 }, {});
-      tm.rejectTrade(trade.id, 'katara');
-      const trades = tm.getTrades();
-      expect(trades.find(t => t.id === trade.id).status).toBe('rejected');
+    it('marks trade as rejected', async () => {
+      const trade = await tm.createTrade('zuko', 'katara', { gold: 10 }, {});
+      await tm.rejectTrade(trade.id, 'katara');
+      const trades = await tm.getAllTradesAsync('katara');
+      expect(trades.find((t) => t.id === trade.id).status).toBe('rejected');
     });
   });
 });

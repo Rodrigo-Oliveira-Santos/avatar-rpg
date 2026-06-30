@@ -8,6 +8,7 @@
   <!-- CSS -->
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components/nav-tabs.css">
+  <link rel="stylesheet" href="css/components/buttons.css">
   <link rel="stylesheet" href="css/components/attr-panel.css">
   <link rel="stylesheet" href="css/components/stat-bars.css">
   <link rel="stylesheet" href="css/components/skill-card.css">
@@ -25,9 +26,20 @@
   <link rel="stylesheet" href="css/components/import.css">
   <link rel="stylesheet" href="css/components/admin.css">
   <link rel="stylesheet" href="css/components/currency.css">
+  <!-- Multi-game -->
   <link rel="stylesheet" href="css/components/multi-game.css">
   <link rel="stylesheet" href="css/components/dnd-sheet.css">
   <link rel="stylesheet" href="css/components/mc-gallery.css">
+  <!-- Avatar — features avançadas -->
+  <link rel="stylesheet" href="css/components/path-picker.css">
+  <link rel="stylesheet" href="css/components/skill-panel.css">
+  <link rel="stylesheet" href="css/components/attr-strip.css">
+  <link rel="stylesheet" href="css/components/status-effects.css">
+  <link rel="stylesheet" href="css/components/monsters.css">
+  <link rel="stylesheet" href="css/components/combat.css">
+  <link rel="stylesheet" href="css/components/notes.css">
+  <link rel="stylesheet" href="css/components/shop-manager.css">
+  <link rel="stylesheet" href="css/components/gm-control.css">
 </head>
 <body>
   <!-- App loader -->
@@ -66,6 +78,7 @@
     <div class="game-root" data-game-root="avatar">
     <!-- Navigation Tabs -->
     <nav class="nav" role="tablist">
+      <!-- Player gameplay tabs (hidden for GM/Admin) -->
       <button class="nav-btn char on" data-page="character">Personagem</button>
       <button class="nav-btn fire" data-page="fire">Fogo</button>
       <button class="nav-btn water" data-page="water">Água</button>
@@ -73,12 +86,20 @@
       <button class="nav-btn air" data-page="air">Ar</button>
       <button class="nav-btn none" data-page="none">Sem Dobra</button>
       <button class="nav-btn items-tab" data-page="items">Itens</button>
+
+      <!-- Shared / GM tabs -->
       <button class="nav-btn shop-tab" data-page="shop">Loja</button>
-      <button class="nav-btn hub-tab" data-page="hub">Jogadores <span class="nav-badge" data-trade-badge hidden>0</span></button>
+      <button class="nav-btn hub-tab" data-page="hub">Jogadores <span class="nav-badge player-count" data-player-count hidden>0</span> <span class="nav-badge" data-trade-badge hidden>0</span></button>
+      <button class="nav-btn gm-control-tab" data-page="gm-control" id="gm-control-tab" style="display:none">🎛 Controlo</button>
+      <button class="nav-btn monsters-tab" data-page="monsters" id="monsters-tab" style="display:none">Monstros</button>
       <button class="nav-btn import-tab" data-page="import" id="import-tab" style="display:none">Importar</button>
       <button class="nav-btn admin-tab" data-page="admin" id="admin-tab" style="display:none">Admin</button>
+
       <button class="nav-btn logout-btn" id="logout-btn" title="Sair">⏻</button>
     </nav>
+
+    <!-- Attribute strip — visible only on skill tree pages (toggled via body.on-skill-page) -->
+    <div id="attr-strip-host"></div>
 
     <!-- Character Page -->
     <main id="character-page" class="page on" role="tabpanel">
@@ -273,7 +294,7 @@
                 <button class="xp-btn" style="flex: 1" id="sp-dec-1">‹ -1</button>
                 <button class="xp-btn" style="flex: 1" id="sp-inc-1">+1 ›</button>
                 <button class="xp-btn" style="flex: 1" id="sp-inc-5">+5 »</button>
-                <button class="xp-btn" style="flex: 1; color: var(--accent)" id="sp-max">MAX</button>
+                <button class="xp-btn" style="flex: 1; color: var(--red)" id="sp-max">MAX</button>
               </div>
             </div>
 
@@ -285,7 +306,7 @@
                 <button class="xp-btn" style="flex: 1" id="cp-dec-1">‹ -1</button>
                 <button class="xp-btn" style="flex: 1" id="cp-inc-1">+1 ›</button>
                 <button class="xp-btn" style="flex: 1" id="cp-inc-5">+5 »</button>
-                <button class="xp-btn" style="flex: 1; color: var(--accent)" id="cp-max">MAX</button>
+                <button class="xp-btn" style="flex: 1; color: var(--red)" id="cp-max">MAX</button>
               </div>
             </div>
           </div>
@@ -323,6 +344,16 @@
             <textarea class="field-input" id="char-notes" rows="6" placeholder="Escreva a história do seu personagem, anotações de sessão, etc."></textarea>
           </div>
 
+          <!-- Player Notes (list) -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <div id="player-notes-host"></div>
+          </div>
+
+          <!-- Trade History (player only) -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <div id="trade-history-host"></div>
+          </div>
+
           <!-- Import/Export Section -->
           <div class="char-section" style="grid-column: 1 / -1">
             <h3>Gerenciamento de Dados</h3>
@@ -337,42 +368,27 @@
     </main>
 
     <!-- Fire Skills Page -->
-    <main id="fire-page" class="page" role="tabpanel">
-      <div class="cat-desc" style="margin-bottom: 12px">
-        <strong style="color: var(--fire)">Dobra de Fogo</strong> — Técnicas ofensivas de fogo, calor e combustão.
-      </div>
+    <main id="fire-page" class="page skill-page" role="tabpanel">
       <div id="fire-skills-container"></div>
     </main>
 
     <!-- Water Skills Page -->
-    <main id="water-page" class="page" role="tabpanel">
-      <div class="cat-desc" style="margin-bottom: 12px">
-        <strong style="color: var(--water)">Dobra de Água</strong> — Técnicas de cura, controle de líquidos e gelo.
-      </div>
+    <main id="water-page" class="page skill-page" role="tabpanel">
       <div id="water-skills-container"></div>
     </main>
 
     <!-- Earth Skills Page -->
-    <main id="earth-page" class="page" role="tabpanel">
-      <div class="cat-desc" style="margin-bottom: 12px">
-        <strong style="color: var(--earth)">Dobra de Terra</strong> — Técnicas defensivas, controle de terra e metal.
-      </div>
+    <main id="earth-page" class="page skill-page" role="tabpanel">
       <div id="earth-skills-container"></div>
     </main>
 
     <!-- Air Skills Page -->
-    <main id="air-page" class="page" role="tabpanel">
-      <div class="cat-desc" style="margin-bottom: 12px">
-        <strong style="color: var(--air)">Dobra de Ar</strong> — Técnicas de esquiva, movimento e vento.
-      </div>
+    <main id="air-page" class="page skill-page" role="tabpanel">
       <div id="air-skills-container"></div>
     </main>
 
     <!-- No Bending Skills Page -->
-    <main id="none-page" class="page" role="tabpanel">
-      <div class="cat-desc" style="margin-bottom: 12px">
-        <strong style="color: var(--none)">Sem Dobra</strong> — Técnicas marciais, armas e habilidades não-mágicas.
-      </div>
+    <main id="none-page" class="page skill-page" role="tabpanel">
       <div id="none-skills-container"></div>
     </main>
 
@@ -394,6 +410,16 @@
     <!-- Import Page (GM only) -->
     <main id="import-page" class="page" role="tabpanel">
       <div id="import-container"></div>
+    </main>
+
+    <!-- Monsters Page (GM/Admin only) -->
+    <main id="monsters-page" class="page" role="tabpanel">
+      <div id="monsters-container"></div>
+    </main>
+
+    <!-- GM Control Page (GM/Admin only) -->
+    <main id="gm-control-page" class="page" role="tabpanel">
+      <div id="gm-control-container"></div>
     </main>
 
     <main id="admin-page" class="page" role="tabpanel">

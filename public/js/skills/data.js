@@ -1,71 +1,103 @@
 /**
- * Skill Data Loader
- * Loads skills from API, imported data, or falls back to local mock data
+ * Skill data loader.
+ *
+ * Source of truth: `public/data/skills/{element}[-non_bender_path].json`,
+ * extracted from `docs/skill-trees/*.html` by `scripts/extract-skill-trees.mjs`.
+ *
+ * Lookup order:
+ *   1. Supabase API (when enabled)
+ *   2. GM-imported overrides (localStorage, via import/storage.js)
+ *   3. Canonical JSON files in /data/skills/
+ *
+ * Mock data has been removed — these JSON files are the source of truth.
  */
 
 import { getSkills } from '../api/skills.js';
-import { MOCK_SKILLS } from './mock-data.js';
 import { getImportedSkills } from '../import/storage.js';
 
+const VALID_ELEMENTS = new Set(['fire', 'water', 'earth', 'air', 'none']);
+const VALID_NON_BENDER_PATHS = new Set(['chiblocker', 'weapons']);
+
+// In-memory cache so we only fetch each JSON file once per session.
+const cache = new Map();
+
+function cacheKey(element, nonBenderPath) {
+  return nonBenderPath ? `${element}:${nonBenderPath}` : element;
+}
+
+function jsonPath(element, nonBenderPath) {
+  return nonBenderPath
+    ? `data/skills/${element}-${nonBenderPath}.json`
+    : `data/skills/${element}.json`;
+}
+
+async function fetchCanonical(element, nonBenderPath) {
+  const key = cacheKey(element, nonBenderPath);
+  if (cache.has(key)) return cache.get(key);
+
+  const url = jsonPath(element, nonBenderPath);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const skills = Array.isArray(data?.skills) ? data.skills : [];
+    cache.set(key, skills);
+    return skills;
+  } catch (err) {
+    console.warn(`[Skills] Canonical fetch failed (${url})`, err);
+    return [];
+  }
+}
+
 /**
- * Load skills for a specific element
- * Priority: API > imported (localStorage) > mock data
- * @param {string} element - Element name
- * @returns {Promise<object>} Skill data { skills: [...] }
+ * Load skills for an element (optionally a non-bender path).
+ *
+ * @param {string} element - 'fire' | 'water' | 'earth' | 'air' | 'none'
+ * @param {object} [options]
+ * @param {'chiblocker'|'weapons'|null} [options.nonBenderPath] required when element='none'
+ * @returns {Promise<{ skills: object[] }>}
  */
-export async function loadSkills(element) {
-  const validElements = ['fire', 'water', 'earth', 'air', 'none'];
-  if (!validElements.includes(element)) {
+export async function loadSkills(element, options = {}) {
+  if (!VALID_ELEMENTS.has(element)) {
     throw new Error(`Unknown element: ${element}`);
   }
+  const nonBenderPath = options.nonBenderPath || null;
+  if (nonBenderPath && !VALID_NON_BENDER_PATHS.has(nonBenderPath)) {
+    throw new Error(`Unknown non_bender_path: ${nonBenderPath}`);
+  }
+  if (element === 'none' && !nonBenderPath) {
+    // No path chosen yet → return empty so the UI can show the picker.
+    return { skills: [] };
+  }
 
+  // 1) Supabase API
   try {
-    const skills = await getSkills(element);
-    if (Array.isArray(skills) && skills.length > 0) {
-      return { skills };
+    const remote = await getSkills(element);
+    if (Array.isArray(remote) && remote.length > 0) {
+      const filtered = nonBenderPath
+        ? remote.filter((s) => s.non_bender_path === nonBenderPath)
+        : remote;
+      if (filtered.length > 0) return { skills: filtered };
     }
   } catch (err) {
     console.warn(`[Skills] API unavailable for ${element}:`, err.message);
   }
 
-  // Check for imported data in localStorage
+  // 2) GM-imported localStorage overrides
   const imported = getImportedSkills(element);
   if (imported.length > 0) {
-    return { skills: imported };
+    const filtered = nonBenderPath
+      ? imported.filter((s) => s.non_bender_path === nonBenderPath)
+      : imported;
+    if (filtered.length > 0) return { skills: filtered };
   }
 
-  // Fallback to mock data
-  const mockSkills = MOCK_SKILLS[element] || [];
-  return { skills: mockSkills };
+  // 3) Canonical JSON (source of truth)
+  const canonical = await fetchCanonical(element, nonBenderPath);
+  return { skills: canonical };
 }
 
-/**
- * Load all skills for all elements
- * @returns {Promise<object>} All skill data keyed by element
- */
-export async function loadAllSkills() {
-  const elements = ['fire', 'water', 'earth', 'air', 'none'];
-  const results = {};
-
-  await Promise.all(elements.map(async (element) => {
-    try {
-      results[element] = await loadSkills(element);
-    } catch {
-      results[element] = { skills: [] };
-    }
-  }));
-
-  return results;
-}
-
-/**
- * Get skill by ID from loaded data
- * @param {string} element - Element name
- * @param {string} skillId - Skill identifier
- * @param {object} skillData - Loaded skill data
- * @returns {object|null} Skill object
- */
-export function getSkillById(element, skillId, skillData) {
-  const data = skillData?.[element]?.skills || [];
-  return data.find(s => s.id === skillId) || null;
+/** Exposed for tests to wipe the in-memory cache between cases. */
+export function _resetSkillCache() {
+  cache.clear();
 }

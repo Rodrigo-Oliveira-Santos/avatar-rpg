@@ -1,0 +1,142 @@
+/* ============================================================
+   Shop GM management UI
+   ============================================================ */
+
+.shop-mode-toggle {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--bg2);
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.shop-mode-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.shop-mode-btn.on {
+  background: var(--gold, #c0a030);
+  color: #1a1408;
+}
+
+.shop-manager-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.shop-manager-head h3 { margin: 0; font-size: 14px; }
+
+.shop-manager-list {
+  overflow-x: auto;
+}
+
+.shop-manager-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.shop-manager-table thead th {
+  text-align: left;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.shop-manager-table tbody td {
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.shop-manager-table td.readonly { color: var(--text3); font-style: italic; }
+
+.shop-manager-table .col-desc { min-width: 280px; }
+
+.shop-manager-table .field-input {
+  font-size: 11px;
+  padding: 4px 6px;
+  width: 100%;
+}
+
+.shop-manager-table tr.static-row { opacity: .7; }
+
+.shop-manager-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.form-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.shop-profiles-section {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.shop-profiles-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.shop-profiles-head h4 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+.shop-profiles-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shop-profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.shop-profile-chip .profile-count {
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.shop-profile-chip .btn,
+.shop-profile-chip .btn-icon {
+  font-size: 11px;
+  padding: 3px 8px;
+}

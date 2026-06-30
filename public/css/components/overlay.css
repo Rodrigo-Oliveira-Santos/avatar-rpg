@@ -141,17 +141,45 @@
   to { transform: rotate(360deg); }
 }
 
-/* Active skill chips */
+/* Active skill chips (character profile → Habilidades Ativas) */
 .skill-chip {
-  display: inline-block;
-  padding: 3px 10px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
+  --chip-color: var(--border2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: color-mix(in srgb, var(--chip-color) 14%, var(--bg3));
+  border: 1px solid var(--chip-color);
   border-radius: 12px;
   font-size: 11px;
-  color: var(--text2);
+  color: var(--text);
   margin: 2px;
+  font-weight: 500;
 }
+
+.skill-chip.loading {
+  opacity: .55;
+  font-style: italic;
+}
+
+.skill-chip-name { line-height: 1; }
+
+.skill-chip-mastery {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 2px;
+}
+
+.skill-chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #2a2a35;
+  display: inline-block;
+}
+
+.skill-chip-dot.on { background: var(--gold, #c0a030); }
 
 /* Attribute row controls */
 .attr-row {

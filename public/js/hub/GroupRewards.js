@@ -9,24 +9,15 @@ import { getPlayers, getPlayerUsernames } from './data.js';
 import { log } from '../admin/LogService.js';
 import { calculateXPForLevel, getMilestone } from '../character/xp.js';
 import { GAME, NATION_CURRENCIES } from '../utils/constants.js';
+import {
+  loadPlayerCharacter,
+  savePlayerCharacter,
+  listPlayerUsernames,
+} from '../api/gm-characters.js';
+import { isSupabaseEnabled } from '../api/config.js';
 
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
 const CURRENCY_OPTIONS = Object.values(NATION_CURRENCIES);
-
-function getCharacterStorageKey(username) {
-  return `${CHARACTER_STORAGE_PREFIX}${username}`;
-}
-
-function parseCharacter(raw) {
-  if (!raw) return null;
-
-  try {
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === 'object' ? parsed : null;
-  } catch {
-    return null;
-  }
-}
 
 function toNumber(value, fallback = 0) {
   const parsed = Number(value);
@@ -105,6 +96,27 @@ function getSelectablePlayers() {
   });
 }
 
+/**
+ * Async variant that pulls the player roster from Supabase (when enabled)
+ * so seeded test profiles (zuko/katara/aang/sokka/toph) without a
+ * localStorage record still show up in the picker.
+ */
+async function getSelectablePlayersAsync() {
+  const local = getSelectablePlayers();
+  try {
+    const remote = await listPlayerUsernames();
+    const seen = new Set(local.map((p) => p.username));
+    remote.forEach((username) => {
+      if (!seen.has(username)) {
+        local.push({ username, name: username, level: null, element: 'none' });
+        seen.add(username);
+      }
+    });
+  } catch {}
+  local.sort((a, b) => a.username.localeCompare(b.username));
+  return local;
+}
+
 export class GroupRewards {
   constructor(container, authManager) {
     this.container = container;
@@ -128,6 +140,19 @@ export class GroupRewards {
         this.selectedPlayers.delete(username);
       }
     });
+
+    // Refresh with the Supabase roster as soon as it resolves so the GM
+    // sees seeded-only players too (sokka, katara, …) even without local
+    // saves.
+    getSelectablePlayersAsync().then((remote) => {
+      if (remote.length === this.players.length &&
+          remote.every((p, i) => p.username === this.players[i]?.username)) {
+        return;
+      }
+      this.players = remote;
+      this.renderPlayerList();
+      this.updatePreview();
+    }).catch(() => {});
 
     this.container.innerHTML = '';
 
@@ -190,55 +215,8 @@ export class GroupRewards {
     const playerList = createElement('div', {
       style: 'display: grid; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 4px; margin-bottom: 10px;',
     });
-
-    if (this.players.length === 0) {
-      playerList.appendChild(createElement('div', {
-        style: 'padding: 10px 12px; border: 1px dashed var(--border2); border-radius: 6px; color: var(--text3); font-size: 11px;',
-        textContent: 'Nenhum jogador com ficha guardada encontrado.',
-      }));
-    } else {
-      this.players.forEach(player => {
-        const label = createElement('label', {
-          style: 'display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(255, 255, 255, 0.02); cursor: pointer;',
-        });
-
-        const checkbox = createElement('input', {
-          type: 'checkbox',
-          checked: this.selectedPlayers.has(player.username),
-        });
-        checkbox.dataset.username = player.username;
-        checkbox.style.accentColor = 'var(--gold)';
-
-        on(checkbox, 'change', () => {
-          if (checkbox.checked) {
-            this.selectedPlayers.add(player.username);
-          } else {
-            this.selectedPlayers.delete(player.username);
-          }
-          this.updatePreview();
-        });
-
-        const meta = createElement('div', { style: 'display: flex; flex-direction: column; gap: 2px;' });
-        meta.appendChild(createElement('span', {
-          style: 'font-size: 12px; color: var(--text); font-weight: 600;',
-          textContent: player.name,
-        }));
-
-        const details = [];
-        details.push(`@${player.username}`);
-        if (player.level) details.push(`Nv. ${player.level}`);
-        if (player.element && player.element !== 'none') details.push(player.element);
-
-        meta.appendChild(createElement('span', {
-          style: 'font-size: 10px; color: var(--text3); text-transform: capitalize;',
-          textContent: details.join(' • '),
-        }));
-
-        label.appendChild(checkbox);
-        label.appendChild(meta);
-        playerList.appendChild(label);
-      });
-    }
+    this.playerListEl = playerList;
+    this.renderPlayerList();
 
     section.appendChild(playerList);
 
@@ -272,6 +250,63 @@ export class GroupRewards {
 
     this.container.appendChild(section);
     this.updatePreview();
+  }
+
+  renderPlayerList() {
+    const playerList = this.playerListEl;
+    if (!playerList) return;
+    playerList.innerHTML = '';
+
+    if (this.players.length === 0) {
+      playerList.appendChild(createElement('div', {
+        style: 'padding: 10px 12px; border: 1px dashed var(--border2); border-radius: 6px; color: var(--text3); font-size: 11px;',
+        textContent: 'Nenhum jogador com ficha guardada encontrado.',
+      }));
+      if (this.distributeBtn) this.distributeBtn.disabled = true;
+      return;
+    }
+
+    this.players.forEach(player => {
+      const label = createElement('label', {
+        style: 'display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgba(255, 255, 255, 0.02); cursor: pointer;',
+      });
+
+      const checkbox = createElement('input', {
+        type: 'checkbox',
+        checked: this.selectedPlayers.has(player.username),
+      });
+      checkbox.dataset.username = player.username;
+      checkbox.style.accentColor = 'var(--gold)';
+
+      on(checkbox, 'change', () => {
+        if (checkbox.checked) {
+          this.selectedPlayers.add(player.username);
+        } else {
+          this.selectedPlayers.delete(player.username);
+        }
+        this.updatePreview();
+      });
+
+      const meta = createElement('div', { style: 'display: flex; flex-direction: column; gap: 2px;' });
+      meta.appendChild(createElement('span', {
+        style: 'font-size: 12px; color: var(--text); font-weight: 600;',
+        textContent: player.name,
+      }));
+
+      const details = [];
+      details.push(`@${player.username}`);
+      if (player.level) details.push(`Nv. ${player.level}`);
+      if (player.element && player.element !== 'none') details.push(player.element);
+
+      meta.appendChild(createElement('span', {
+        style: 'font-size: 10px; color: var(--text3); text-transform: capitalize;',
+        textContent: details.join(' • '),
+      }));
+
+      label.appendChild(checkbox);
+      label.appendChild(meta);
+      playerList.appendChild(label);
+    });
   }
 
   createNumberField(labelText, placeholder, minValue) {
@@ -408,11 +443,16 @@ export class GroupRewards {
     if (!confirmed) return;
 
     const updatedPlayers = [];
+    const failedPlayers = [];
 
-    selectedPlayers.forEach(username => {
-      const storageKey = getCharacterStorageKey(username);
-      const character = parseCharacter(localStorage.getItem(storageKey));
-      if (!character) return;
+    for (const username of selectedPlayers) {
+      let character = null;
+      try {
+        character = await loadPlayerCharacter(username);
+      } catch (err) {
+        console.warn('[GroupRewards.handleDistribute] load failed', username, err);
+      }
+      if (!character) { failedPlayers.push(username); continue; }
 
       ensureIdentity(character);
       ensureNationCoins(character);
@@ -429,9 +469,14 @@ export class GroupRewards {
         character.moedas[selectedCurrency.id] += nationCoinsEach;
       }
 
-      localStorage.setItem(storageKey, JSON.stringify(character));
-      updatedPlayers.push(username);
-    });
+      try {
+        await savePlayerCharacter(username, character);
+        updatedPlayers.push(username);
+      } catch (err) {
+        console.warn('[GroupRewards.handleDistribute] save failed', username, err);
+        failedPlayers.push(username);
+      }
+    }
 
     if (updatedPlayers.length === 0) {
       toast('Não foi possível atualizar os jogadores selecionados.', 'error');
@@ -447,9 +492,11 @@ export class GroupRewards {
       nation_currency: selectedCurrency?.id || null,
       nation_coins_each: nationCoinsEach,
       players: updatedPlayers,
+      backend: isSupabaseEnabled() ? 'supabase' : 'local',
     }, actor);
 
-    toast(`Recompensas distribuídas por ${updatedPlayers.length} jogador${updatedPlayers.length !== 1 ? 'es' : ''}!`, 'success');
+    const failedSuffix = failedPlayers.length > 0 ? ` (falhou: ${failedPlayers.join(', ')})` : '';
+    toast(`Recompensas distribuídas por ${updatedPlayers.length} jogador${updatedPlayers.length !== 1 ? 'es' : ''}!${failedSuffix}`, 'success');
 
     this.container.dispatchEvent(new CustomEvent('group-rewards:updated', {
       bubbles: true,

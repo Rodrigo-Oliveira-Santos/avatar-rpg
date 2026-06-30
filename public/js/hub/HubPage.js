@@ -5,13 +5,18 @@
 
 import { createElement, on } from '../utils/dom.js';
 import { toast, promptDialog } from '../utils/toast.js';
-import { getPlayers } from './data.js';
+import { getPlayers, getPlayersAsync, getPlayerCount } from './data.js';
 import { CharacterModal } from './CharacterModal.js';
 import { LootDelivery } from './LootDelivery.js';
 import { GroupRewards } from './GroupRewards.js';
 import { GiftTransfer, GIFT_TRANSFER_UPDATED_EVENT } from './GiftTransfer.js';
 import { log } from '../admin/LogService.js';
 import { TradeManager, TradeModal, TRADE_UPDATED_EVENT, getTradeNotificationCount, updateTradeBadge } from '../trade/index.js';
+import { StatusEffectManager, STATUS_EFFECTS_UPDATED_EVENT } from './StatusEffectManager.js';
+import { normalizeStatusEffect } from '../utils/statusEffects.js';
+import { listStaged as listMonstersStaged } from '../api/monsters.js';
+import { MONSTERS_UPDATED_EVENT } from '../monsters/index.js';
+import { EncounterPanel, ENCOUNTER_UPDATED_EVENT } from '../combat/index.js';
 
 const ELEMENT_LABELS = {
   fire: 'Fogo',
@@ -22,6 +27,15 @@ const ELEMENT_LABELS = {
 };
 
 const sameUsername = (left, right) => String(left || '').trim().toLowerCase() === String(right || '').trim().toLowerCase();
+
+function updatePlayerCountBadge(count) {
+  const badge = document.querySelector('[data-player-count]');
+  if (!badge) return;
+  const n = Math.max(0, Number(count) || 0);
+  badge.textContent = String(n);
+  if (n > 0) badge.removeAttribute('hidden');
+  else badge.setAttribute('hidden', '');
+}
 
 const tradeSummary = (side = {}) => {
   const parts = [];
@@ -53,13 +67,52 @@ export class HubPage {
     this.characterModal = new CharacterModal();
     this.tradeManager = new TradeManager();
     this.tradeModal = new TradeModal(this.tradeManager, this.getCurrentUsername());
+    this.statusEffectManager = new StatusEffectManager({ authManager });
+    this.encounterPanel = null;
+    this.activeEncounter = null;
     this.groupRewards = null;
     this.lootDelivery = null;
     this.giftTransfer = null;
     this._refreshTimer = null;
 
     this.handleTradeUpdate = this.handleTradeUpdate.bind(this);
+    this.handleStatusEffectsUpdate = () => this.render();
+    this.handleMonstersUpdate = () => this.render();
+    this.handleEncounterUpdate = (event) => {
+      this.activeEncounter = event.detail || null;
+      this.render();
+    };
     window.addEventListener(TRADE_UPDATED_EVENT, this.handleTradeUpdate);
+    window.addEventListener(STATUS_EFFECTS_UPDATED_EVENT, this.handleStatusEffectsUpdate);
+    window.addEventListener(MONSTERS_UPDATED_EVENT, this.handleMonstersUpdate);
+    window.addEventListener(ENCOUNTER_UPDATED_EVENT, this.handleEncounterUpdate);
+
+    // Realtime: refresh the in-battle monster overlay when any monster
+    // row changes in the DB (other browsers / GM Control).
+    this._unsubMonstersRealtime = null;
+    this._unsubTradesRealtime = null;
+    this._realtimeSeq = (this._realtimeSeq || 0) + 1;
+    const seq = this._realtimeSeq;
+    import('../api/monsters.js')
+      .then((m) => m.subscribe(() => this.render()))
+      .then((unsub) => {
+        // Drop the channel if this HubPage was destroyed before
+        // subscribe resolved.
+        if (this._realtimeSeq !== seq) { unsub?.(); return; }
+        this._unsubMonstersRealtime = unsub;
+      })
+      .catch(() => {});
+
+    // Realtime: trades. New incoming proposal → toast + badge refresh.
+    this.tradeManager.subscribe(() => {
+      const user = this.getCurrentUsername();
+      updateTradeBadge(user);
+      this.render();
+    }).then((unsub) => {
+      if (this._realtimeSeq !== seq) { unsub?.(); return; }
+      this._unsubTradesRealtime = unsub;
+    }).catch(() => {});
+
     this.render();
   }
 
@@ -75,13 +128,27 @@ export class HubPage {
     this.tradeModal.currentUsername = currentUsername;
     updateTradeBadge(currentUsername);
 
+    // Surface a toast on the recipient's side when a new proposal lands —
+    // works across browsers because the realtime channel also dispatches
+    // this event via the manager.
+    if (
+      type === 'created'
+      && currentUsername
+      && trade
+      && sameUsername(trade.to_username || trade.to, currentUsername)
+    ) {
+      toast(`${trade.from_username || trade.from} propôs uma troca contigo.`, 'info', 6000);
+    }
+
     if (
       type === 'accepted'
       && currentUsername
       && trade
-      && (sameUsername(trade.from, currentUsername) || sameUsername(trade.to, currentUsername))
+      && (sameUsername(trade.from_username || trade.from, currentUsername)
+       || sameUsername(trade.to_username   || trade.to,   currentUsername))
     ) {
       this.syncCurrentCharacter(currentUsername);
+      toast('Troca concluída.', 'success');
     }
 
     this.refresh();
@@ -107,54 +174,157 @@ export class HubPage {
 
     const currentUsername = this.getCurrentUsername();
     const isGameMaster = this.authManager?.hasRole('gm');
-    const players = getPlayers({ includeUnsaved: isGameMaster });
     const incomingTradeCount = getTradeNotificationCount(currentUsername);
 
     updateTradeBadge(currentUsername);
 
+    // Header rendered immediately with a placeholder count; refreshed
+    // below once Supabase responds.
     const header = createElement('div', { class: 'hub-header' });
     header.appendChild(createElement('div', { class: 'hub-title', textContent: 'Hub de Jogadores' }));
-    header.appendChild(createElement('div', {
-      class: 'hub-count',
-      textContent: `${players.length} jogador${players.length !== 1 ? 'es' : ''}`,
-    }));
+    const countEl = createElement('div', { class: 'hub-count', textContent: '…' });
+    header.appendChild(countEl);
     this.container.appendChild(header);
 
-    if (currentUsername) {
-      this.renderTradeSection(currentUsername, incomingTradeCount);
+    // Encounter panel — shown to everyone (read-only for players, with
+    // GM controls when the user is GM). The launcher / "Iniciar batalha"
+    // button lives only on the GM Control tab so the layout doesn't
+    // duplicate controls, but the order + turn indicator is shared so
+    // players can see the battle they're part of.
+    if (!this.encounterPanel) {
+      const panelHost = createElement('div');
+      this.container.appendChild(panelHost);
+      this.encounterPanel = new EncounterPanel({
+        host: panelHost,
+        authManager: this.authManager,
+        getCurrentUsername: () => this.getCurrentUsername(),
+      });
+    } else {
+      this.container.appendChild(this.encounterPanel.root);
     }
 
+    // Hub encounter overlay: when a battle is active, surface the monster
+    // cards (with HP, defense, status effects) so the whole party can see
+    // who they're facing. Players-only — the EncounterPanel above already
+    // shows the order + GM controls.
+    const encounterHost = createElement('section', { class: 'hub-encounter', hidden: true });
+    encounterHost.appendChild(createElement('h2', { textContent: '⚔ Monstros em batalha' }));
+    const encounterList = createElement('div', { class: 'hub-encounter-list' });
+    encounterHost.appendChild(encounterList);
+    this.container.appendChild(encounterHost);
+
+    // Interactive ATLA map embed — cached on the instance so render()
+    // doesn't reload the iframe every time a trade/status update fires.
+    this.container.appendChild(this._getOrCreateMapSection());
+
+    Promise.all([
+      this.activeEncounter ? Promise.resolve(this.activeEncounter) : Promise.resolve(null),
+      listMonstersStaged().then(() => null).catch(() => null), // warm cache only
+      import('../api/monsters.js').then((m) => m.list()).catch(() => []),
+    ])
+      .then(([enc, , monsters]) => {
+        const monsterIds = new Set(
+          (enc?.combatants || [])
+            .filter((c) => c.kind === 'monster' && c.ref_id)
+            .map((c) => c.ref_id)
+        );
+        const fighting = monsters.filter((m) => monsterIds.has(m.id) && !m.is_dead);
+        if (!fighting.length) {
+          encounterHost.hidden = true;
+          return;
+        }
+        encounterHost.hidden = false;
+        encounterList.innerHTML = '';
+        fighting.forEach((m) => encounterList.appendChild(this._renderMonsterCard(m)));
+      })
+      .catch((err) => console.warn('[HubPage] encounter monsters load', err));
+
+    const gridHost = createElement('div');
+    gridHost.appendChild(createElement('p', {
+      class: 'hub-empty',
+      textContent: 'A carregar jogadores…',
+    }));
+    this.container.appendChild(gridHost);
+
+    // Load campaign roster (Supabase-first) and refresh nav badge.
+    this._renderToken = (this._renderToken || 0) + 1;
+    const token = this._renderToken;
+
+    Promise.all([
+      getPlayersAsync({ includeUnsaved: isGameMaster }),
+      getPlayerCount(),
+    ]).then(([players, totalCount]) => {
+      // Ignore the result if a later render() superseded this one.
+      if (token !== this._renderToken) return;
+
+      countEl.textContent = `${totalCount} jogador${totalCount !== 1 ? 'es' : ''}`;
+      updatePlayerCountBadge(totalCount);
+
+      gridHost.innerHTML = '';
+      if (players.length === 0) {
+        gridHost.appendChild(createElement('div', {
+          class: 'hub-empty',
+          textContent: 'Nenhum jogador encontrado.',
+        }));
+        return;
+      }
+
+      const grid = createElement('div', { class: 'hub-grid' });
+      players.forEach((player) => {
+        grid.appendChild(this.createPlayerCard(player, currentUsername));
+      });
+      gridHost.appendChild(grid);
+
+      // Trade + GM tools live BELOW the player grid (per design feedback).
+      // Only re-render if not done in this pass.
+      this._renderBelowGrid(currentUsername, incomingTradeCount);
+    }).catch((err) => {
+      if (token !== this._renderToken) return;
+      console.warn('[HubPage.render] roster load failed, using local snapshot', err);
+      const snapshot = getPlayers({ includeUnsaved: isGameMaster });
+      countEl.textContent = `${snapshot.length} jogador${snapshot.length !== 1 ? 'es' : ''}`;
+      updatePlayerCountBadge(snapshot.length);
+      gridHost.innerHTML = '';
+      const grid = createElement('div', { class: 'hub-grid' });
+      snapshot.forEach((player) => {
+        grid.appendChild(this.createPlayerCard(player, currentUsername));
+      });
+      gridHost.appendChild(grid);
+      this._renderBelowGrid(currentUsername, incomingTradeCount);
+    });
+  }
+
+  /**
+   * Render the secondary content (trade tools + GM-only tools) below the
+   * player grid. Kept in a separate method so both happy/fallback paths
+   * append it after the cards.
+   */
+  _renderBelowGrid(currentUsername, incomingTradeCount) {
+    if (currentUsername) {
+      // Async — Supabase-backed listing. Fire-and-forget; errors degrade
+      // to the empty state.
+      this.renderTradeSection(currentUsername, incomingTradeCount).catch((err) => {
+        console.warn('[HubPage] trade section render failed', err);
+      });
+    }
     if (this.authManager?.hasRole('gm')) {
       this.renderGMTools();
     }
-
-    if (players.length === 0) {
-      this.container.appendChild(createElement('div', {
-        class: 'hub-empty',
-        textContent: 'Nenhum jogador encontrado.',
-      }));
-      return;
-    }
-
-    const grid = createElement('div', { class: 'hub-grid' });
-
-    players.forEach((player) => {
-      grid.appendChild(this.createPlayerCard(player, currentUsername));
-    });
-
-    this.container.appendChild(grid);
   }
 
-  renderTradeSection(currentUsername, incomingTradeCount) {
-    const trades = this.tradeManager.getPendingTrades(currentUsername);
-    const incoming = trades.filter((trade) => sameUsername(trade.to, currentUsername));
-    const outgoing = trades.filter((trade) => sameUsername(trade.from, currentUsername));
+  async renderTradeSection(currentUsername, incomingTradeCount) {
+    const trades = await this.tradeManager.getPendingTradesAsync(currentUsername);
+    const incoming = trades.filter((trade) => sameUsername(trade.to_username, currentUsername));
+    const outgoing = trades.filter((trade) => sameUsername(trade.from_username, currentUsername));
+
+    // Skip rendering entirely when there is nothing to show.
+    if (incoming.length === 0 && outgoing.length === 0) return;
 
     const section = createElement('section', { class: 'hub-trade-section' });
     const header = createElement('div', { class: 'hub-trade-section-header' });
-    header.appendChild(createElement('h2', { textContent: 'Trocas Pendentes' }));
+    header.appendChild(createElement('h2', { textContent: 'Trocas' }));
     header.appendChild(createElement('small', {
-      textContent: incomingTradeCount > 0 ? `${incomingTradeCount} proposta(s) recebida(s)` : 'Sem propostas recebidas',
+      textContent: incomingTradeCount > 0 ? `${incomingTradeCount} proposta(s) recebida(s)` : '',
     }));
     section.appendChild(header);
 
@@ -183,11 +353,13 @@ export class HubPage {
     trades.forEach((trade) => {
       const card = createElement('article', { class: 'hub-trade-card' });
       const content = createElement('div', { class: 'hub-trade-card-content' });
-      const counterpart = isIncoming ? trade.from : trade.to;
+      const counterpart = isIncoming ? trade.from_username : trade.to_username;
+      const offer = { items: trade.offer_items || [], gold: trade.offer_gold || 0 };
+      const request = { items: trade.request_items || [], gold: trade.request_gold || 0 };
 
       content.appendChild(createElement('strong', { textContent: counterpart }));
-      content.appendChild(createElement('p', { textContent: `Oferece: ${tradeSummary(trade.offer)}` }));
-      content.appendChild(createElement('p', { textContent: `Pede: ${tradeSummary(trade.request)}` }));
+      content.appendChild(createElement('p', { textContent: `Oferece: ${tradeSummary(offer)}` }));
+      content.appendChild(createElement('p', { textContent: `Pede: ${tradeSummary(request)}` }));
       content.appendChild(createElement('small', {
         textContent: new Date(trade.created_at).toLocaleString('pt-PT'),
       }));
@@ -309,27 +481,42 @@ export class HubPage {
     this.container.appendChild(section);
   }
 
-  openCharacterModal(player) {
+  async openCharacterModal(player) {
     if (!this.authManager?.hasRole('gm')) return;
 
-    const username = player?.id;
-    if (!username || typeof localStorage === 'undefined') {
+    const username = player?.username || player?.id;
+    if (!username) {
       toast('Ficha completa indisponível para este jogador.', 'warning');
       return;
     }
 
-    const rawCharacter = localStorage.getItem(`avatar_rpg_character_${username}`);
-    if (!rawCharacter) {
-      toast('Ficha completa indisponível para este jogador.', 'warning');
-      return;
-    }
-
+    // 1. Prefer Supabase when enabled — that's where the canonical seed
+    //    lives for test profiles like sokka/aang/toph.
+    let characterData = null;
     try {
-      const characterData = JSON.parse(rawCharacter);
-      this.characterModal.show(characterData, username);
-    } catch {
-      toast('Não foi possível carregar a ficha do jogador.', 'error');
+      const { isSupabaseEnabled } = await import('../api/config.js');
+      if (isSupabaseEnabled()) {
+        const { loadCharacter } = await import('../api/supabase-characters.js');
+        characterData = await loadCharacter(username);
+      }
+    } catch (err) {
+      console.warn('[HubPage.openCharacterModal] Supabase fetch failed', err);
     }
+
+    // 2. Fall back to localStorage for offline / pure-local mode.
+    if (!characterData && typeof localStorage !== 'undefined') {
+      const rawCharacter = localStorage.getItem(`avatar_rpg_character_${username}`);
+      if (rawCharacter) {
+        try { characterData = JSON.parse(rawCharacter); } catch {}
+      }
+    }
+
+    if (!characterData) {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    this.characterModal.show(characterData, username);
   }
 
   openTradeModal(targetUsername) {
@@ -339,6 +526,85 @@ export class HubPage {
     }
 
     this.tradeModal.showCreate(targetUsername);
+  }
+
+  /**
+   * Build (once) and return the interactive ATLA map embed section. The
+   * iframe is cached on the instance so subsequent `render()` calls just
+   * re-append the same node — preventing the map from reloading every
+   * time a status effect / trade / monster update triggers a refresh.
+   *
+   * Map by iYiyo (https://iyiyo.itch.io/avatarlastairbendermap) — embedded
+   * via the public itch.zone HTML host with a credit link back.
+   *
+   * Requires Cross-Origin Isolation (COOP=same-origin + COEP=require-corp)
+   * because the Godot WASM runtime inside the iframe asks for
+   * SharedArrayBuffer. Those headers are emitted by `public/serve.json`
+   * (local dev via `serve`) and `netlify.toml` (production). The Supabase
+   * client loader was moved to jsdelivr.net (which sends CORP) so that the
+   * isolation doesn't break our other cross-origin fetches.
+   */
+  _getOrCreateMapSection() {
+    if (this._mapSection) return this._mapSection;
+
+    const STORAGE_KEY = 'avatar_rpg_hub_map_collapsed';
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+
+    const section = createElement('section', { class: 'hub-map-section' });
+
+    const header = createElement('div', { class: 'hub-map-header' });
+    const title = createElement('h2', {
+      class: 'hub-map-title',
+      textContent: '🗺 Mapa Interativo do Mundo',
+    });
+    const credit = createElement('a', {
+      class: 'hub-map-credit',
+      href: 'https://iyiyo.itch.io/avatarlastairbendermap',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      textContent: 'por iYiyo ↗',
+    });
+    const toggleBtn = createElement('button', {
+      type: 'button',
+      class: 'hub-map-toggle',
+      textContent: collapsed ? '▼ Mostrar' : '▲ Esconder',
+      title: collapsed ? 'Mostrar mapa' : 'Esconder mapa',
+    });
+
+    const titleWrap = createElement('div', { class: 'hub-map-title-wrap' });
+    titleWrap.append(title, credit);
+    header.append(titleWrap, toggleBtn);
+    section.appendChild(header);
+
+    const frameWrap = createElement('div', {
+      class: 'hub-map-frame-wrap',
+    });
+    if (collapsed) frameWrap.hidden = true;
+
+    const iframe = createElement('iframe', {
+      class: 'hub-map-iframe',
+      src: 'https://html.itch.zone/html/8396265/index.html',
+      title: 'Mapa Interativo Avatar: The Last Airbender',
+      loading: 'lazy',
+      allowfullscreen: 'true',
+      scrolling: 'no',
+    });
+    iframe.setAttribute('allow', 'fullscreen; gamepad; gyroscope; accelerometer; cross-origin-isolated');
+    iframe.setAttribute('frameborder', '0');
+    frameWrap.appendChild(iframe);
+    section.appendChild(frameWrap);
+
+    on(toggleBtn, 'click', () => {
+      const next = !frameWrap.hidden;
+      frameWrap.hidden = next;
+      toggleBtn.textContent = next ? '▼ Mostrar' : '▲ Esconder';
+      toggleBtn.title = next ? 'Mostrar mapa' : 'Esconder mapa';
+      try { localStorage.setItem(STORAGE_KEY, next ? '1' : '0'); } catch {}
+    });
+
+    this._mapSection = section;
+    return section;
   }
 
   /**
@@ -352,10 +618,29 @@ export class HubPage {
     const playerUsername = player?.username || player?.id;
     const isCurrentUser = currentUsername && sameUsername(playerUsername, currentUsername);
 
+    // Look up the matching combatant in the active encounter so we can
+    // surface the initiative number and "on turn" glow on the card itself.
+    const enc = this.activeEncounter;
+    const combatantIdx = enc?.combatants?.findIndex(
+      (c) => c.kind === 'character' && sameUsername(c.name, playerUsername)
+    ) ?? -1;
+    const combatant = combatantIdx >= 0 ? enc.combatants[combatantIdx] : null;
+    const isOnTurn = combatant && enc && enc.current_turn_index === combatantIdx;
+
     const card = createElement('div', {
-      class: 'player-card',
+      class: `player-card${isCurrentUser ? ' is-self' : ''}${isOnTurn ? ' on-turn' : ''}`,
       title: canViewCharacter ? `Ver ficha completa de ${player.name}` : '',
     });
+    if (combatant) {
+      // Position the floating order badge on the card.
+      const order = (combatant.turn_order ?? combatantIdx) + 1;
+      card.style.position = 'relative';
+      card.appendChild(createElement('div', {
+        class: 'player-card-initiative',
+        textContent: `#${order}`,
+        title: `Posição #${order} (iniciativa ${combatant.initiative})`,
+      }));
+    }
 
     if (canViewCharacter) {
       card.style.cursor = 'pointer';
@@ -421,39 +706,134 @@ export class HubPage {
     card.appendChild(hpBar);
 
     const allEffects = [
-      ...(player.buffs || []).map((buff) => ({ ...buff, type: 'positive' })),
-      ...(player.debuffs || []).map((debuff) => ({ ...debuff, type: 'negative' })),
-    ];
+      ...(player.buffs || []).map((buff) => normalizeStatusEffect({ ...buff, type: 'positive' })),
+      ...(player.debuffs || []).map((debuff) => normalizeStatusEffect({ ...debuff, type: 'negative' })),
+    ].filter(Boolean);
 
     if (allEffects.length > 0) {
       const buffsContainer = createElement('div', { class: 'player-buffs' });
       allEffects.forEach((effect) => {
-        buffsContainer.appendChild(createElement('span', {
-          class: `player-buff ${effect.type}`,
-          textContent: effect.name,
-        }));
+        const chip = createElement('span', { class: `player-buff ${effect.type}` });
+        if (effect.icon) {
+          chip.appendChild(createElement('span', { class: 'player-buff-icon', textContent: effect.icon }));
+        }
+        chip.appendChild(createElement('span', { class: 'player-buff-name', textContent: effect.name }));
+        if (effect.description) chip.title = effect.description;
+        buffsContainer.appendChild(chip);
       });
       card.appendChild(buffsContainer);
     }
 
-    if (currentUsername) {
+    // Per-card action row: trade button (players only) + status effects
+    // button (GM/Admin only). GM doesn't trade with players.
+    const isGameMaster = this.authManager?.hasRole?.('gm');
+    if (currentUsername && (!isCurrentUser || isGameMaster)) {
       const actionRow = createElement('div', { class: 'hub-player-actions' });
       on(actionRow, 'click', (event) => event.stopPropagation());
-      const tradeButton = createElement('button', {
-        type: 'button',
-        textContent: isCurrentUser ? 'És tu' : 'Propor Troca',
-      });
-      tradeButton.disabled = Boolean(isCurrentUser) || !playerUsername;
 
-      on(tradeButton, 'click', (event) => {
-        event.stopPropagation();
-        if (!isCurrentUser && playerUsername) {
-          this.openTradeModal(playerUsername);
-        }
-      });
+      // "Propor Troca" só faz sentido entre jogadores.
+      if (!isCurrentUser && !isGameMaster) {
+        const tradeButton = createElement('button', {
+          type: 'button',
+          textContent: 'Propor Troca',
+        });
+        tradeButton.disabled = !playerUsername;
+        on(tradeButton, 'click', (event) => {
+          event.stopPropagation();
+          if (playerUsername) {
+            this.openTradeModal(playerUsername);
+          }
+        });
+        actionRow.appendChild(tradeButton);
+      }
 
-      actionRow.appendChild(tradeButton);
-      card.appendChild(actionRow);
+      if (isGameMaster) {
+        const effectsButton = createElement('button', {
+          type: 'button',
+          class: 'hub-player-actions-secondary',
+          textContent: '⚡ Efeitos',
+        });
+        on(effectsButton, 'click', (event) => {
+          event.stopPropagation();
+          this.statusEffectManager.openFor(player);
+        });
+        actionRow.appendChild(effectsButton);
+      }
+
+      // Only mount the row if it actually has a button.
+      if (actionRow.children.length > 0) card.appendChild(actionRow);
+    }
+
+    return card;
+  }
+
+  /**
+   * Render a compact, read-only monster card for the Hub overlay. Uses
+   * the same visual idiom as MonstersPage but strips management actions
+   * (they live in the dedicated GM tab).
+   */
+  _renderMonsterCard(monster) {
+    const card = createElement('article', { class: 'monster-card in-play' });
+    card.style.position = 'relative';
+
+    // Floating order badge: if this monster has a combatant slot in the
+    // active encounter, surface its position #N (matches player cards).
+    const enc = this.activeEncounter;
+    const combIdx = enc?.combatants?.findIndex(
+      (c) => c.kind === 'monster' && c.ref_id === monster.id
+    ) ?? -1;
+    if (combIdx >= 0) {
+      const comb = enc.combatants[combIdx];
+      const order = (comb.turn_order ?? combIdx) + 1;
+      card.appendChild(createElement('div', {
+        class: 'player-card-initiative',
+        textContent: `#${order}`,
+        title: `Posição #${order} (iniciativa ${comb.initiative})`,
+      }));
+    }
+
+    const head = createElement('header', { class: 'monster-card-head' });
+    head.appendChild(createElement('h4', { textContent: monster.name }));
+    head.appendChild(createElement('span', { class: 'monster-level', textContent: `Nv. ${monster.level}` }));
+    card.appendChild(head);
+
+    const hpRow = createElement('div', { class: 'monster-hp' });
+    hpRow.appendChild(createElement('span', {
+      class: 'monster-hp-text',
+      textContent: `${monster.hp_current}/${monster.hp_max} HP`,
+    }));
+    const bar = createElement('div', { class: 'monster-hp-bar' });
+    const fill = createElement('div', { class: 'monster-hp-fill' });
+    const pct = monster.hp_max > 0 ? (monster.hp_current / monster.hp_max) * 100 : 0;
+    fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    if (pct <= 25) fill.style.background = 'linear-gradient(90deg, #a01010, #c02020)';
+    else if (pct <= 50) fill.style.background = 'linear-gradient(90deg, #c07010, #e09020)';
+    bar.appendChild(fill);
+    hpRow.appendChild(bar);
+    card.appendChild(hpRow);
+
+    const stats = createElement('div', { class: 'monster-stats' });
+    [['DEF', monster.defense], ['ESQ', monster.dodge]].forEach(([label, value]) => {
+      const cell = createElement('div', { class: 'monster-stat' });
+      cell.appendChild(createElement('span', { class: 'monster-stat-lbl', textContent: label }));
+      cell.appendChild(createElement('span', { class: 'monster-stat-val', textContent: String(value) }));
+      stats.appendChild(cell);
+    });
+    card.appendChild(stats);
+
+    const effects = Array.isArray(monster.status_effects)
+      ? monster.status_effects.map(normalizeStatusEffect).filter(Boolean)
+      : [];
+    if (effects.length) {
+      const chips = createElement('div', { class: 'player-buffs' });
+      effects.forEach((effect) => {
+        const chip = createElement('span', { class: `player-buff ${effect.type}` });
+        if (effect.icon) chip.appendChild(createElement('span', { class: 'player-buff-icon', textContent: effect.icon }));
+        chip.appendChild(createElement('span', { class: 'player-buff-name', textContent: effect.name }));
+        if (effect.description) chip.title = effect.description;
+        chips.appendChild(chip);
+      });
+      card.appendChild(chips);
     }
 
     return card;
@@ -470,7 +850,19 @@ export class HubPage {
 
   destroy() {
     window.removeEventListener(TRADE_UPDATED_EVENT, this.handleTradeUpdate);
+    window.removeEventListener(STATUS_EFFECTS_UPDATED_EVENT, this.handleStatusEffectsUpdate);
+    window.removeEventListener(MONSTERS_UPDATED_EVENT, this.handleMonstersUpdate);
+    window.removeEventListener(ENCOUNTER_UPDATED_EVENT, this.handleEncounterUpdate);
     if (this._refreshTimer) clearTimeout(this._refreshTimer);
+    // Bump the realtime seq so any in-flight subscribe resolutions drop
+    // their channels instead of attaching to this disposed HubPage.
+    this._realtimeSeq = (this._realtimeSeq || 0) + 1;
+    if (typeof this._unsubMonstersRealtime === 'function') this._unsubMonstersRealtime();
+    if (typeof this._unsubTradesRealtime === 'function') this._unsubTradesRealtime();
+    this.encounterPanel?.destroy?.();
+    this.encounterPanel = null;
+    this.statusEffectManager?.close?.();
     this.characterModal.close();
+    this._mapSection = null;
   }
 }

@@ -37,6 +37,36 @@ export const ATTRIBUTES = {
 
 export const ELEMENTS = ['fire', 'water', 'earth', 'air', 'none'];
 
+/**
+ * For `element === 'none'`, the player picks a non-bender path that
+ * determines which skill tree is available. Mirrors the data in
+ * docs/skill-trees/{chiblocker,weapons}.html.
+ */
+export const NON_BENDER_PATHS = {
+  chiblocker: 'Bloqueador de Chi',
+  weapons: 'Utilizador de Armas',
+};
+
+/**
+ * Skill tree branches (mirrors the canonical HTML trees).
+ *  - sp/ag: per-character branches available from tier 1
+ *  - cb:    combat shared at tiers 1-2
+ *  - pr/br: mutually exclusive paths unlocked at tier 3 (combat_path lock)
+ */
+export const SKILL_BRANCHES = {
+  sp: { label: 'Espírito',  exclusive: false },
+  ag: { label: 'Agilidade', exclusive: false },
+  cb: { label: 'Combate',   exclusive: false },
+  pr: { label: 'Preciso',   exclusive: true  },
+  br: { label: 'Bruto',     exclusive: true  },
+};
+
+/**
+ * Mastery progression — number of uses required to reach each mastery
+ * level. M0 is the baseline; M1/M2/M3 are unlocked at these thresholds.
+ */
+export const MASTERY_THRESHOLDS = [0, 15, 50, 150];
+
 export const NATION_CURRENCIES = {
   fire: { id: 'fire_coins', label: 'Moedas de Fogo', icon: '🔥', color: '#e74c3c' },
   water: { id: 'water_coins', label: 'Moedas de Água', icon: '💧', color: '#3498db' },
@@ -46,10 +76,11 @@ export const NATION_CURRENCIES = {
 };
 
 export const CATEGORIES = {
-  spirit: 'Espiritualidade',
+  spirit:  'Espiritualidade',
   agility: 'Agilidade',
+  combat:  'Combate (N1-N2)',
   precise: 'Combate Preciso',
-  brute: 'Combate Bruto',
+  brute:   'Combate Bruto',
 };
 
 /**
@@ -72,10 +103,11 @@ export const RARITY_BONUSES = {
 };
 
 export const TIERS = {
-  1: 'Iniciante',
-  2: 'Avançado',
-  3: 'Mestre',
-  4: 'Lendário',
+  1: 'Tier 1',
+  2: 'Tier 2',
+  3: 'Tier 3',
+  4: 'Tier 4',
+  5: 'Lendário',
 };
 
 export const POSITIONS = {

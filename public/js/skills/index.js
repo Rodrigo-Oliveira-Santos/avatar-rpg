@@ -4,4 +4,4 @@
 
 export { SkillTree } from './SkillTree.js';
 export { createSkillCard } from './SkillCard.js';
-export { loadSkills, loadAllSkills, getSkillById } from './data.js';
+export { loadSkills } from './data.js';

@@ -23,6 +23,7 @@ import {
   STORAGE_KEY as REGISTRY_STORAGE_KEY,
   MAX_ADMINS as SHARED_MAX_ADMINS,
 } from '../games/lib/users-registry.js';
+import { deletePlayerAccount } from '../api/gm-characters.js';
 
 const STORAGE_KEY = REGISTRY_STORAGE_KEY;
 const CHARACTER_STORAGE_PREFIX = 'avatar_rpg_character_';
@@ -212,33 +213,35 @@ export class AdminPanel {
     return [];
   }
 
+  /**
+   * Whether the targeted user can be deleted. Self-delete blocked; admins
+   * can only be removed if at least one other admin remains.
+   */
+  canDeleteUser(username, role, registry) {
+    const currentUsername = this.getCurrentUsername();
+    if (!username) return { allowed: false, reason: 'Username inválido.' };
+    if (username === currentUsername) {
+      return { allowed: false, reason: 'Não podes apagar a tua própria conta.' };
+    }
+    if (role === 'admin') {
+      const adminCount = this.getAdminCount(registry);
+      if (adminCount <= 1) {
+        return { allowed: false, reason: 'Tem de existir pelo menos 1 admin.' };
+      }
+    }
+    return { allowed: true, reason: '' };
+  }
+
   renderActions(username, role, registry) {
     const actions = this.getActionDefinitions(username, role, registry);
     const actor = { username: this.getCurrentUsername() };
-    const deleteValidation = validateDeleteUser({ username, actor });
-    const deleteDisabled = deleteValidation.allowed ? '' : ' disabled';
-    const deleteTitle = deleteValidation.reason ? ` title="${escapeHtml(deleteValidation.reason)}"` : '';
-    const deleteBtn = `
-      <button
-        type="button"
-        class="admin-action-btn danger"
-        data-action="delete-account"
-        data-username="${escapeHtml(username)}"
-        ${deleteDisabled}${deleteTitle}
-      >
-        🗑 Apagar conta
-      </button>
-    `;
+    const buttons = [];
 
-    if (actions.length === 0) {
-      return `<span class="admin-empty-actions">—</span>${deleteBtn}`;
-    }
-
-    const roleBtns = actions.map(action => {
+    actions.forEach((action) => {
       const validation = this.validateRoleChange(username, role, action.toRole, registry);
       const disabledAttr = validation.allowed ? '' : ' disabled';
       const titleAttr = validation.reason ? ` title="${escapeHtml(validation.reason)}"` : '';
-      return `
+      buttons.push(`
         <button
           type="button"
           class="admin-action-btn ${action.variant}"
@@ -249,10 +252,28 @@ export class AdminPanel {
         >
           ${escapeHtml(action.label)}
         </button>
-      `;
-    }).join('');
+      `);
+    });
 
-    return roleBtns + deleteBtn;
+    // Delete account — sempre renderizado, com guards (self / last admin)
+    // validados pelo módulo partilhado games/lib/users-registry.
+    const deleteValidation = validateDeleteUser({ username, actor });
+    const deleteDisabled = deleteValidation.allowed ? '' : ' disabled';
+    const deleteTitle = deleteValidation.reason ? ` title="${escapeHtml(deleteValidation.reason)}"` : '';
+    buttons.push(`
+      <button
+        type="button"
+        class="admin-action-btn danger admin-delete-btn"
+        data-action="delete-account"
+        data-username="${escapeHtml(username)}"
+        data-current-role="${escapeHtml(role)}"
+        ${deleteDisabled}${deleteTitle}
+      >
+        🗑 Apagar conta
+      </button>
+    `);
+
+    return buttons.join('') || '<span class="admin-empty-actions">—</span>';
   }
 
   render() {
@@ -344,7 +365,7 @@ export class AdminPanel {
       });
     });
 
-    this.container.querySelectorAll('.admin-action-btn[data-action="delete-account"]').forEach(button => {
+    this.container.querySelectorAll('.admin-delete-btn[data-action="delete-account"]').forEach(button => {
       on(button, 'click', async () => {
         const username = normalizeUsername(button.dataset.username);
         const actor = { username: this.getCurrentUsername() };
@@ -442,6 +463,39 @@ export class AdminPanel {
     }, this.getCurrentUsername());
 
     toast(`${username} é agora ${ROLE_LABELS[toRole]}.`, 'success');
+    this.render();
+  }
+
+  async handleDelete(username, role) {
+    const registry = this.ensureRegistry();
+    const validation = this.canDeleteUser(username, role, registry);
+
+    if (!validation.allowed) {
+      toast(validation.reason, 'warning');
+      return;
+    }
+
+    const confirmed = await confirmDialog(
+      `⚠ Apagar permanentemente a conta de "${username}" (${ROLE_LABELS[role]})?\n\nIsto remove a ficha, inventário, habilidades e notificações. Não pode ser desfeito.`,
+      { confirmText: 'Apagar conta', cancelText: 'Cancelar' }
+    );
+    if (!confirmed) return;
+
+    try {
+      await deletePlayerAccount(username);
+    } catch (err) {
+      console.warn('[AdminPanel.handleDelete]', err);
+      toast(`Falha ao apagar: ${err.message}`, 'error');
+      return;
+    }
+
+    log('admin_action', {
+      action: 'account_delete',
+      target: username,
+      role,
+    }, this.getCurrentUsername());
+
+    toast(`Conta "${username}" apagada.`, 'success');
     this.render();
   }
 }

@@ -15,7 +15,7 @@
     "db:stop": "npx supabase stop",
     "db:reset": "npx supabase db reset",
     "db:status": "npx supabase status",
-    "dev:all": "npm run db:start && npm run dev"
+    "dev:all": "npm run db:start && npm run db:reset && npm run dev"
   },
   "keywords": [
     "rpg",

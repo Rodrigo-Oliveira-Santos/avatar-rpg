@@ -4,8 +4,10 @@
  */
 
 const VALID_ELEMENTS = ['fire', 'water', 'earth', 'air', 'none'];
-const VALID_CATEGORIES = ['spirit', 'agility', 'precise', 'brute'];
-const VALID_TIERS = [1, 2, 3, 4];
+const VALID_CATEGORIES = ['spirit', 'agility', 'combat', 'precise', 'brute'];
+const VALID_TIERS = [1, 2, 3, 4, 5];
+const VALID_BRANCHES = ['sp', 'ag', 'cb', 'pr', 'br'];
+const VALID_NON_BENDER_PATHS = ['chiblocker', 'weapons'];
 const VALID_POSITIONS = ['off', 'def', 'any', 'pass'];
 const VALID_ITEM_TYPES = ['weapon', 'armor', 'accessory', 'consumable', 'scroll', 'potion', 'material', 'other'];
 const VALID_RARITIES = ['common', 'rare', 'epic', 'legendary'];
@@ -39,15 +41,36 @@ export function validateSkill(skill, index = 0) {
   }
 
   if (!VALID_TIERS.includes(skill.tier)) {
-    errs.push(`${prefix} "tier" inválido: ${skill.tier} (válidos: 1-4)`);
+    errs.push(`${prefix} "tier" inválido: ${skill.tier} (válidos: 1-5)`);
+  }
+
+  if (skill.branch !== undefined && !VALID_BRANCHES.includes(skill.branch)) {
+    errs.push(`${prefix} "branch" inválido: "${skill.branch}" (válidos: ${VALID_BRANCHES.join(', ')})`);
+  }
+
+  if (skill.non_bender_path !== undefined && skill.non_bender_path !== null
+      && !VALID_NON_BENDER_PATHS.includes(skill.non_bender_path)) {
+    errs.push(`${prefix} "non_bender_path" inválido: "${skill.non_bender_path}" (válidos: ${VALID_NON_BENDER_PATHS.join(', ')})`);
+  }
+
+  if (skill.element === 'none' && skill.non_bender_path === undefined) {
+    errs.push(`${prefix} "non_bender_path" é obrigatório quando element="none"`);
+  }
+
+  if (skill.mastery_levels !== undefined && skill.mastery_levels !== null) {
+    if (!Array.isArray(skill.mastery_levels) || skill.mastery_levels.length !== 4) {
+      errs.push(`${prefix} "mastery_levels" deve ser um array de 4 strings [M0, M1, M2, M3]`);
+    }
   }
 
   if (skill.position && !VALID_POSITIONS.includes(skill.position)) {
     errs.push(`${prefix} "position" inválida: "${skill.position}" (válidos: ${VALID_POSITIONS.join(', ')})`);
   }
 
-  if (skill.requirements && typeof skill.requirements === 'object') {
-    Object.keys(skill.requirements).forEach(key => {
+  // attribute_requirements is the new explicit name; old code used `requirements`
+  const attrReqs = skill.attribute_requirements || skill.requirements;
+  if (attrReqs && typeof attrReqs === 'object') {
+    Object.keys(attrReqs).forEach((key) => {
       if (!ATTRIBUTE_KEYS.includes(key)) {
         errs.push(`${prefix} requirement desconhecido: "${key}"`);
       }

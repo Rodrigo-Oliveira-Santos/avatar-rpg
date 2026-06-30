@@ -2,7 +2,10 @@
  * Combat Module Exports
  */
 
-export { rollDie, rollDice, rollNotation, rollAdvantage, rollDisadvantage } from './dice.js';
+export {
+  rollDie, rollDice, rollNotation, rollAdvantage, rollDisadvantage,
+  rollExpression, parseExpression, promptRoll,
+} from './dice.js';
 export {
   getStatusEffect,
   createStatus,
@@ -17,3 +20,6 @@ export {
   resolveFullAttack,
   rollInitiative,
 } from './resolver.js';
+export { EncounterPanel, ENCOUNTER_UPDATED_EVENT } from './EncounterPanel.js';
+export { BattleLauncher } from './BattleLauncher.js';
+export { applyTickFor } from './statusTicks.js';

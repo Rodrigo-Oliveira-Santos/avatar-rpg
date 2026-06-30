@@ -3,8 +3,8 @@
 > **Documentação Completa (em `docs/`):**
 > - [docs/FEATURES.md](./docs/FEATURES.md) — Páginas e mecânicas Avatar (atuais e futuras)
 > - [docs/DECISIONS.md](./docs/DECISIONS.md) — Decisões aplicadas e pendentes
-> - [docs/DIAGRAMAS-NÃO-TÉCNICOS.md](./docs/DIAGRAMAS-NÃO-TÉCNICOS.md) — Fluxos e mecânicas do jogo
-> - [docs/DIAGRAMAS-TÉCNICOS.md](./docs/DIAGRAMAS-TÉCNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
+> - [docs/DIAGRAMAS-NAO-TECNICOS.md](./docs/DIAGRAMAS-NAO-TECNICOS.md) — Fluxos e mecânicas do jogo
+> - [docs/DIAGRAMAS-TECNICOS.md](./docs/DIAGRAMAS-TECNICOS.md) — Arquitetura, schema DB, APIs, schemas JSON
 > - [docs/DEV-LOCAL.md](./docs/DEV-LOCAL.md) — Como correr localmente (com Supabase opcional)
 >
 > **Por app:**
@@ -19,7 +19,7 @@ Supabase opcional):
 
 | App           | O quê                                                                | Status              |
 |---------------|----------------------------------------------------------------------|---------------------|
-| **Avatar**    | RPG inspirado em *Avatar: The Last Airbender* (fichas, dobras, hub)  | ✅ Fases 1-6 + Admin |
+| **Avatar**    | RPG inspirado em *Avatar: The Last Airbender* (fichas, dobras, hub, GM Control, monstros, combat, trades cross-browser) | ✅ Fases 1-6 + GM tooling + Admin |
 | **D&D 5e**    | Fichas D&D 5e completas (multiclass, magias, trade, import de packs) | ✅ MVP + Admin       |
 | **Minecraft** | Galeria de builds com likes/dislikes e playlists pessoais            | ✅ MVP + Admin       |
 
@@ -161,12 +161,15 @@ simultâneos). O botão "← Início" fica sempre visível dentro de uma app
 avatar-rpg/
 ├── public/                    ← Frontend
 │   ├── index.html             ← SPA (todos os jogos vivem aqui)
+│   ├── config.example.js      ← Template Supabase (config.js é gitignored)
+│   ├── serve.json             ← Headers COI (COOP/COEP) para o `serve` dev
+│   ├── data/skills/           ← JSONs canónicos das skill trees (Avatar, por elemento)
 │   ├── css/
 │   │   ├── main.css
-│   │   └── components/        ← incl. multi-game.css, dnd-sheet.css,
-│   │                             mc-gallery.css, admin.css, …
+│   │   └── components/        ← incl. multi-game.css, dnd-sheet.css, mc-gallery.css,
+│   │                             admin.css, gm-control.css, monsters.css, …
 │   └── js/
-│       ├── main.js            ← Entry: registers games, single-game mode
+│       ├── main.js            ← Entry: regista jogos + single-game mode
 │       ├── router.js          ← Hash router (#/<game>/<page>)
 │       ├── app.js             ← Avatar App class (orchestrator)
 │       ├── games/
@@ -177,34 +180,47 @@ avatar-rpg/
 │       │   ├── dnd/           ← Full 5e: index, data/srd, pages/, dnd-character.js, …
 │       │   └── minecraft/     ← Galeria + Painel + Listas + Admin
 │       ├── admin/             ← Avatar AdminPanel (delega role-change a lib/users-registry)
-│       ├── auth/, character/, skills/, items/, shop/, hub/, import/, trade/
-│       ├── combat/            ← Dice, resolver, status effects (Avatar)
-│       ├── storage/           ← AutoSave + export/import (Avatar)
-│       ├── utils/             ← dom, toast, validators, constants
-│       └── api/               ← Avatar + dnd-characters + mc-builds/reactions/lists
-├── netlify/functions/         ← API serverless (Avatar; Netlify Functions)
+│       ├── auth, character, skills, items, shop, hub, import, trade,
+│       │   storage, monsters, gm-control, combat   ← Avatar
+│       ├── utils/             ← dom, toast (× + Limpar tudo), validators, constants, statusEffects
+│       └── api/               ← Avatar (incl. gm-characters, monsters, encounters,
+│                                shopProfiles, trades) + dnd-characters/+mapper +
+│                                mc-builds/reactions/lists
+├── data/skills/               ← Source-of-truth das skill trees Avatar (espelhado em public/)
+├── scripts/
+│   ├── dev-game.js            ← launcher single-game (?game=<id>)
+│   └── extract-skill-trees.mjs  ← gerador HTML → JSON
+├── netlify/functions/         ← API serverless (Avatar; legacy em bypass mode)
 ├── supabase/
-│   ├── migrations/            ← 5 migrations (init + multi-game + reactions/lists)
-│   └── seed.sql
-├── scripts/dev-game.js        ← launcher single-game (?game=<id>)
-├── tests/                     ← 25 ficheiros, 332 testes (vitest)
+│   ├── migrations/            ← init + relax-RLS + multi-game + skills-v2 + monsters +
+│   │                            encounters + status-effects + vitals-realtime +
+│   │                            shop_profiles + trades + …
+│   ├── seed.sql               ← Test data determinístico (utilizadores + chars + items + monstros)
+│   └── schema.sql             ← Snapshot legado (referência)
 ├── docs/                      ← Documentação humana
-├── CLAUDE.md / .github/copilot-instructions.md  ← Context p/ agentes
-├── netlify.toml
+│   ├── AVATAR-APP.md, DND-APP.md, MINECRAFT-APP.md, MULTI-GAME-DESIGN.md
+│   ├── FEATURES.md, DECISIONS.md, DEV-LOCAL.md
+│   ├── DIAGRAMAS-NAO-TECNICOS.md, DIAGRAMAS-TECNICOS.md
+│   └── skill-trees/           ← HTMLs originais das trees
+├── tests/                     ← Vitest
+├── netlify.toml               ← Config Netlify + headers COI em produção
 ├── package.json
 ├── vitest.config.js
 ├── .env.example
+├── CLAUDE.md                  ← Contexto p/ Claude Code
+├── .github/copilot-instructions.md  ← Contexto p/ GitHub Copilot
 └── README.md
 ```
 
 ### Comandos
 
 ```bash
-npm run dev            # Tudo: landing + Avatar + D&D + Minecraft (porta 3000)
+npm run dev            # Tudo: landing + Avatar + D&D + Minecraft (porta 3000, headers COI)
 npm run dev:avatar     # Apenas a app Avatar RPG (esconde a landing)
 npm run dev:dnd        # Apenas a app D&D 5e
 npm run dev:minecraft  # Apenas a app Minecraft Builds
-npm test               # 332 testes unitários (vitest)
+npm run dev:all        # Supabase local + db:reset (seed) + dev (tudo numa linha)
+npm test               # Testes unitários (vitest)
 npm run test:watch     # Testes em modo watch
 ```
 
@@ -223,7 +239,7 @@ Cada app tem documentação dedicada em `docs/`:
 
 ## Schema de Importação
 
-**Documentação completa:** [docs/DIAGRAMAS-TÉCNICOS.md](./docs/DIAGRAMAS-TÉCNICOS.md#9-schema-para-importação)
+**Documentação completa:** [docs/DIAGRAMAS-TECNICOS.md](./docs/DIAGRAMAS-TECNICOS.md#9-schema-para-importação)
 
 ### Schema de Habilidade (Resumo)
 

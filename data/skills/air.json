@@ -1,0 +1,1692 @@
+{
+  "element": "air",
+  "non_bender_path": null,
+  "skills": [
+    {
+      "id": "air-sp1a",
+      "raw_id": "sp1a",
+      "name": "Medit. Profunda",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Aumenta perceção espiritual e regeneração de energia.",
+      "damage_summary": "1d6 PV/turno fora combate",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "Regenera 1d6 PV/turno",
+        "2d6 PV/turno",
+        "3d6 PV/turno",
+        "5d6 PV/turno"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp1b",
+      "raw_id": "sp1b",
+      "name": "Respiração Calma",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Neutraliza efeitos de veneno, gás e sufocação.",
+      "damage_summary": "Con CD 11 — Remove veneno/gás",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "RES": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp2a",
+      "raw_id": "sp2a",
+      "name": "Visão do Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Sente perturbações no ar, detetando movimento inimigo.",
+      "damage_summary": "Deteta movimento 18m pelo ar",
+      "requirements_text": "Medit. Profunda",
+      "attribute_requirements": {
+        "ESP": 6,
+        "PER": 3
+      },
+      "prerequisites": [
+        "air-sp1a"
+      ],
+      "prerequisites_raw": [
+        "sp1a"
+      ],
+      "mastery_levels": [
+        "Deteta mov. 18m",
+        "Deteta 24m",
+        "Deteta 30m",
+        "Deteta 36m"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp2b",
+      "raw_id": "sp2b",
+      "name": "Aura de Paz",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Projeta uma calma que desarma inimigos com menor determinação.",
+      "damage_summary": "Sal. Sab CD 13 — Remove Medo",
+      "requirements_text": "Medit.+Resp. Calma",
+      "attribute_requirements": {
+        "ESP": 5,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "air-sp1a",
+        "air-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp1a",
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp2c",
+      "raw_id": "sp2c",
+      "name": "Escuta do Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Espírito N2",
+      "description": "Ouve sons a grandes distâncias através do ar.",
+      "damage_summary": "Ouve sons 300m",
+      "requirements_text": "Respiração Calma",
+      "attribute_requirements": {
+        "ESP": 6,
+        "PER": 4
+      },
+      "prerequisites": [
+        "air-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp3a",
+      "raw_id": "sp3a",
+      "name": "Contacto Espiritual",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Comunica com espíritos do ar e animais.",
+      "damage_summary": "Religião CD 14 — Fala c/ esp.",
+      "requirements_text": "Visão Vento + Aura Paz",
+      "attribute_requirements": {
+        "ESP": 13,
+        "CHI": 7
+      },
+      "prerequisites": [
+        "air-sp2a",
+        "air-sp2b"
+      ],
+      "prerequisites_raw": [
+        "sp2a",
+        "sp2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp3b",
+      "raw_id": "sp3b",
+      "name": "Voz do Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Envia mensagens através do vento a aliados a distância.",
+      "damage_summary": "Mensagem a aliado 1,5km",
+      "requirements_text": "Escuta + Visão Vento",
+      "attribute_requirements": {
+        "ESP": 11,
+        "PER": 8
+      },
+      "prerequisites": [
+        "air-sp2c",
+        "air-sp2a"
+      ],
+      "prerequisites_raw": [
+        "sp2c",
+        "sp2a"
+      ],
+      "mastery_levels": [
+        "1,5km de alcance",
+        "3km",
+        "6km",
+        "12km"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp3c",
+      "raw_id": "sp3c",
+      "name": "Presença Etérea",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Espírito N3",
+      "description": "Reduz a presença física, tornando-se difícil de detetar.",
+      "damage_summary": "Furtividade CD 13 c/ vantagem",
+      "requirements_text": "Aura Paz + Resp. Calma",
+      "attribute_requirements": {
+        "ESP": 12,
+        "AGI": 6
+      },
+      "prerequisites": [
+        "air-sp2b",
+        "air-sp1b"
+      ],
+      "prerequisites_raw": [
+        "sp2b",
+        "sp1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp4a",
+      "raw_id": "sp4a",
+      "name": "Projeção Astral",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Separa o espírito do corpo para exploração.",
+      "damage_summary": "Espírito explora 90m / turno",
+      "requirements_text": "Contacto Esp. + Presença",
+      "attribute_requirements": {
+        "ESP": 19,
+        "CHI": 11
+      },
+      "prerequisites": [
+        "air-sp3a",
+        "air-sp3c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp4b",
+      "raw_id": "sp4b",
+      "name": "Harmonia Espiritual",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Sintoniza-se com o mundo espiritual, prevendo ataques.",
+      "damage_summary": "Prevê ataques 1t antecipado",
+      "requirements_text": "Contacto Esp. + Voz Vento",
+      "attribute_requirements": {
+        "ESP": 20,
+        "CHI": 12,
+        "PER": 10
+      },
+      "prerequisites": [
+        "air-sp3a",
+        "air-sp3b"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp3b"
+      ],
+      "mastery_levels": [
+        "Prevê 1 turno antecipado",
+        "2 turnos",
+        "3 turnos",
+        "4 turnos"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp4c",
+      "raw_id": "sp4c",
+      "name": "Invis. de Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Dobra o ar ao redor tornando-se visualmente invisível.",
+      "damage_summary": "Furtividade CD 16 — 1d4 turnos",
+      "requirements_text": "Presença Etérea + Visão Vento",
+      "attribute_requirements": {
+        "ESP": 18,
+        "AGI": 13,
+        "CHI": 10
+      },
+      "prerequisites": [
+        "air-sp3c",
+        "air-sp2a"
+      ],
+      "prerequisites_raw": [
+        "sp3c",
+        "sp2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp5a",
+      "raw_id": "sp5a",
+      "name": "União c/ Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Dissolve o corpo no ar por breves momentos, sendo intangível.",
+      "damage_summary": "Intangível 1 turno",
+      "requirements_text": "Projeção + Invis. Vento",
+      "attribute_requirements": {
+        "ESP": 27,
+        "CHI": 16,
+        "AGI": 17
+      },
+      "prerequisites": [
+        "air-sp4a",
+        "air-sp4c"
+      ],
+      "prerequisites_raw": [
+        "sp4a",
+        "sp4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp5b",
+      "raw_id": "sp5b",
+      "name": "Mente do Céu",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito",
+      "description": "Perceção total de um campo de batalha através do ar.",
+      "damage_summary": "Percebe campo inteiro via ar",
+      "requirements_text": "Harmonia + Invis. Vento",
+      "attribute_requirements": {
+        "ESP": 28,
+        "PER": 17,
+        "CHI": 15
+      },
+      "prerequisites": [
+        "air-sp4b",
+        "air-sp4c"
+      ],
+      "prerequisites_raw": [
+        "sp4b",
+        "sp4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag1a",
+      "raw_id": "ag1a",
+      "name": "Corrida de Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Aumenta drasticamente a velocidade de movimento.",
+      "damage_summary": "Velocidade +6m",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag1b",
+      "raw_id": "ag1b",
+      "name": "Salto Aéreo",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Agilidade N1",
+      "description": "Impulsiona saltos a grande altitude com bolsões de ar.",
+      "damage_summary": "Atletismo CD 11 — salta 3x",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "AGI": 1,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag2a",
+      "raw_id": "ag2a",
+      "name": "Passo de Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Reduz o som dos passos a zero.",
+      "damage_summary": "Movimento silencioso",
+      "requirements_text": "Corrida de Vento",
+      "attribute_requirements": {
+        "AGI": 6
+      },
+      "prerequisites": [
+        "air-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag2b",
+      "raw_id": "ag2b",
+      "name": "Planagem",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Plana longas distâncias usando correntes de ar.",
+      "damage_summary": "Plana 30m por 3m altitude",
+      "requirements_text": "Salto Aéreo",
+      "attribute_requirements": {
+        "AGI": 5,
+        "CHI": 3
+      },
+      "prerequisites": [
+        "air-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag2c",
+      "raw_id": "ag2c",
+      "name": "Rodar no Ar",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Agilidade N2",
+      "description": "Executa manobras acrobáticas complexas no ar.",
+      "damage_summary": "Acrobacia CD 12 — manobras ar",
+      "requirements_text": "Salto + Corrida Vento",
+      "attribute_requirements": {
+        "AGI": 6,
+        "PER": 3
+      },
+      "prerequisites": [
+        "air-ag1b",
+        "air-ag1a"
+      ],
+      "prerequisites_raw": [
+        "ag1b",
+        "ag1a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag3a",
+      "raw_id": "ag3a",
+      "name": "Tornado Pessoal",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Envolve o corpo num redemoinho que deflecte projéteis.",
+      "damage_summary": "Deflecte projéteis CD 14",
+      "requirements_text": "Corrida + Passo Vento",
+      "attribute_requirements": {
+        "AGI": 13,
+        "CHI": 7
+      },
+      "prerequisites": [
+        "air-ag1a",
+        "air-ag2a"
+      ],
+      "prerequisites_raw": [
+        "ag1a",
+        "ag2a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag3b",
+      "raw_id": "ag3b",
+      "name": "Voo com Asa-Delta",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Voo controlado com asa-delta de ar dobrado.",
+      "damage_summary": "Voo 15m totalmente manobrável",
+      "requirements_text": "Planagem + Rodar no Ar",
+      "attribute_requirements": {
+        "AGI": 12,
+        "CHI": 7
+      },
+      "prerequisites": [
+        "air-ag2b",
+        "air-ag2c"
+      ],
+      "prerequisites_raw": [
+        "ag2b",
+        "ag2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag3c",
+      "raw_id": "ag3c",
+      "name": "Corrente Ascendente",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Agilidade N3",
+      "description": "Cria e monta correntes de ar ascendentes.",
+      "damage_summary": "Ganha altitude sem esforço",
+      "requirements_text": "Planagem + Salto Aéreo",
+      "attribute_requirements": {
+        "AGI": 11,
+        "CHI": 6
+      },
+      "prerequisites": [
+        "air-ag2b",
+        "air-ag1b"
+      ],
+      "prerequisites_raw": [
+        "ag2b",
+        "ag1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag4a",
+      "raw_id": "ag4a",
+      "name": "Esfera de Ar",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Move-se dentro de uma esfera protetora de ar.",
+      "damage_summary": "CA+3, vel. 18m, deflecte auto.",
+      "requirements_text": "Tornado + Voo Asa-Delta",
+      "attribute_requirements": {
+        "AGI": 20,
+        "CHI": 12,
+        "RES": 8
+      },
+      "prerequisites": [
+        "air-ag3a",
+        "air-ag3b"
+      ],
+      "prerequisites_raw": [
+        "ag3a",
+        "ag3b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag4b",
+      "raw_id": "ag4b",
+      "name": "Dança Aérea",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Combate aéreo fluido, impossível de prever ou rastrear.",
+      "damage_summary": "Ataques em voo têm vantagem",
+      "requirements_text": "Voo + Rodar no Ar",
+      "attribute_requirements": {
+        "AGI": 19,
+        "PER": 11
+      },
+      "prerequisites": [
+        "air-ag3b",
+        "air-ag2c"
+      ],
+      "prerequisites_raw": [
+        "ag3b",
+        "ag2c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag4c",
+      "raw_id": "ag4c",
+      "name": "Corredor Sónico",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Agilidade N4",
+      "description": "Move-se a velocidades próximas do som em linha reta.",
+      "damage_summary": "Vel. 36m — 2d8 + Atordoado",
+      "requirements_text": "Corrida + Tornado Pessoal",
+      "attribute_requirements": {
+        "AGI": 20,
+        "CHI": 11,
+        "FOR": 8
+      },
+      "prerequisites": [
+        "air-ag1a",
+        "air-ag3a"
+      ],
+      "prerequisites_raw": [
+        "ag1a",
+        "ag3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag5a",
+      "raw_id": "ag5a",
+      "name": "Fénix do Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Move-se tão depressa que parece estar em múltiplos locais.",
+      "damage_summary": "Parece estar em 1d3 locais",
+      "requirements_text": "Esfera Ar + Corredor Sónico",
+      "attribute_requirements": {
+        "AGI": 28,
+        "CHI": 15,
+        "PER": 14
+      },
+      "prerequisites": [
+        "air-ag4a",
+        "air-ag4c"
+      ],
+      "prerequisites_raw": [
+        "ag4a",
+        "ag4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-ag5b",
+      "raw_id": "ag5b",
+      "name": "Tempestade Viva",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "ag",
+      "category": "agility",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Agilidade",
+      "description": "Torna-se o centro de uma tempestade pessoal em movimento.",
+      "damage_summary": "3d8 em 9m/turno em movimento",
+      "requirements_text": "Dança Aérea + Esfera de Ar",
+      "attribute_requirements": {
+        "AGI": 27,
+        "CHI": 16,
+        "FOR": 13
+      },
+      "prerequisites": [
+        "air-ag4b",
+        "air-ag4a"
+      ],
+      "prerequisites_raw": [
+        "ag4b",
+        "ag4a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb1a",
+      "raw_id": "cb1a",
+      "name": "Rajada Focada",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Jato de ar comprimido de alta velocidade.",
+      "damage_summary": "M0:1d6+empurra · M1:2d6 · M2:3d6 · M3:5d6",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "PER": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "1d6 + empurra 1,5m",
+        "2d6 + empurra 3m",
+        "3d6",
+        "5d6 + empurra 3m"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb1b",
+      "raw_id": "cb1b",
+      "name": "Sopro de Dispersão",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1",
+      "description": "Ráfaga de ar que empurra e desorienta inimigos próximos.",
+      "damage_summary": "M0:empurra 3m · M1:4,5m · M2:6m · M3:9m+Atord.",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 1,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": [
+        "Empurra 3m (sem dano)",
+        "Empurra 4,5m",
+        "Empurra 6m",
+        "Empurra 9m + Atordoado"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb2a",
+      "raw_id": "cb2a",
+      "name": "Corte de Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Lâmina de ar capaz de cortar superfícies sólidas.",
+      "damage_summary": "M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8",
+      "requirements_text": "Rajada Focada",
+      "attribute_requirements": {
+        "PER": 6,
+        "CHI": 5
+      },
+      "prerequisites": [
+        "air-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "1d8 corta",
+        "2d8 corta mat.médio",
+        "3d8",
+        "5d8"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb2b",
+      "raw_id": "cb2b",
+      "name": "Dedos do Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Jatos de ar que atingem pontos de pressão no corpo inimigo.",
+      "damage_summary": "M0:1d4×alvos · M1:2d4 · M2:3d4 · M3:5d4",
+      "requirements_text": "Rajada + Sopro Dispersão",
+      "attribute_requirements": {
+        "PER": 5,
+        "CHI": 3,
+        "AGI": 3
+      },
+      "prerequisites": [
+        "air-cb1a",
+        "air-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb1a",
+        "cb1b"
+      ],
+      "mastery_levels": [
+        "1d4 × 3 alvos",
+        "2d4 × 3",
+        "3d4 × 4",
+        "5d4 × 4"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb2c",
+      "raw_id": "cb2c",
+      "name": "Agulhas de Ar",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Micro-projéteis de ar comprimido que perfuram armaduras leves.",
+      "damage_summary": "M0:1d4×3 · M1:2d4×3 · M2:3d4 · M3:5d4",
+      "requirements_text": "Sopro de Dispersão",
+      "attribute_requirements": {
+        "PER": 6,
+        "CHI": 4
+      },
+      "prerequisites": [
+        "air-cb1b"
+      ],
+      "prerequisites_raw": [
+        "cb1b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb2d",
+      "raw_id": "cb2d",
+      "name": "Explosão de Ar",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Liberta uma onda de ar em todas as direções.",
+      "damage_summary": "Empurra 3m + 1d6 em falha",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 3,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-cb2e",
+      "raw_id": "cb2e",
+      "name": "Rajada Pesada",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 2,
+      "is_legendary": false,
+      "tier_label": "Combate N2",
+      "description": "Vento forte que derruba inimigos em linha reta.",
+      "damage_summary": "Sal. FOR CD 12 — Derrubado",
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "FOR": 1,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 4,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr3a",
+      "raw_id": "pr3a",
+      "name": "Soco de Vácuo",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Projétil de ar que cria mini-vácuo ao impactar.",
+      "damage_summary": "2d6 + Sal. Con CD 14 Atordoado",
+      "requirements_text": "Corte + Rajada Focada",
+      "attribute_requirements": {
+        "PER": 13,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "air-cb2a",
+        "air-cb1a"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "cb1a"
+      ],
+      "mastery_levels": [
+        "2d6 + Atordoado",
+        "3d6",
+        "5d6",
+        "8d6 + Atordoado"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr3b",
+      "raw_id": "pr3b",
+      "name": "Acupuntura Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Dezenas de pontos de pressão em frações de segundo.",
+      "damage_summary": "1d6 + Paralisia membro",
+      "requirements_text": "Dedos + Agulhas Ar",
+      "attribute_requirements": {
+        "PER": 12,
+        "CHI": 7,
+        "AGI": 6
+      },
+      "prerequisites": [
+        "air-cb2b",
+        "air-cb2c"
+      ],
+      "prerequisites_raw": [
+        "cb2b",
+        "cb2c"
+      ],
+      "mastery_levels": [
+        "1d6 + Paralisia membro",
+        "2d6",
+        "3d6",
+        "5d6 + Paralisia+Lentidão"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr3c",
+      "raw_id": "pr3c",
+      "name": "Lâmina Giratória",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Preciso N3",
+      "description": "Disco de ar giratório que persegue o alvo.",
+      "damage_summary": "2d6 persegue 1d3 turnos",
+      "requirements_text": "Corte + Agulhas Ar",
+      "attribute_requirements": {
+        "PER": 11,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "air-cb2a",
+        "air-cb2c"
+      ],
+      "prerequisites_raw": [
+        "cb2a",
+        "cb2c"
+      ],
+      "mastery_levels": [
+        "2d6 persegue",
+        "3d6",
+        "5d6",
+        "8d6"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr4a",
+      "raw_id": "pr4a",
+      "name": "Implosão de Ar",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Cria vácuo localizado que atrai e esmaga tudo.",
+      "damage_summary": "3d8 + Enraizado+Atordoado",
+      "requirements_text": "Soco Vácuo + Presença Etérea",
+      "attribute_requirements": {
+        "PER": 19,
+        "CHI": 13,
+        "ESP": 10
+      },
+      "prerequisites": [
+        "air-pr3a",
+        "air-sp3c"
+      ],
+      "prerequisites_raw": [
+        "pr3a",
+        "sp3c"
+      ],
+      "mastery_levels": [
+        "3d8 + Atordoado",
+        "5d8",
+        "8d8",
+        "13d8 + Atordoado"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr4b",
+      "raw_id": "pr4b",
+      "name": "Paralisia de Pressão",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Imobiliza completamente um inimigo com pressão de ar.",
+      "damage_summary": "Sal. Con CD 16 — Imobilizado",
+      "requirements_text": "Acupuntura + Contacto Espiritual",
+      "attribute_requirements": {
+        "PER": 20,
+        "CHI": 12,
+        "ESP": 11
+      },
+      "prerequisites": [
+        "air-pr3b",
+        "air-sp3a"
+      ],
+      "prerequisites_raw": [
+        "pr3b",
+        "sp3a"
+      ],
+      "mastery_levels": [
+        "3d8 Enraizado+Atord.",
+        "5d8",
+        "8d8",
+        "13d8"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr4c",
+      "raw_id": "pr4c",
+      "name": "Serra de Vento",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Preciso N4",
+      "description": "Múltiplas lâminas de ar giratórias que cobrem uma área.",
+      "damage_summary": "3d6 em 6m + Sangramento",
+      "requirements_text": "Lâmina Giratória + Corte",
+      "attribute_requirements": {
+        "PER": 18,
+        "CHI": 13
+      },
+      "prerequisites": [
+        "air-pr3c",
+        "air-cb2a"
+      ],
+      "prerequisites_raw": [
+        "pr3c",
+        "cb2a"
+      ],
+      "mastery_levels": [
+        "3d6 em área 6m",
+        "5d6",
+        "8d6",
+        "13d6 + Sangramento"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr5a",
+      "raw_id": "pr5a",
+      "name": "Grande Vácuo",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Aspira tudo numa área para um ponto central.",
+      "damage_summary": "5d8 em 12m — todos puxados",
+      "requirements_text": "Implosão + Furacão",
+      "attribute_requirements": {
+        "PER": 26,
+        "CHI": 17,
+        "FOR": 13
+      },
+      "prerequisites": [
+        "air-pr4a",
+        "air-br3a"
+      ],
+      "prerequisites_raw": [
+        "pr4a",
+        "br3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr5b",
+      "raw_id": "pr5b",
+      "name": "Toque Fantasma",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Atinge pontos de pressão sem contacto físico.",
+      "damage_summary": "4d8 + Atordoado+Silêncio",
+      "requirements_text": "Paralisia + União c/ Vento",
+      "attribute_requirements": {
+        "PER": 27,
+        "CHI": 16,
+        "ESP": 17
+      },
+      "prerequisites": [
+        "air-pr4b",
+        "air-sp5a"
+      ],
+      "prerequisites_raw": [
+        "pr4b",
+        "sp5a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-pr5c",
+      "raw_id": "pr5c",
+      "name": "Tempestade de Lâminas",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "pr",
+      "category": "precise",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Preciso",
+      "description": "Cobre área massiva com lâminas de ar enquanto se move.",
+      "damage_summary": "6d8 em 18m + Sangramento+Lent.",
+      "requirements_text": "Serra Vento + Fénix Vento",
+      "attribute_requirements": {
+        "PER": 28,
+        "CHI": 17,
+        "AGI": 18
+      },
+      "prerequisites": [
+        "air-pr4c",
+        "air-ag5a"
+      ],
+      "prerequisites_raw": [
+        "pr4c",
+        "ag5a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br3a",
+      "raw_id": "br3a",
+      "name": "Furacão",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Gera um furacão localizado que arremessa inimigos.",
+      "damage_summary": "2d6 + arremessado 3m",
+      "requirements_text": "Explosão de Ar",
+      "attribute_requirements": {
+        "FOR": 12,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "air-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "2d6 + Enraizado",
+        "3d6",
+        "5d6",
+        "8d6 + Enraizado"
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br3b",
+      "raw_id": "br3b",
+      "name": "Barreira Sónica",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Barreira de ar comprimido que explode ao ser atravessada.",
+      "damage_summary": "2d8 + Atordoado ao atravessar",
+      "requirements_text": "Muro Vento + Onda Pressão",
+      "attribute_requirements": {
+        "FOR": 11,
+        "CHI": 7,
+        "RES": 6
+      },
+      "prerequisites": [
+        "air-cb2e",
+        "air-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2e",
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "2d8 atravessar + Atord.",
+        "3d8",
+        "5d8",
+        "8d8 + Atordoado"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br3c",
+      "raw_id": "br3c",
+      "name": "Golpe de Trovão",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 3,
+      "is_legendary": false,
+      "tier_label": "Bruto N3",
+      "description": "Concentra o vento num único golpe que ressoa como trovão.",
+      "damage_summary": "2d10 + surdo 1 min",
+      "requirements_text": "Onda de Pressão",
+      "attribute_requirements": {
+        "FOR": 13,
+        "CHI": 8
+      },
+      "prerequisites": [
+        "air-cb2d"
+      ],
+      "prerequisites_raw": [
+        "cb2d"
+      ],
+      "mastery_levels": [
+        "2d10 + Atordoado",
+        "3d10",
+        "5d10",
+        "8d10 + Cegueira"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br4a",
+      "raw_id": "br4a",
+      "name": "Tempestade Controlada",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Comanda uma tempestade em área combinando ataque e mobilidade.",
+      "damage_summary": "3d8 em 12m + Lent+Atord+Ceg",
+      "requirements_text": "Vórtice + Tornado Pessoal",
+      "attribute_requirements": {
+        "FOR": 19,
+        "CHI": 12,
+        "AGI": 13
+      },
+      "prerequisites": [
+        "air-br3a",
+        "air-ag3a"
+      ],
+      "prerequisites_raw": [
+        "br3a",
+        "ag3a"
+      ],
+      "mastery_levels": [
+        "3d8 em 12m",
+        "5d8",
+        "8d8",
+        "13d8 + Lentidão+Atord."
+      ],
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br4b",
+      "raw_id": "br4b",
+      "name": "Sufocação",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Remove o ar ao redor de um inimigo, imobilizando-o.",
+      "damage_summary": "Incapacitado + 1d6/turno",
+      "requirements_text": "Barreira Sónica + Corte Vento",
+      "attribute_requirements": {
+        "FOR": 18,
+        "CHI": 13,
+        "PER": 10
+      },
+      "prerequisites": [
+        "air-br3b",
+        "air-cb2a"
+      ],
+      "prerequisites_raw": [
+        "br3b",
+        "cb2a"
+      ],
+      "mastery_levels": [
+        "Incapacitado 1d6/t",
+        "2d6/t",
+        "3d6/t",
+        "5d6/t"
+      ],
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br4c",
+      "raw_id": "br4c",
+      "name": "Punho do Gigante",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Bruto N4",
+      "description": "Mão invisível de ar que esmaga e arremessa.",
+      "damage_summary": "3d8 + arremessado 6m",
+      "requirements_text": "Golpe Trovão + Soco Vácuo",
+      "attribute_requirements": {
+        "FOR": 20,
+        "CHI": 13
+      },
+      "prerequisites": [
+        "air-br3c",
+        "air-pr3a"
+      ],
+      "prerequisites_raw": [
+        "br3c",
+        "pr3a"
+      ],
+      "mastery_levels": [
+        "3d8 + arremessa 6m",
+        "5d8",
+        "8d8",
+        "13d8 + Atordoado"
+      ],
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br5a",
+      "raw_id": "br5a",
+      "name": "Cataclismo do Céu",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Invoca tempestade devastadora que cobre todo o campo.",
+      "damage_summary": "6d10 em 24m + Lent+Atord+Medo",
+      "requirements_text": "Tempestade + Punho Gigante",
+      "attribute_requirements": {
+        "FOR": 27,
+        "CHI": 17,
+        "AGI": 16
+      },
+      "prerequisites": [
+        "air-br4a",
+        "air-br4c"
+      ],
+      "prerequisites_raw": [
+        "br4a",
+        "br4c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 0,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br5b",
+      "raw_id": "br5b",
+      "name": "Silêncio Absoluto",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto",
+      "description": "Remove todo o ar de uma área, criando vácuo total.",
+      "damage_summary": "Vácuo total — apaga fogo+som",
+      "requirements_text": "Sufocação + Mente do Céu",
+      "attribute_requirements": {
+        "FOR": 26,
+        "CHI": 17,
+        "ESP": 18
+      },
+      "prerequisites": [
+        "air-br4b",
+        "air-sp5b"
+      ],
+      "prerequisites_raw": [
+        "br4b",
+        "sp5b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-br5c",
+      "raw_id": "br5c",
+      "name": "Grande Vácuo",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "br",
+      "category": "brute",
+      "tier": 6,
+      "is_legendary": true,
+      "tier_label": "Lendário — Bruto ★partilhado",
+      "description": "Aspira tudo numa área para um ponto central. (Partilhado com Preciso)",
+      "damage_summary": "5d8 em 12m — todos puxados",
+      "requirements_text": "Implosão + Furacão",
+      "attribute_requirements": {
+        "FOR": 13,
+        "CHI": 17
+      },
+      "prerequisites": [
+        "air-pr4a",
+        "air-br3a"
+      ],
+      "prerequisites_raw": [
+        "pr4a",
+        "br3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    }
+  ]
+}
