@@ -1,0 +1,217 @@
+/* ===================================
+   Skill Use Grid
+   ===================================
+   Square cards used by Hub / Character profile / GM Control to let the
+   player or GM trigger Character.useSkill without going to the skill
+   tree. States: ok / no-chi / cooldown — each gets a visual cue.
+*/
+
+.suc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.suc-grid-compact {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.suc-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--text2, #9a9890);
+  font-size: 12px;
+  font-style: italic;
+  border: 1px dashed var(--border, #2b2b34);
+  border-radius: 8px;
+}
+
+/* ─── Card ─────────────────────────────────────────────── */
+.suc {
+  --suc-accent: #D88840;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--bg2, #16161b);
+  border: 1px solid var(--border, #2b2b34);
+  border-left: 3px solid var(--suc-accent);
+  position: relative;
+  transition: border-color .15s, transform .12s, box-shadow .15s;
+}
+
+.suc:hover {
+  border-color: var(--suc-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.suc-compact {
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+/* Disabled states. Dim the whole card + add a subtle status colour. */
+.suc-disabled {
+  opacity: 0.72;
+}
+
+.suc-no-chi {
+  --suc-accent: #4f8cff;
+  background: linear-gradient(180deg, var(--bg2, #16161b), rgba(79, 140, 255, 0.05));
+}
+
+.suc-cooldown {
+  --suc-accent: #c07010;
+  background: linear-gradient(180deg, var(--bg2, #16161b), rgba(192, 112, 16, 0.06));
+}
+
+.suc-disabled:hover {
+  transform: none;
+}
+
+/* ─── Card header ──────────────────────────────────────── */
+.suc-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.suc-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.suc-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.suc-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text, #e8e3d4);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suc-compact .suc-name {
+  font-size: 12px;
+}
+
+.suc-tier {
+  font-size: 9px;
+  color: var(--text2, #9a9890);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 1px;
+}
+
+.suc-mastery {
+  font-size: 10px;
+  font-weight: 700;
+  color: #ef9f27;
+  padding: 2px 7px;
+  background: rgba(239, 159, 39, 0.12);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* ─── Body ─────────────────────────────────────────────── */
+.suc-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text2, #aaa);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.suc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.suc-chip {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.suc-chip-cost {
+  background: rgba(79, 140, 255, 0.18);
+  color: #9fc2ff;
+}
+
+.suc-chip-cost.insufficient {
+  background: rgba(196, 48, 48, 0.18);
+  color: #f08070;
+}
+
+.suc-chip-restore {
+  background: rgba(34, 134, 75, 0.18);
+  color: #6fd99c;
+}
+
+.suc-chip-uses {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text2, #9a9890);
+}
+
+/* State banner (insufficient chi / cooldown). Inline notice between
+   chips and the action button so the GM/player sees WHY a card is
+   disabled without hovering for the tooltip. */
+.suc-state-banner {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.suc-no-chi .suc-state-banner {
+  background: rgba(196, 48, 48, 0.14);
+  color: #f08070;
+}
+
+.suc-cooldown .suc-state-banner {
+  background: rgba(192, 112, 16, 0.16);
+  color: #f0c070;
+}
+
+/* ─── Use button ───────────────────────────────────────── */
+.suc-use-btn {
+  margin-top: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--suc-accent);
+  background: transparent;
+  color: var(--suc-accent);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.suc-use-btn:hover:not(:disabled) {
+  background: var(--suc-accent);
+  color: #fff;
+}
+
+.suc-use-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: var(--border, #3a3a48);
+  color: var(--text3, #5a5856);
+}
