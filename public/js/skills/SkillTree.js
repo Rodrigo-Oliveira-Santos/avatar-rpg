@@ -646,22 +646,22 @@ export class SkillTree {
   }
 
   /**
-   * Compose the use-toast text. Always shows the basic uses + mastery
-   * counter; appends the chi delta when the skill actually moves the
-   * chi pool, and flags `insufficientChi` so the player notices when
-   * they over-extended.
+   * Compose the use-toast text. Splits into multiple lines so each
+   * piece of information (action / chi delta / mastery progress) is
+   * legible — single-line was getting cramped at the top-right.
    */
   _formatUseToast(skill, result) {
-    let msg = `⚡ ${skill.name} usada (${result.uses} usos, M${result.mastery})`;
-    const parts = [];
-    if (result.chiCost > 0) parts.push(`−${result.chiCost} chi`);
-    if (result.chiRestore > 0) parts.push(`+${result.chiRestore} chi`);
-    if (parts.length) {
+    const lines = [`⚡ ${skill.name} usada`];
+    const chiBits = [];
+    if (result.chiCost > 0) chiBits.push(`−${result.chiCost} chi`);
+    if (result.chiRestore > 0) chiBits.push(`+${result.chiRestore} chi`);
+    if (chiBits.length) {
       const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
-      msg += ` · ${parts.join(' / ')}${newChi}`;
+      lines.push(`${chiBits.join(' · ')}${newChi}`);
     }
-    if (result.insufficientChi) msg += ' ⚠ chi insuficiente';
-    return msg;
+    lines.push(`${result.uses} usos · M${result.mastery}`);
+    if (result.insufficientChi) lines.push('⚠ chi insuficiente');
+    return lines.join('\n');
   }
 
   _toastLevelForUse(result) {
@@ -780,11 +780,24 @@ export class SkillTree {
   }
 
   /**
-   * Refresh the tree (after character data changes)
+   * Refresh the tree after character data changes.
+   *
+   * In **tree (canvas) mode** the heavy children — canvas + side panel —
+   * both subscribe to `character.notify()` themselves and redraw on
+   * their own. Calling `render()` here would destroy them (closing any
+   * open side panel mid-action) so we deliberately no-op. Structural
+   * changes that need the tree to rebuild (path commitment, JSON
+   * reload) call `this.render()` explicitly.
+   *
+   * In **cards mode** the slot bar / active-count labels / individual
+   * card chips are static at render time, so we do a full re-render.
    */
   refresh() {
-    if (!this.loading) {
-      this.render();
+    if (this.loading) return;
+    if (this.viewMode === 'tree') {
+      // Canvas + panel auto-update via their own character.subscribe().
+      return;
     }
+    this.render();
   }
 }

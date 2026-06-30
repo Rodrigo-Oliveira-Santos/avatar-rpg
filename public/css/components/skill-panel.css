@@ -207,6 +207,12 @@
 
 .sp-use { border-color: #E8844A; color: #E8844A; }
 .sp-use:hover:not(:disabled) { background: #E8844A; color: #1a0a04; }
+.sp-use-disabled {
+  /* Insufficient chi — keep the chi-blue tint so the player notices
+     it's a resource issue rather than a missing skill prereq. */
+  border-color: #4f6a99 !important;
+  color: #4f6a99 !important;
+}
 
 .sp-upgrade { border-color: #AFA9EC; color: #AFA9EC; }
 .sp-upgrade:hover:not(:disabled) { background: #AFA9EC; color: #1a1840; }

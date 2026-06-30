@@ -78,6 +78,15 @@ export function describeSkillState({ skill, character, allSkills }) {
     && prereqMissing.length === 0
     && !pathConflict;
 
+  // Chi accounting. `enoughChi` is informational only — useSkill still
+  // applies the cost (clamping at 0) but the UI surfaces it so the
+  // player can decide whether to wait, restore, or push through.
+  const chiCost = Number(skill.chi_cost) || 0;
+  const chiRestore = Number(skill.chi_restore) || 0;
+  const maxCP = Number(charData.stats_derived?.maxCP) || 0;
+  const currentCp = Number.isFinite(charData.cp_current) ? charData.cp_current : maxCP;
+  const enoughChi = currentCp >= chiCost;
+
   return {
     active,
     unlockable,
@@ -87,6 +96,11 @@ export function describeSkillState({ skill, character, allSkills }) {
     attrMissing,
     prereqMissing,
     pathConflict,
+    chiCost,
+    chiRestore,
+    currentCp,
+    maxCP,
+    enoughChi,
   };
 }
 
@@ -162,9 +176,18 @@ export function createSkillPanel({ host, character, getAllSkills, callbacks = {}
           Desbloquear Habilidade
         </button>`);
     } else {
+      // Use button: shows the chi cost + restore + uses so the player
+      // sees the price BEFORE clicking. Insufficient chi greys out the
+      // button (Character.useSkill clamps cp at 0, so we surface the
+      // limit here instead of letting the player drain silently).
+      const costParts = [];
+      if (info.chiCost > 0) costParts.push(`−${info.chiCost} Chi`);
+      if (info.chiRestore > 0) costParts.push(`+${info.chiRestore} Chi`);
+      const cost = costParts.length ? ` — ${costParts.join(' / ')}` : '';
+      const insufficient = info.chiCost > 0 && !info.enoughChi;
       buttons.push(`
-        <button type="button" class="sp-btn sp-use" data-action="use">
-          ⚡ Usar (${info.uses} usos)
+        <button type="button" class="sp-btn sp-use${insufficient ? ' sp-use-disabled' : ''}" data-action="use"${insufficient ? ' disabled title="Chi insuficiente"' : ''}>
+          ⚡ Usar${cost} (${info.uses} usos)
         </button>`);
       const next = Math.min(info.masteryLevel + 1, 3);
       if (info.masteryLevel < 3) {
