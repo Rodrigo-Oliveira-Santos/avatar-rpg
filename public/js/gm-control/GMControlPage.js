@@ -50,6 +50,8 @@ import {
   updateVitals,
 } from '../api/supabase-characters.js';
 import { NotesEditor } from '../character/NotesEditor.js';
+import { Character } from '../character/Character.js';
+import { loadPlayerCharacter, savePlayerCharacter } from '../api/gm-characters.js';
 import { PlayerShopModal } from './PlayerShopModal.js';
 import { PlayerInventoryModal } from './PlayerInventoryModal.js';
 import { PlayerSkillsModal } from './PlayerSkillsModal.js';
@@ -279,13 +281,18 @@ export class GMControlPage {
     } else {
       activeSkills.forEach((id) => {
         const def = window.__SKILL_DEFINITIONS__?.get?.(id);
+        const cost = Number(def?.chi_cost) || 0;
+        const restore = Number(def?.chi_restore) || 0;
+        const costLabel = cost > 0 ? `−${cost} chi` : '';
+        const restoreLabel = restore > 0 ? `+${restore} chi` : '';
+        const meta = [costLabel, restoreLabel].filter(Boolean).join(' / ');
         const chip = createElement('button', {
           type: 'button',
           class: 'gm-skill-chip',
           textContent: def?.name || id,
-          title: def?.description || id,
+          title: [def?.description, meta].filter(Boolean).join('\n'),
         });
-        on(chip, 'click', () => toast(`${player.name} usou: ${def?.name || id}`, 'info'));
+        on(chip, 'click', () => this._usePlayerSkill(player, id, def));
         skillsRow.appendChild(chip);
       });
     }
@@ -737,6 +744,69 @@ export class GMControlPage {
     } catch (err) {
       toast(`Falha: ${err.message}`, 'error');
     }
+  }
+
+  /**
+   * GM-side "click a skill chip to log that the player used it".
+   *
+   * Loads the player's full character (Supabase first, localStorage
+   * fallback), wraps it in a Character instance so `useSkill` can run
+   * the same chi cost/restore + use-counter logic the player's own
+   * SkillTree uses, then persists via `savePlayerCharacter` (writes
+   * Supabase + mirrors to localStorage). A full-row save races with
+   * the player's AutoSave, but the GM action is intentional and
+   * low-frequency so the small window is acceptable.
+   *
+   * Refreshes the cards after success so the new chi value + use count
+   * are visible immediately.
+   */
+  async _usePlayerSkill(player, skillId, skillDef) {
+    if (!player?.username || !skillId) return;
+    const name = skillDef?.name || skillId;
+
+    let raw = null;
+    try {
+      raw = await loadPlayerCharacter(player.username);
+    } catch (err) {
+      toast(`Falha a carregar ficha: ${err.message}`, 'error');
+      return;
+    }
+    if (!raw) {
+      toast(`Sem ficha de ${player.name || player.username}.`, 'warning');
+      return;
+    }
+
+    // The skill definition lives in __SKILL_DEFINITIONS__ (already
+    // warmed up at construction); fall back to a stub so the call still
+    // increments the use counter even when the definition isn't cached
+    // (e.g. a custom skill imported only on the player's session).
+    const skill = skillDef || { id: skillId, chi_cost: 0, chi_restore: 0 };
+
+    const character = new Character();
+    character.load(raw);
+    const result = character.useSkill(skill);
+
+    try {
+      await savePlayerCharacter(player.username, character.serialize());
+    } catch (err) {
+      toast(`Falha a gravar: ${err.message}`, 'error');
+      return;
+    }
+
+    const parts = [`${player.name || player.username} usou ${name}`];
+    const deltaBits = [];
+    if (result.chiCost > 0) deltaBits.push(`−${result.chiCost} chi`);
+    if (result.chiRestore > 0) deltaBits.push(`+${result.chiRestore} chi`);
+    if (deltaBits.length) {
+      const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
+      parts.push(`${deltaBits.join(' / ')}${newChi}`);
+    }
+    parts.push(`${result.uses} usos · M${result.mastery}`);
+    let level = result.insufficientChi ? 'warning' : (result.mastery > result.masteryBefore ? 'success' : 'info');
+    const msg = parts.join(' · ') + (result.insufficientChi ? ' ⚠ chi insuficiente' : '');
+    toast(msg, level);
+
+    await this.refresh();
   }
 
   async _openGmNotes(player) {
