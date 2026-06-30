@@ -162,11 +162,14 @@ export async function create(input) {
  * tripping the role check.
  *
  * Only the fields needed during a tick are accepted (`hp_current`,
- * `status_effects`); attempting to pass anything else is ignored.
+ * `cp_current`, `status_effects`); attempting to pass anything else is
+ * ignored. `cp_current` was added 2026-06-30 so the every-2-rounds chi
+ * regen can refill monsters too (when `cp_max` is set).
  */
 export async function tickPatch(id, patch) {
   const cleaned = {};
   if (Number.isFinite(patch.hp_current)) cleaned.hp_current = patch.hp_current;
+  if (Number.isFinite(patch.cp_current)) cleaned.cp_current = patch.cp_current;
   if (Array.isArray(patch.status_effects)) cleaned.status_effects = patch.status_effects;
   if (Object.keys(cleaned).length === 0) return null;
 
@@ -291,6 +294,16 @@ function sanitize(input, { partial = false } = {}) {
   if ('level' in input) out.level = clampInt(input.level, 1, 99, 1);
   if ('hp_max' in input) out.hp_max = clampInt(input.hp_max, 1, 100000, 10);
   if ('hp_current' in input) out.hp_current = clampInt(input.hp_current, 0, 100000, 10);
+  // Optional chi pool. NULL means "this monster doesn't use chi" — the regen
+  // engine + UI both treat that as opt-out. Stored nullable in the DB.
+  if ('cp_max' in input) {
+    const v = input.cp_max;
+    out.cp_max = (v === null || v === '' || v === undefined) ? null : clampInt(v, 0, 100000, 0);
+  }
+  if ('cp_current' in input) {
+    const v = input.cp_current;
+    out.cp_current = (v === null || v === '' || v === undefined) ? null : clampInt(v, 0, 100000, 0);
+  }
   if ('defense' in input) out.defense = clampInt(input.defense, 0, 999, 10);
   if ('dodge' in input) out.dodge = clampInt(input.dodge, 0, 999, 10);
   ['for', 'agi', 'chi', 'per', 'res', 'esp'].forEach((k) => {

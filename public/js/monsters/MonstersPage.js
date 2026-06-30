@@ -25,6 +25,8 @@ const EMPTY_DRAFT = {
   level: 1,
   hp_max: 10,
   hp_current: 10,
+  cp_max: null,
+  cp_current: null,
   defense: 10,
   dodge: 10,
   attr_for: 8, attr_agi: 8, attr_chi: 8, attr_per: 8, attr_res: 8, attr_esp: 8,
@@ -187,6 +189,25 @@ export class MonstersPage {
     hpRow.appendChild(hpBar);
     card.appendChild(hpRow);
 
+    // Chi pool (optional). Shown only when the GM defined one — keeps
+    // legacy monsters visually unchanged.
+    if (Number.isFinite(monster.cp_max) && monster.cp_max > 0) {
+      const cpCur = Number.isFinite(monster.cp_current) ? monster.cp_current : monster.cp_max;
+      const cpRow = createElement('div', { class: 'monster-hp monster-cp' });
+      cpRow.appendChild(createElement('span', {
+        class: 'monster-hp-text',
+        textContent: `${cpCur}/${monster.cp_max} Chi`,
+      }));
+      const cpBar = createElement('div', { class: 'monster-hp-bar' });
+      const cpFill = createElement('div', { class: 'monster-hp-fill' });
+      const cpPct = (cpCur / monster.cp_max) * 100;
+      cpFill.style.width = `${Math.max(0, Math.min(100, cpPct))}%`;
+      cpFill.style.background = 'linear-gradient(90deg, #2a5fb0, #4f8cff)';
+      cpBar.appendChild(cpFill);
+      cpRow.appendChild(cpBar);
+      card.appendChild(cpRow);
+    }
+
     const stats = createElement('div', { class: 'monster-stats' });
     [
       ['DEF', monster.defense], ['ESQ', monster.dodge],
@@ -326,6 +347,13 @@ export class MonstersPage {
       ['Esquiva', this._number(draft, 'dodge', 0, 999)],
     ]));
 
+    // Chi pool is optional — leave blank for monsters that don't use chi.
+    // The every-2-rounds regen only fires for monsters with `cp_max` set.
+    form.appendChild(this._gridRow([
+      ['Chi máx (opcional)', this._numberNullable(draft, 'cp_max', 0, 100000, 'em branco = não usa chi')],
+      ['Chi atual',          this._numberNullable(draft, 'cp_current', 0, 100000, 'em branco = cheio')],
+    ]));
+
     // ── Attributes ──
     form.appendChild(createElement('h3', { class: 'form-section-title', textContent: 'Atributos' }));
     form.appendChild(this._gridRow([
@@ -448,6 +476,14 @@ export class MonstersPage {
       return;
     }
     if (draft.hp_current > draft.hp_max) draft.hp_current = draft.hp_max;
+    // Clamp chi when both are present; allow either to be null (opt-out).
+    if (Number.isFinite(draft.cp_max) && Number.isFinite(draft.cp_current)
+        && draft.cp_current > draft.cp_max) {
+      draft.cp_current = draft.cp_max;
+    }
+    if (Number.isFinite(draft.cp_max) && draft.cp_current === undefined) {
+      draft.cp_current = draft.cp_max;
+    }
     try {
       if (id) {
         await Monsters.update(id, draft);
@@ -498,6 +534,33 @@ export class MonstersPage {
     on(input, 'input', () => {
       const n = Number(input.value);
       draft[key] = Number.isFinite(n) ? n : 0;
+    });
+    return input;
+  }
+
+  /**
+   * Same as `_number` but treats an empty input as `null` (opt-out).
+   * Used by optional fields like the monster chi pool (`cp_max`,
+   * `cp_current`) — when null, the regen + UI just skip the monster.
+   */
+  _numberNullable(draft, key, min, max, placeholder = '') {
+    const initial = draft[key];
+    const input = createElement('input', {
+      type: 'number',
+      class: 'field-input',
+      min,
+      max,
+      placeholder,
+      value: (initial === null || initial === undefined) ? '' : String(initial),
+    });
+    on(input, 'input', () => {
+      const raw = input.value.trim();
+      if (raw === '') {
+        draft[key] = null;
+        return;
+      }
+      const n = Number(raw);
+      draft[key] = Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : null;
     });
     return input;
   }
