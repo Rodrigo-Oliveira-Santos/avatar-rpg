@@ -165,6 +165,22 @@ export class App {
           } catch (err) {
             console.warn('[App] preset bootstrap could not reach Supabase, kept local copy', err);
           }
+        } else if (user?.username) {
+          // Brand-new account with no preset and no saved data anywhere.
+          // Reset to defaults and seed identidade.nome with the username
+          // so the Hub doesn't render the *previous* logged-in user's
+          // name (which was leaking from the persistent Character
+          // instance) and the AutoSave persists a clean baseline.
+          this.character.reset();
+          this.character.data.identidade.nome = user.username;
+          this.character.notify();
+          API.characters.saveLocal(this.character.serialize());
+          try {
+            await API.characters.create(this.character.serialize());
+            loadedFromRemote = true;
+          } catch (err) {
+            console.warn('[App] new-account bootstrap could not reach Supabase, kept local copy', err);
+          }
         }
       }
     } catch (e) {
@@ -379,6 +395,12 @@ export class App {
     this._charsRealtimeSeq = (this._charsRealtimeSeq || 0) + 1;
     this.shopPage = null;
     this.skillTrees = {};
+
+    // Reset the Character so any stale data from the previous session
+    // (e.g. identidade.nome) doesn't leak into the next login. Without
+    // this, a brand-new account with no preset would inherit the prior
+    // user's name in the Hub until first edit.
+    this.character?.reset?.();
   }
 
   showLoading(show) {
@@ -433,6 +455,13 @@ export class App {
 
     if (pageId === 'shop') {
       this.shopPage?.refresh();
+    }
+
+    // Skill-tree pages: let the tree know it just became visible. Used
+    // by the Sem Dobra tree to lazy-prompt the non-bender path picker
+    // (the picker no longer fires on login).
+    if (SKILL_PAGES.has(pageId)) {
+      this.skillTrees?.[pageId]?.notifyShown?.();
     }
   }
 

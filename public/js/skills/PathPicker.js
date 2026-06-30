@@ -24,7 +24,7 @@ const COMBAT_PATHS = {
   },
 };
 
-function buildModal({ title, subtitle, options, onChoose, onCancel }) {
+function buildModal({ title, subtitle, options, onChoose, onCancel, currentPreview, cancelLabel }) {
   const overlay = createElement('div', { class: 'path-picker-overlay' });
 
   const modal = createElement('div', { class: 'path-picker-modal' });
@@ -44,11 +44,14 @@ function buildModal({ title, subtitle, options, onChoose, onCancel }) {
   options.forEach((opt) => {
     const card = createElement('button', {
       type: 'button',
-      class: 'path-picker-card',
+      class: `path-picker-card${currentPreview && currentPreview === opt.value ? ' is-preview' : ''}`,
     });
     card.appendChild(createElement('h3', { textContent: opt.label }));
     card.appendChild(createElement('p', { textContent: opt.description }));
-    const cta = createElement('span', { class: 'path-picker-cta', textContent: 'Escolher' });
+    const cta = createElement('span', {
+      class: 'path-picker-cta',
+      textContent: currentPreview === opt.value ? 'Confirmar este' : 'Escolher',
+    });
     card.appendChild(cta);
     on(card, 'click', () => {
       onChoose(opt.value);
@@ -62,7 +65,7 @@ function buildModal({ title, subtitle, options, onChoose, onCancel }) {
     const cancel = createElement('button', {
       type: 'button',
       class: 'path-picker-cancel',
-      textContent: 'Cancelar',
+      textContent: cancelLabel || 'Cancelar',
     });
     on(cancel, 'click', () => {
       onCancel();
@@ -98,16 +101,24 @@ export function askCombatPath() {
 }
 
 /**
- * Show the non-bender path picker. No cancel — Sem Dobra requires a
- * choice before any skills are shown.
+ * Show the non-bender path picker. By default the choice is mandatory
+ * (no cancel button). Pass `{ cancellable: true }` to allow dismissing
+ * the modal — useful for "preview before committing" flows where the
+ * player wants to compare both trees before locking one in. The
+ * `currentPreview` option highlights the path currently being inspected.
  *
- * @returns {Promise<'chiblocker'|'weapons'>}
+ * @param {object} [opts]
+ * @param {boolean} [opts.cancellable]
+ * @param {'chiblocker'|'weapons'|null} [opts.currentPreview]
+ * @param {string} [opts.subtitle]
+ * @returns {Promise<'chiblocker'|'weapons'|null>}
  */
-export function askNonBenderPath() {
+export function askNonBenderPath(opts = {}) {
   return new Promise((resolve) => {
     const overlay = buildModal({
       title: 'Escolhe o teu caminho — Sem Dobra',
-      subtitle: 'Personagens sem dobra seguem um de dois caminhos especializados. Esta escolha não pode ser revertida.',
+      subtitle: opts.subtitle || 'Personagens sem dobra seguem um de dois caminhos especializados. Esta escolha não pode ser revertida.',
+      currentPreview: opts.currentPreview || null,
       options: [
         { value: 'chiblocker', label: NON_BENDER_PATHS.chiblocker,
           description: 'Especialista em bloquear o chi de dobradores. Combate desarmado focado em interromper e neutralizar.' },
@@ -115,7 +126,8 @@ export function askNonBenderPath() {
           description: 'Mestre de armas tradicionais. Combate à distância e corpo a corpo com lâminas, arcos e armas exóticas.' },
       ],
       onChoose: resolve,
-      // No cancel: Sem Dobra requires this.
+      onCancel: opts.cancellable ? () => resolve(null) : null,
+      cancelLabel: opts.cancellable ? '👁 Esconder e pré-visualizar' : null,
     });
     document.body.appendChild(overlay);
   });

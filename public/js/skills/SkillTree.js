@@ -207,8 +207,64 @@ export class SkillTree {
     this.viewMode = 'tree';   // 'tree' (canvas) | 'cards'
     this._canvas = null;
     this._panel = null;
+    // For element='none': which path is currently being *previewed*. If
+    // the character has committed a path, that's the source of truth and
+    // overrides this field. Otherwise it lets the player toggle between
+    // the two trees without committing.
+    this._previewPath = (this.element === 'none')
+      ? (character?.getData?.()?.non_bender_path || 'chiblocker')
+      : null;
+    // Whether we've already prompted this session — prevents the picker
+    // from popping up on every tab-switch back to Sem Dobra.
+    this._pickerPrompted = false;
 
     this.loadSkills();
+  }
+
+  /**
+   * Currently effective non-bender path: the committed one if any, else
+   * the preview path. Returns null for non-`none` elements.
+   */
+  getEffectiveNonBenderPath() {
+    if (this.element !== 'none') return null;
+    const committed = this.character?.getData?.()?.non_bender_path || null;
+    return committed || this._previewPath || 'chiblocker';
+  }
+
+  /** Whether the character has committed a non-bender path. */
+  hasCommittedPath() {
+    if (this.element !== 'none') return true;
+    return !!this.character?.getData?.()?.non_bender_path;
+  }
+
+  /**
+   * Called by the host (App.switchTab / GM modal) right after this tree
+   * becomes visible to the user. For Sem Dobra trees with no committed
+   * path, prompts the dismissable path picker once per session. Bender
+   * trees are no-ops.
+   */
+  async notifyShown() {
+    if (this.element !== 'none') return;
+    if (this.hasCommittedPath()) return;
+    if (this._pickerPrompted) return;
+    this._pickerPrompted = true;
+    await this._openPathPicker({ cancellable: true });
+  }
+
+  async _openPathPicker({ cancellable } = {}) {
+    const subtitle = cancellable
+      ? 'Podes pré-visualizar ambos os caminhos antes de decidir — usa "Esconder" para fechar este aviso e alternar entre as duas árvores via separadores no topo.'
+      : undefined;
+    const picked = await askNonBenderPath({
+      cancellable: !!cancellable,
+      currentPreview: this._previewPath,
+      subtitle,
+    });
+    if (picked) {
+      this.character.setNonBenderPath(picked);
+      this._previewPath = picked;
+      await this.loadSkills();
+    }
   }
 
   /**
@@ -218,24 +274,11 @@ export class SkillTree {
     this.loading = true;
     this.container.innerHTML = '<p style="color: var(--text2); padding: 20px;">A carregar habilidades...</p>';
 
-    // For element='none' we need a non_bender_path before fetching anything.
-    if (this.element === 'none') {
-      const charData = this.character.getData();
-      let path = charData.non_bender_path;
-      if (!path) {
-        path = await askNonBenderPath();
-        this.character.setNonBenderPath(path);
-      }
-    }
-
     try {
-      const charData = this.character.getData();
       // nonBenderPath only matters for the 'none' element; passing it for
       // bender elements would request a non-existent fire-chiblocker.json
       // etc. and return zero skills.
-      const nonBenderPath = this.element === 'none'
-        ? (charData.non_bender_path || null)
-        : null;
+      const nonBenderPath = this.element === 'none' ? this.getEffectiveNonBenderPath() : null;
       const data = await loadSkills(this.element, { nonBenderPath });
       this.skills = data.skills || [];
       registerSkillDefinitions(this.skills);
@@ -260,6 +303,11 @@ export class SkillTree {
     }
     this.container.innerHTML = '';
 
+    // Sem Dobra: path tab strip + preview banner (if not committed).
+    if (this.element === 'none') {
+      this.container.appendChild(this._renderNonBenderHeader());
+    }
+
     // View toggle (Tree | Cards)
     const toggleWrap = createElement('div', { class: 'skill-view-toggle' });
     ['tree', 'cards'].forEach((mode) => {
@@ -283,6 +331,58 @@ export class SkillTree {
     this.renderCards();
   }
 
+  /**
+   * Build the Sem Dobra header: a tab strip to switch which path's tree
+   * is shown, plus a preview banner when the player hasn't committed to
+   * a path yet.
+   */
+  _renderNonBenderHeader() {
+    const wrap = createElement('div', { class: 'non-bender-header' });
+    const committed = this.character?.getData?.()?.non_bender_path || null;
+    const effective = this.getEffectiveNonBenderPath();
+
+    const tabs = createElement('div', { class: 'non-bender-path-tabs' });
+    [
+      { id: 'chiblocker', label: '🥋 Bloqueador de Chi' },
+      { id: 'weapons',    label: '⚔ Utilizador de Armas' },
+    ].forEach((p) => {
+      const btn = createElement('button', {
+        type: 'button',
+        class: `non-bender-path-tab${effective === p.id ? ' on' : ''}`,
+        textContent: p.label,
+      });
+      if (committed && committed !== p.id) {
+        btn.disabled = true;
+        btn.title = `Já escolheste ${committed === 'chiblocker' ? 'Bloqueador de Chi' : 'Utilizador de Armas'} — caminho fechado.`;
+      } else {
+        on(btn, 'click', () => {
+          if (this._previewPath === p.id && effective === p.id) return;
+          this._previewPath = p.id;
+          this.loadSkills();
+        });
+      }
+      tabs.appendChild(btn);
+    });
+    wrap.appendChild(tabs);
+
+    if (!committed) {
+      const banner = createElement('div', { class: 'non-bender-preview-banner' });
+      banner.appendChild(createElement('span', {
+        textContent: '👁 Modo pré-visualização — escolhe um caminho para desbloquear habilidades. ',
+      }));
+      const chooseBtn = createElement('button', {
+        type: 'button',
+        class: 'non-bender-choose-btn',
+        textContent: 'Escolher caminho…',
+      });
+      on(chooseBtn, 'click', () => this._openPathPicker({ cancellable: true }));
+      banner.appendChild(chooseBtn);
+      wrap.appendChild(banner);
+    }
+
+    return wrap;
+  }
+
   renderCanvas() {
     if (!this.skills.length) {
       this.container.appendChild(createElement('p', {
@@ -292,7 +392,7 @@ export class SkillTree {
       return;
     }
 
-    // Legend (mirrors docs/*_skill_tree.html)
+    // Legend (mirrors docs/skill-trees/*.html)
     const legend = createElement('div', { class: 'skill-tree-legend' });
     legend.innerHTML = `
       <div class="leg"><div class="lsq" style="background:#1e1a40;border:2px solid #7F77DD"></div>Espiritualidade</div>
@@ -442,10 +542,38 @@ export class SkillTree {
   }
 
   /**
+   * If the player is on Sem Dobra without a committed path, prompt the
+   * picker before allowing an unlock. Returns true if the unlock should
+   * proceed, false otherwise.
+   */
+  async _ensureNonBenderPathCommitted() {
+    if (this.element !== 'none') return true;
+    if (this.hasCommittedPath()) return true;
+    const previousPreview = this._previewPath;
+    const chosen = await askNonBenderPath({
+      cancellable: true,
+      currentPreview: previousPreview,
+      subtitle: 'Para desbloquear uma habilidade tens de comprometer-te com um caminho. A escolha é permanente.',
+    });
+    if (!chosen) return false;
+    this.character.setNonBenderPath(chosen);
+    this._previewPath = chosen;
+    if (chosen !== previousPreview) {
+      // User committed to a different tree than the one currently shown
+      // — reload the new skill set and require a re-click on the target.
+      await this.loadSkills();
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Unlock a skill via the side panel. Handles combat-path locking
    * (with confirmation modal) and validates attributes/prerequisites.
    */
   async requestUnlock(skill) {
+    if (!(await this._ensureNonBenderPathCommitted())) return;
+
     const charData = this.character.getData();
     if (charData.habilidades?.[skill.id]?.active) return;
 
@@ -530,6 +658,9 @@ export class SkillTree {
 
     // Only validate when activating
     if (!current) {
+      // 0) Sem Dobra: prompt for path commitment if previewing
+      if (!(await this._ensureNonBenderPathCommitted())) return;
+
       // 1) Combat-path gating: tier 3+ on pr/br requires combat_path.
       if (skill.tier >= 3 && (skill.branch === 'pr' || skill.branch === 'br')) {
         const required = skill.branch === 'pr' ? 'precise' : 'brute';
