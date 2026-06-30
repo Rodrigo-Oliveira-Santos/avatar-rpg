@@ -8,7 +8,7 @@
  * defaults e o próximo autosave grava esses defaults sobre os reais.
  *
  * O mapper preserva também:
- *   • `classes` (jsonb, multiclass, adicionado em `20260629100000_…`)
+ *   • `classes` (jsonb, multiclass, adicionado em `20260629240000_…`)
  *   • `gold` (não tem coluna própria; vive em jsonb? — guardamos no
  *     campo `notes` é mau; em vez disso espelhamos no `inventory[0]`?
  *     Decisão: adicionamos coluna `gold int` na migration de extras se

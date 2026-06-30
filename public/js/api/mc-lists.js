@@ -9,7 +9,7 @@
  * "just works".
  *
  * Persistência: **localStorage apenas** (chave `mc_lists_{username}`).
- * A migration `20260629200000_mc_reactions_and_lists.sql` tem o schema
+ * A migration `20260629250000_mc_reactions_and_lists.sql` tem o schema
  * Supabase pronto (`mc_lists` + `mc_list_builds`) mas a API ainda não
  * o usa — wirar exige passar os consumers de síncronos para assíncronos.
  * Marcado como follow-up.

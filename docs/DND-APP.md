@@ -99,7 +99,7 @@ XP table segue a tabela canónica 5e (300 → 355 000) — código em
 ## Schema (Supabase, opcional)
 
 Ver [`MULTI-GAME-DESIGN.md`](MULTI-GAME-DESIGN.md) (`dnd_characters`). Migration adicional
-em `supabase/migrations/20260629100000_multi_game_extras.sql` adiciona a
+em `supabase/migrations/20260629240000_multi_game_extras.sql` adiciona a
 coluna `classes jsonb` para multiclass.
 
 ```sql

@@ -6,7 +6,7 @@
  * clicar "dislike" quando está liked → muda para dislike.
  *
  * Persistência: **localStorage apenas** (chave `mc_reactions`). A
- * migration `20260629200000_mc_reactions_and_lists.sql` tem o schema
+ * migration `20260629250000_mc_reactions_and_lists.sql` tem o schema
  * Supabase pronto (tabela `mc_build_reactions`) mas a API ainda não
  * o usa — wirar exige passar os consumers (`components/reactions-
  * bookmarks.js`) de síncronos para assíncronos. Marcado como follow-up.

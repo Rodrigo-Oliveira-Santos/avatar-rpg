@@ -292,4 +292,4 @@ Depois de implementar nova fase/feature set:
   automated combat resolution.
 - D&D: motor de combate (rolls automáticos, status effects).
 - Minecraft: wirar reactions/lists em Supabase (schema pronto em
-  `20260629200000_…`; UI precisa de passar de sync para async).
+  `20260629250000_…`; UI precisa de passar de sync para async).

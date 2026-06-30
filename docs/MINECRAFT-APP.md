@@ -96,7 +96,7 @@ API que suporta isto: `api/mc-builds.js` adicionou
 ## Schema (Supabase, opcional)
 
 Ver [`MULTI-GAME-DESIGN.md`](MULTI-GAME-DESIGN.md) (`mc_builds`). Migration adicional em
-`supabase/migrations/20260629100000_multi_game_extras.sql` adiciona
+`supabase/migrations/20260629240000_multi_game_extras.sql` adiciona
 `video_url` e `social_url`. Versão completa guardada na DB:
 
 ```sql

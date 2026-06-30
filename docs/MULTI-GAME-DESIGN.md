@@ -168,7 +168,7 @@ public/js/
 ## Schema (Supabase)
 
 Migration `20260629000000_multi_game.sql` introduz `dnd_characters`,
-`mc_builds` e `mc_build_likes`. A `20260629100000_multi_game_extras.sql`
+`mc_builds` e `mc_build_likes`. A `20260629240000_multi_game_extras.sql`
 adiciona depois:
 - `dnd_characters.classes jsonb` (multiclass)
 - `mc_builds.video_url`, `mc_builds.social_url` (links opcionais)
