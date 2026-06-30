@@ -4,12 +4,12 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const SOURCES = [
-  { file: 'fire.html',       element: 'fire',     path: null },
-  { file: 'water.html',      element: 'water',    path: null },
-  { file: 'earth.html',      element: 'earth',    path: null },
-  { file: 'air.html',        element: 'air',      path: null },
-  { file: 'chiblocker.html', element: 'none',     path: 'chiblocker' },
-  { file: 'weapons.html',    element: 'none',     path: 'weapons' },
+  { file: 'fire_skill_tree.html',       element: 'fire',     path: null },
+  { file: 'water_skill_tree.html',      element: 'water',    path: null },
+  { file: 'earth_skill_tree.html',      element: 'earth',    path: null },
+  { file: 'air_skill_tree.html',        element: 'air',      path: null },
+  { file: 'chiblocker_skill_tree.html', element: 'none',     path: 'chiblocker' },
+  { file: 'weapons_skill_tree.html',    element: 'none',     path: 'weapons' },
 ];
 
 const BRANCH_TO_CATEGORY = {
