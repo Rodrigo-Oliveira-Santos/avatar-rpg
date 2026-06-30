@@ -535,6 +535,11 @@ export class App {
       this[conf.state] = next;
       this.character.data[conf.col] = next;
       this.updateCombatBars();
+      // Notify subscribers (SkillUseGrid, etc.) so that adding chi
+      // immediately re-enables skill cards that were dimmed for
+      // 'Chi insuficiente'. Without this, the grid would only refresh
+      // on the next character mutation (skill use, attribute change…).
+      this.character.notify();
       // Persist via targeted column update so AutoSave never overwrites.
       this._persistVital(conf.col, next);
     };
@@ -903,10 +908,15 @@ export class App {
   }
 
   initSkillTrees() {
-    // GM/Admin don't play a character → skip the entire skill-tree pipeline
-    // (it would otherwise launch the non-bender path picker when element='none').
+    // GM/Admin don't play a character → skip the actual SkillTree
+    // instances (they'd otherwise launch the non-bender path picker
+    // when element='none'). We DO still warm the skill definition
+    // cache below so the GM Control dashboard can resolve skill ids
+    // to names without waiting for a player to navigate to a tree
+    // first.
     if (this.authManager?.hasRole?.('gm')) {
       this.skillTrees = {};
+      this._warmAllSkillDefinitions();
       return;
     }
     ['fire', 'water', 'earth', 'air', 'none'].forEach(element => {
@@ -915,6 +925,55 @@ export class App {
         this.skillTrees[element] = new SkillTree(element, this.character, container);
       }
     });
+    // Even for players, the SkillTree constructors kick off async
+    // loads that may not be done by the time updateUI runs for the
+    // first time. Warming here in parallel + re-triggering updateUI
+    // when ready makes the profile "Todas as Habilidades" section
+    // populated on the very first paint (no need to visit a tree).
+    this._warmAllSkillDefinitions();
+  }
+
+  /**
+   * Load every skill JSON the app cares about so
+   * `window.__SKILL_DEFINITIONS__` is populated regardless of which
+   * tabs the user visited. Fires once per App lifetime (idempotent
+   * via `_skillWarmStarted`). When it finishes, re-runs `updateUI` so
+   * any sections that filtered out unresolved skills get a fresh
+   * render with the now-warm cache.
+   */
+  async _warmAllSkillDefinitions() {
+    if (this._skillWarmStarted) return;
+    this._skillWarmStarted = true;
+
+    const targets = [
+      { element: 'fire',  path: null },
+      { element: 'water', path: null },
+      { element: 'earth', path: null },
+      { element: 'air',   path: null },
+      { element: 'none',  path: 'chiblocker' },
+      { element: 'none',  path: 'weapons' },
+    ];
+    window.__SKILL_DEFINITIONS__ ||= new Map();
+    const cache = window.__SKILL_DEFINITIONS__;
+
+    try {
+      const tasks = targets.map((t) =>
+        loadSkills(t.element, { nonBenderPath: t.path }).then((res) => {
+          (res?.skills || []).forEach((s) => { if (s?.id) cache.set(s.id, s); });
+        }).catch((err) => {
+          console.warn('[App.warmSkillDefs] failed', t, err?.message);
+        })
+      );
+      await Promise.allSettled(tasks);
+    } catch (err) {
+      console.warn('[App.warmSkillDefs] unexpected', err);
+    } finally {
+      // Trigger downstream re-renders that filter by def availability.
+      try { this.updateUI(this.character?.getData?.() || {}); } catch {}
+      // Tell the GM Control dashboard (when present) to refresh its
+      // player cards too — it has its own _renderCards path.
+      try { this.gmControlPage?.refresh?.(); } catch {}
+    }
   }
 
   initInventory() {
@@ -1361,6 +1420,32 @@ export class App {
         return { def, isActive: !!state?.active };
       })
       .filter(Boolean);
+
+    // Lazy-load fallback: when a skill id couldn't be resolved (the
+    // app boot warm didn't include its element, e.g. a custom imported
+    // skill), kick the canonical loader and re-render once it warms.
+    // Mirrors the existing `_kickActiveSkillsLazyLoad` flow.
+    const unresolved = entries.filter(([id]) => !defs?.get?.(id));
+    if (unresolved.length > 0) {
+      const missing = new Map();
+      unresolved.forEach(([id]) => {
+        const target = inferSkillElementFromId(id);
+        if (!target) return;
+        const key = target.nonBenderPath ? `${target.element}:${target.nonBenderPath}` : target.element;
+        missing.set(key, target);
+      });
+      if (missing.size > 0) this._kickActiveSkillsLazyLoad(missing, data);
+    }
+
+    // While the lazy load is in flight (or if no def could be resolved
+    // at all), show a helpful placeholder instead of an empty grid.
+    if (resolved.length === 0) {
+      this._allSkillsGrid?.destroy?.();
+      this._allSkillsGrid = null;
+      container.innerHTML = '<p style="color: var(--text2); font-size: 11px;">A carregar definições das habilidades…</p>';
+      this._allSkillsGridIds = new Set();
+      return;
+    }
 
     // Stable order: active first (so the player sees what they can use
     // right now), then by branch + tier so siblings cluster together.
