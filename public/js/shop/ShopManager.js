@@ -20,10 +20,14 @@ import { createElement, on } from '../utils/dom.js';
 import { toast, confirmDialog, promptDialog } from '../utils/toast.js';
 import * as Items from '../api/items.js';
 import * as Profiles from '../api/shopProfiles.js';
-import { getShopItems, loadShopItemsFromSupabase } from './data.js';
+import { isSupabaseEnabled } from '../api/config.js';
+import { getImportedItems } from '../import/storage.js';
+import { getAllManagedItems, loadShopItemsFromSupabase, MOCK_SHOP_ITEMS } from './data.js';
 
 const TYPES = ['weapon','armor','accessory','consumable','other'];
 const RARITIES = ['common','rare','epic','legendary'];
+
+const MOCK_ID_SET = new Set(MOCK_SHOP_ITEMS.map((m) => m.id));
 
 export class ShopManager {
   /**
@@ -61,11 +65,31 @@ export class ShopManager {
     this._loading = true;
     this.listHost.innerHTML = '<p class="hub-empty">A carregar itens…</p>';
     await loadShopItemsFromSupabase({ force: true });
-    this.items = getShopItems('all', '');
+    this.items = getAllManagedItems();
+    // Track which items live in the local imported store — those are
+    // editable in offline mode (Supabase rows are editable when
+    // Supabase is on). Mocks remain read-only until promoted.
+    this._importedIds = new Set(getImportedItems().map((i) => i.id));
     this.profiles = await Profiles.list();
     this._loading = false;
     this._renderProfiles();
     this._renderList();
+  }
+
+  /**
+   * Decide whether the GM can edit a given item in place.
+   *
+   * • If the item lives in the local imported store, it's always
+   *   editable (covers offline mode + promoted mocks that kept their
+   *   original id).
+   * • Otherwise mocks are read-only.
+   * • Otherwise (online, non-mock) it's a Supabase row → editable.
+   */
+  _isEditable(item) {
+    if (!item?.id) return false;
+    if (this._importedIds?.has(item.id)) return true;
+    if (MOCK_ID_SET.has(item.id)) return false;
+    return isSupabaseEnabled();
   }
 
   _renderProfiles() {
@@ -177,36 +201,42 @@ export class ShopManager {
   }
 
   _renderRow(item) {
-    const isSupabaseRow = Boolean(item.id && !String(item.id).startsWith('item-'));
-    const tr = createElement('tr', { class: isSupabaseRow ? 'db-row' : 'static-row' });
+    const isEditable = this._isEditable(item);
+    const tr = createElement('tr', { class: isEditable ? 'db-row' : 'static-row' });
 
-    // ✅ in_shop toggle
+    // ✅ in_shop toggle. The checked state mirrors the player-side filter
+    // (`getShopItems` filters with `in_shop !== false`) so the manager
+    // visually matches what players actually see — mocks default to
+    // visible until explicitly hidden.
     const inShopCell = createElement('td');
     const inShopBox = createElement('input', { type: 'checkbox' });
-    inShopBox.checked = Boolean(item.in_shop);
-    inShopBox.disabled = !isSupabaseRow;
+    inShopBox.checked = item.in_shop !== false;
+    inShopBox.disabled = !isEditable;
+    inShopBox.title = isEditable
+      ? ''
+      : 'Item de mock — clica em "Promover" para o tornar editável.';
     on(inShopBox, 'change', () => this._update(item, { in_shop: inShopBox.checked }));
     inShopCell.appendChild(inShopBox);
     tr.appendChild(inShopCell);
 
     // Name
-    tr.appendChild(this._cell(item.name, (v) => this._update(item, { name: v }), isSupabaseRow));
+    tr.appendChild(this._cell(item.name, (v) => this._update(item, { name: v }), isEditable));
 
     // Type select
-    tr.appendChild(this._selectCell(item.type, TYPES, (v) => this._update(item, { type: v }), isSupabaseRow));
+    tr.appendChild(this._selectCell(item.type, TYPES, (v) => this._update(item, { type: v }), isEditable));
 
     // Rarity select
-    tr.appendChild(this._selectCell(item.rarity, RARITIES, (v) => this._update(item, { rarity: v }), isSupabaseRow));
+    tr.appendChild(this._selectCell(item.rarity, RARITIES, (v) => this._update(item, { rarity: v }), isEditable));
 
     // Price
-    tr.appendChild(this._cell(String(item.price ?? 0), (v) => this._update(item, { price: Number(v) }), isSupabaseRow, 'number'));
+    tr.appendChild(this._cell(String(item.price ?? 0), (v) => this._update(item, { price: Number(v) }), isEditable, 'number'));
 
     // Description
-    tr.appendChild(this._cell(item.description || '', (v) => this._update(item, { description: v }), isSupabaseRow));
+    tr.appendChild(this._cell(item.description || '', (v) => this._update(item, { description: v }), isEditable));
 
     // Actions
     const actionsCell = createElement('td', { class: 'shop-manager-actions' });
-    if (isSupabaseRow) {
+    if (isEditable) {
       const del = createElement('button', { type: 'button', class: 'btn-icon', textContent: '✕', title: 'Apagar' });
       on(del, 'click', () => this._delete(item));
       actionsCell.appendChild(del);
@@ -215,7 +245,9 @@ export class ShopManager {
         type: 'button',
         class: 'btn',
         textContent: 'Promover',
-        title: 'Copiar para a base de dados (passa a ser editável)',
+        title: isSupabaseEnabled()
+          ? 'Copiar para a base de dados (passa a ser editável)'
+          : 'Copiar para o armazenamento local (passa a ser editável)',
       });
       on(promote, 'click', () => this._promote(item));
       actionsCell.appendChild(promote);
@@ -282,7 +314,10 @@ export class ShopManager {
   async _promote(item) {
     try {
       await Items.createItem(item);
-      toast(`"${item.name}" agora vive na BD.`, 'success');
+      const msg = isSupabaseEnabled()
+        ? `"${item.name}" agora vive na BD.`
+        : `"${item.name}" promovido para edição local.`;
+      toast(msg, 'success');
       await this.refresh();
     } catch (err) {
       toast(`Falha: ${err.message}`, 'error');

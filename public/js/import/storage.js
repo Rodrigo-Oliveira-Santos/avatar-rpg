@@ -72,6 +72,19 @@ export function saveImportedItems(items) {
 }
 
 /**
+ * Replace the entire imported-items store. Used by the in-memory CRUD
+ * path in `api/items.js` when Supabase is off.
+ *
+ * @param {object[]} items
+ * @returns {number} total items after the write
+ */
+export function setImportedItems(items) {
+  const safe = Array.isArray(items) ? items : [];
+  localStorage.setItem(ITEMS_KEY, JSON.stringify(safe));
+  return safe.length;
+}
+
+/**
  * Get all imported items
  * @returns {object[]} Array of item objects
  */

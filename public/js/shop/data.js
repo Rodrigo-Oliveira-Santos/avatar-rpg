@@ -202,11 +202,21 @@ export const MOCK_SHOP_ITEMS = [
  * @returns {object[]}
  */
 export function getShopItems(category = 'all', search = '') {
-  const supabase = (_supabaseItems || []).filter((i) => i.in_shop !== false);
-  const importedRaw = getImportedItems().filter((i) => i.in_shop !== false);
-  const supabaseNames = new Set(supabase.map((i) => i.name));
-  const imported = importedRaw.filter((i) => !supabaseNames.has(i.name));
-  const knownNames = new Set([...supabaseNames, ...imported.map((i) => i.name)]);
+  const supabaseRaw = _supabaseItems || [];
+  const importedRaw = getImportedItems();
+  // Build the "known names" set from RAW lists (including items that are
+  // currently hidden via `in_shop === false`) so that a hidden imported
+  // override correctly suppresses the mock fallback for the same name.
+  // Without this, applying a profile that marks a mock as hidden would
+  // still resurface the original mock through the fallback path below.
+  const supabaseNames = new Set(supabaseRaw.map((i) => i.name));
+  const importedNames = new Set(importedRaw.map((i) => i.name));
+  const knownNames = new Set([...supabaseNames, ...importedNames]);
+
+  const supabase = supabaseRaw.filter((i) => i.in_shop !== false);
+  const imported = importedRaw
+    .filter((i) => i.in_shop !== false)
+    .filter((i) => !supabaseNames.has(i.name));
   const mockFiltered = MOCK_SHOP_ITEMS.filter((m) => !knownNames.has(m.name));
   let items = [...supabase, ...imported, ...mockFiltered];
 
@@ -223,4 +233,24 @@ export function getShopItems(category = 'all', search = '') {
   }
 
   return items;
+}
+
+/**
+ * Variant of {@link getShopItems} used by the GM manage UI: returns
+ * EVERY item the catalogue knows about — visible (`in_shop !== false`)
+ * AND hidden (`in_shop === false`). Without this, an item the GM
+ * accidentally toggled off would vanish from the management table and
+ * become unrecoverable without going through a profile.
+ *
+ * Override priority is the same as the player view: supabase > imported > mock.
+ */
+export function getAllManagedItems() {
+  const supabaseRaw = _supabaseItems || [];
+  const importedRaw = getImportedItems();
+  const supabaseNames = new Set(supabaseRaw.map((i) => i.name));
+  const importedNames = new Set(importedRaw.map((i) => i.name));
+  const knownNames = new Set([...supabaseNames, ...importedNames]);
+  const imported = importedRaw.filter((i) => !supabaseNames.has(i.name));
+  const mocks = MOCK_SHOP_ITEMS.filter((m) => !knownNames.has(m.name));
+  return [...supabaseRaw, ...imported, ...mocks];
 }
