@@ -154,6 +154,34 @@ function parseCharacter(raw) {
   }
 }
 
+function readUserRegistry() {
+  if (!hasLocalStorage()) return {};
+  try {
+    const stored = localStorage.getItem(USER_REGISTRY_KEY);
+    const parsed = stored ? JSON.parse(stored) : null;
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Return true if `username` should appear in the Hub / GM Control as a
+ * player. Default to `true` for unknown usernames (their role wasn't
+ * recorded yet) so brand-new accounts aren't accidentally hidden. GM
+ * and admin roles are excluded — they manage the campaign, they don't
+ * play in it (see user feedback in `Coisas que o André…` / DECISIONS).
+ *
+ * Exported for cross-app use (D&D Hub mirrors the same filter).
+ */
+export function isPlayerRole(username) {
+  const reg = readUserRegistry();
+  const entry = reg[String(username || '').trim().toLowerCase()];
+  if (!entry) return true;
+  const role = entry.role;
+  return role !== 'gm' && role !== 'admin';
+}
+
 function getKnownCharacterUsernames() {
   if (!hasLocalStorage()) return [];
 
@@ -278,6 +306,7 @@ export function getPlayerUsernames() {
   if (!hasLocalStorage()) return [];
 
   return getKnownCharacterUsernames().filter(username => {
+    if (!isPlayerRole(username)) return false;
     const character = parseCharacter(localStorage.getItem(getCharacterStorageKey(username)));
     return Boolean(character);
   });

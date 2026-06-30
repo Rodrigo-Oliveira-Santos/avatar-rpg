@@ -4,6 +4,7 @@
 
 import { createElement, on } from '../../../utils/dom.js';
 import { listAll } from '../../../api/dnd-characters.js';
+import { isPlayerRole } from '../../../hub/data.js';
 import { toast } from '../../../utils/toast.js';
 import { CLASSES } from '../data/srd.js';
 import { classesSummary, totalLevel } from '../dnd-character.js';
@@ -24,7 +25,17 @@ export async function renderHubPage(char, ctx) {
 
   const all = await listAll();
   const me = ctx.currentUser?.username;
-  const filtered = all.sort((a, b) => (b.level || 0) - (a.level || 0));
+  // GMs e admins não jogam — não devem aparecer no Hub nem nos
+  // controlos de XP/Ouro. Usar o registry partilhado para distinguir.
+  const filtered = all
+    .filter((p) => {
+      // Preferir owner_role quando vem do Supabase (mais fresh);
+      // caso contrário cair na helper que consulta o registry local.
+      const role = p?.owner_role;
+      if (role === 'gm' || role === 'admin') return false;
+      return isPlayerRole(p?.owner_username);
+    })
+    .sort((a, b) => (b.level || 0) - (a.level || 0));
 
   if (!filtered.length) {
     wrap.appendChild(emptyState('Ainda não há fichas D&D guardadas.'));

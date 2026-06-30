@@ -15,6 +15,7 @@ import { createElement, on } from '../../utils/dom.js';
 import { toast, confirmDialog } from '../../utils/toast.js';
 import { mountBackWidget, unmountBackWidget } from '../back-widget.js';
 import { createSharedAuth } from '../lib/shared-auth.js';
+import { isPlayerRole } from '../../hub/data.js';
 
 import { DnDCharacter, totalLevel, classesSummary } from './dnd-character.js';
 import { CLASSES } from './data/srd.js';
@@ -366,7 +367,17 @@ class DnDApp {
     // Hub player count (async — pode falar com Supabase)
     try {
       const all = await listAllChars();
-      const count = Array.isArray(all) ? all.length : 0;
+      // Excluir GMs e admins do contador — coerente com a filtragem
+      // do próprio HubPage. Usar owner_role quando vier do Supabase,
+      // senão recorrer ao registry partilhado.
+      const players = Array.isArray(all)
+        ? all.filter((p) => {
+            const role = p?.owner_role;
+            if (role === 'gm' || role === 'admin') return false;
+            return isPlayerRole(p?.owner_username);
+          })
+        : [];
+      const count = players.length;
       const hubBadge = nav.querySelector('.dnd-nav-badge-hub');
       if (hubBadge) {
         hubBadge.textContent = String(count);
