@@ -561,3 +561,37 @@
     width: 100%;
   }
 }
+
+/* ── Admin Landing per-app tabs (post 2026-06-30 split) ─────────── */
+.admin-landing-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border, #2b2b34);
+  padding-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.admin-landing-tab {
+  background: transparent;
+  color: var(--text2, #9a9890);
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .12s, border-color .12s, background .12s;
+}
+
+.admin-landing-tab:hover {
+  color: var(--text, #e8e3d4);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.admin-landing-tab.on {
+  color: var(--gold, #d4a849);
+  border-bottom-color: var(--gold, #d4a849);
+  background: var(--bg2, #16161b);
+}

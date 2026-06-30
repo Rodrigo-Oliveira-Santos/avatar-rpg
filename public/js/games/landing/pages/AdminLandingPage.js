@@ -1,29 +1,27 @@
 /**
  * Landing — Admin Global.
  *
- * Painel agregador visível a partir da landing page. Mostra todos os
- * utilizadores conhecidos do registry partilhado e estatísticas por
- * jogo (tem ficha Avatar? Tem ficha D&D? Quantas builds Minecraft?).
- *
- * Permite ainda gerir roles globalmente (promover/rebaixar) usando o
- * mesmo conjunto de regras do Avatar AdminPanel — porque escrevem
- * todos para o mesmo `avatar_rpg_users_registry`.
+ * Painel agregador per-app (post 2026-06-30): cada app tem o seu
+ * próprio registry, por isso o mesmo username pode ter roles
+ * diferentes em Avatar / D&D / MC. Esta página expõe um tab por app
+ * + um tab "Cross-app" para a visão de conjunto + o delete cascata
+ * em todas as apps de uma vez.
  *
  * Auth: o módulo recebe `actor` (sessão admin activa). Quem chama
  * (LandingPage) só renderiza isto se `hasAnyAdminSession()` for true,
  * pelo que aqui assumimos que actor existe.
  */
-
 import { createElement, on } from '../../../utils/dom.js';
 import { toast, confirmDialog } from '../../../utils/toast.js';
 import {
-  getUsers,
-  getActionsFor,
-  applyRoleChange,
-  validateRoleChange,
-  validateDeleteUser,
-  ROLE_LABELS,
+  APP_IDS,
+  APP_LABELS,
   MAX_ADMINS,
+  ROLE_LABELS,
+  createRegistryAPI,
+  getActionsFor,
+  normalizeUsername,
+  validateAppDeleteUser,
 } from '../../lib/users-registry.js';
 import { confirmAndDeleteUser } from '../../lib/delete-user-ui.js';
 
@@ -46,6 +44,7 @@ function safeJsonGet(key) {
   }
 }
 
+/** Counts per-user data slices across the 3 apps (for the cross-app stats). */
 function buildPerUserStats(usernames) {
   const stats = {};
   for (const username of usernames) {
@@ -81,48 +80,58 @@ function knownUsernamesFromAllSources() {
       if (owner) set.add(owner);
     }
   }
+  // Also fold in every username present in any of the 3 registries.
+  for (const id of APP_IDS) {
+    const reg = createRegistryAPI(id).read();
+    for (const u of Object.keys(reg || {})) set.add(u);
+  }
   return [...set];
 }
 
+const TABS = [
+  { id: 'avatar', label: APP_LABELS.avatar },
+  { id: 'dnd',    label: APP_LABELS.dnd },
+  { id: 'mc',     label: APP_LABELS.mc },
+  { id: 'cross',  label: 'Cross-app' },
+];
+
 export function renderAdminLandingPage({ actor, onBack }) {
   const wrap = createElement('section', { class: 'admin-panel admin-landing' });
+  let activeTab = 'avatar';
 
   function refresh() {
     wrap.innerHTML = '';
-    wrap.appendChild(buildContent());
+    wrap.appendChild(buildShell());
   }
 
-  function buildContent() {
+  function buildShell() {
     const root = createElement('div');
 
-    const users = getUsers(knownUsernamesFromAllSources());
-    const stats = buildPerUserStats(users.map((u) => u.username));
-    const adminCount = users.filter((u) => u.role === 'admin').length;
-    const totals = users.reduce((acc, u) => {
-      const s = stats[u.username];
+    // ---- Header ---------------------------------------------------
+    const allKnown = knownUsernamesFromAllSources();
+    const stats = buildPerUserStats(allKnown);
+    const totals = allKnown.reduce((acc, name) => {
+      const s = stats[name];
       if (s.avatar) acc.avatar += 1;
       if (s.dnd) acc.dnd += 1;
       acc.mcBuilds += s.mcBuilds;
       return acc;
     }, { avatar: 0, dnd: 0, mcBuilds: 0 });
 
-    // ---- Header ---------------------------------------------------
     const header = createElement('header', { class: 'admin-panel-header' });
     const titleBox = createElement('div');
     titleBox.appendChild(createElement('h2', { textContent: '🛡️ Admin Global' }));
     titleBox.appendChild(createElement('p', {
-      textContent: `A operar como ${actor.username} (${actor.role}) — sessão ${actor.app}.`,
+      textContent: `A operar como ${actor.username} (${actor.role}) — sessão ${actor.app}. Contas independentes por app.`,
     }));
     header.appendChild(titleBox);
 
     const statsBox = createElement('div', { class: 'admin-panel-stats' });
-    statsBox.appendChild(stat(users.length, 'Utilizadores'));
-    statsBox.appendChild(stat(`${adminCount}/${MAX_ADMINS}`, 'Admins', true));
+    statsBox.appendChild(stat(allKnown.length, 'Usernames totais'));
     statsBox.appendChild(stat(totals.avatar, 'Fichas Avatar'));
     statsBox.appendChild(stat(totals.dnd, 'Fichas D&D'));
     statsBox.appendChild(stat(totals.mcBuilds, 'Builds MC'));
     header.appendChild(statsBox);
-
     root.appendChild(header);
 
     // ---- Back -----------------------------------------------------
@@ -132,24 +141,57 @@ export function renderAdminLandingPage({ actor, onBack }) {
     backRow.appendChild(backBtn);
     root.appendChild(backRow);
 
-    // ---- Note -----------------------------------------------------
-    root.appendChild(createElement('div', {
+    // ---- Tabs ----------------------------------------------------
+    const tabBar = createElement('div', { class: 'admin-landing-tabs' });
+    TABS.forEach((t) => {
+      const btn = createElement('button', {
+        class: `admin-landing-tab${activeTab === t.id ? ' on' : ''}`,
+        textContent: t.label,
+      });
+      on(btn, 'click', () => { activeTab = t.id; refresh(); });
+      tabBar.appendChild(btn);
+    });
+    root.appendChild(tabBar);
+
+    // ---- Active tab body -----------------------------------------
+    if (activeTab === 'cross') {
+      root.appendChild(buildCrossAppTab(allKnown, stats));
+    } else {
+      root.appendChild(buildAppTab(activeTab));
+    }
+
+    return root;
+  }
+
+  /**
+   * Per-app tab (Avatar / D&D / MC). Uses createRegistryAPI(appId) so
+   * every mutation is scoped to that app — exactly the same semantics
+   * as the dedicated admin page for each app.
+   */
+  function buildAppTab(appId) {
+    const REG = createRegistryAPI(appId);
+    const users = REG.list();
+    const adminCount = users.filter((u) => u.role === 'admin').length;
+
+    const body = createElement('div');
+
+    body.appendChild(createElement('div', {
       class: 'admin-panel-note',
-      html: 'Mudanças escritas em <code>avatar_rpg_users_registry</code>. ' +
-        'Sessões activas com o username afectado são sincronizadas automaticamente.',
+      html: `Mudanças neste tab só afetam <strong>${APP_LABELS[appId]}</strong>. Contas com o mesmo username noutras apps ficam intactas.`,
     }));
 
-    // ---- Table ----------------------------------------------------
+    const summary = createElement('div', { class: 'admin-panel-stats', style: 'margin-top:8px' });
+    summary.appendChild(stat(users.length, 'Utilizadores'));
+    summary.appendChild(stat(`${adminCount}/${MAX_ADMINS}`, 'Admins', true));
+    body.appendChild(summary);
+
     const tableWrap = createElement('div', { class: 'admin-table-wrap' });
     const table = createElement('table', { class: 'admin-users-table' });
     table.innerHTML = `
       <thead>
         <tr>
           <th>Username</th>
-          <th>Role</th>
-          <th>Avatar</th>
-          <th>D&D 5e</th>
-          <th>Minecraft</th>
+          <th>Role nesta app</th>
           <th>Ações</th>
         </tr>
       </thead>
@@ -158,19 +200,15 @@ export function renderAdminLandingPage({ actor, onBack }) {
     const tbody = table.querySelector('tbody');
 
     users.forEach((u) => {
-      const s = stats[u.username];
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>
           <div class="admin-username-cell">
             <span>${escapeHtml(u.username)}</span>
-            ${u.username === actor.username ? '<span class="admin-self-chip">Sessão actual</span>' : ''}
+            ${u.username === actor.username ? '<span class="admin-self-chip">Tu</span>' : ''}
           </div>
         </td>
         <td><span class="admin-role-badge ${u.role}">${escapeHtml(ROLE_LABELS[u.role])}</span></td>
-        <td>${s.avatar ? '✓' : '—'}</td>
-        <td>${s.dnd ? '✓' : '—'}</td>
-        <td>${s.mcBuilds || '—'}</td>
         <td><div class="admin-actions-row" data-actions="${escapeHtml(u.username)}"></div></td>
       `;
       tbody.appendChild(tr);
@@ -181,7 +219,7 @@ export function renderAdminLandingPage({ actor, onBack }) {
         actionsCell.appendChild(createElement('span', { class: 'admin-empty-actions', textContent: '—' }));
       } else {
         actions.forEach((a) => {
-          const validation = validateRoleChange({
+          const validation = REG.validateRoleChange({
             username: u.username, fromRole: u.role, toRole: a.toRole, actor,
           });
           const btn = createElement('button', {
@@ -192,35 +230,32 @@ export function renderAdminLandingPage({ actor, onBack }) {
           if (!validation.allowed) btn.title = validation.reason;
           on(btn, 'click', async () => {
             const ok = await confirmDialog(
-              `Alterar ${u.username} de ${ROLE_LABELS[u.role]} para ${ROLE_LABELS[a.toRole]}?`,
+              `Alterar ${u.username} de ${ROLE_LABELS[u.role]} para ${ROLE_LABELS[a.toRole]} em ${APP_LABELS[appId]}?`,
               { confirmText: 'Alterar', cancelText: 'Cancelar' },
             );
             if (!ok) return;
-            const res = applyRoleChange({
+            const res = REG.applyRoleChange({
               username: u.username, fromRole: u.role, toRole: a.toRole, actor,
             });
-            if (!res.ok) {
-              toast(res.reason, 'warning');
-              return;
-            }
-            toast(`${u.username} é agora ${ROLE_LABELS[a.toRole]}.`, 'success');
+            if (!res.ok) { toast(res.reason, 'warning'); return; }
+            toast(`${u.username} é agora ${ROLE_LABELS[a.toRole]} em ${APP_LABELS[appId]}.`, 'success');
             refresh();
           });
           actionsCell.appendChild(btn);
         });
       }
 
-      // Botão "Apagar conta" — sempre presente, validação inline
-      const delValidation = validateDeleteUser({ username: u.username, actor });
+      // Delete in this app only.
+      const delValidation = REG.validateDeleteUser({ username: u.username, actor });
       const delBtn = createElement('button', {
         class: 'admin-action-btn danger',
-        textContent: '🗑 Apagar conta',
+        textContent: `🗑 Apagar em ${APP_LABELS[appId]}`,
       });
       delBtn.disabled = !delValidation.allowed;
       if (!delValidation.allowed) delBtn.title = delValidation.reason;
       on(delBtn, 'click', async () => {
         const ok = await confirmAndDeleteUser({
-          username: u.username, actor, onDone: () => refresh(),
+          username: u.username, actor, app: appId, onDone: () => refresh(),
         });
         if (ok) refresh();
       });
@@ -228,9 +263,95 @@ export function renderAdminLandingPage({ actor, onBack }) {
     });
 
     tableWrap.appendChild(table);
-    root.appendChild(tableWrap);
+    body.appendChild(tableWrap);
+    return body;
+  }
 
-    return root;
+  /**
+   * Cross-app tab. Shows the union of every known username with their
+   * role in each app side-by-side, plus the "apagar de TODAS as apps"
+   * cascading delete. This is the one-stop-shop for the power admin.
+   */
+  function buildCrossAppTab(allKnown, stats) {
+    const body = createElement('div');
+
+    const regs = {
+      avatar: createRegistryAPI('avatar').read(),
+      dnd:    createRegistryAPI('dnd').read(),
+      mc:     createRegistryAPI('mc').read(),
+    };
+
+    body.appendChild(createElement('div', {
+      class: 'admin-panel-note',
+      html: '"Apagar em <strong>TODAS</strong>" remove a conta + dados em Avatar, D&D e Minecraft de uma só vez. Cada app continua disponível nos seus tabs próprios para deletes parciais.',
+    }));
+
+    const tableWrap = createElement('div', { class: 'admin-table-wrap' });
+    const table = createElement('table', { class: 'admin-users-table' });
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Role Avatar</th>
+          <th>Role D&D</th>
+          <th>Role MC</th>
+          <th>Ficha Avatar</th>
+          <th>Ficha D&D</th>
+          <th>Builds MC</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+
+    [...allKnown].sort((a, b) => a.localeCompare(b)).forEach((username) => {
+      const s = stats[username] || { avatar: false, dnd: false, mcBuilds: 0 };
+      const roles = {
+        avatar: regs.avatar[username]?.role || '—',
+        dnd:    regs.dnd[username]?.role || '—',
+        mc:     regs.mc[username]?.role || '—',
+      };
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <div class="admin-username-cell">
+            <span>${escapeHtml(username)}</span>
+            ${username === actor.username ? '<span class="admin-self-chip">Tu</span>' : ''}
+          </div>
+        </td>
+        <td><span class="admin-role-badge ${roles.avatar}">${escapeHtml(ROLE_LABELS[roles.avatar] || '—')}</span></td>
+        <td><span class="admin-role-badge ${roles.dnd}">${escapeHtml(ROLE_LABELS[roles.dnd] || '—')}</span></td>
+        <td><span class="admin-role-badge ${roles.mc}">${escapeHtml(ROLE_LABELS[roles.mc] || '—')}</span></td>
+        <td>${s.avatar ? '✓' : '—'}</td>
+        <td>${s.dnd ? '✓' : '—'}</td>
+        <td>${s.mcBuilds || '—'}</td>
+        <td><div class="admin-actions-row" data-actions="${escapeHtml(username)}"></div></td>
+      `;
+      tbody.appendChild(tr);
+
+      const actionsCell = tr.querySelector(`[data-actions="${cssEscape(username)}"]`);
+
+      // Single button: cascade delete across every app.
+      const allValidation = validateAppDeleteUser({ appId: 'avatar', username, actor });
+      const delBtn = createElement('button', {
+        class: 'admin-action-btn danger',
+        textContent: '🗑 Apagar em TODAS',
+      });
+      delBtn.disabled = !allValidation.allowed;
+      if (!allValidation.allowed) delBtn.title = allValidation.reason;
+      on(delBtn, 'click', async () => {
+        const ok = await confirmAndDeleteUser({
+          username, actor, app: 'all', onDone: () => refresh(),
+        });
+        if (ok) refresh();
+      });
+      actionsCell.appendChild(delBtn);
+    });
+
+    tableWrap.appendChild(table);
+    body.appendChild(tableWrap);
+    return body;
   }
 
   refresh();
