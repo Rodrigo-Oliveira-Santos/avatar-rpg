@@ -381,18 +381,44 @@ export class HubPage {
   }
 
   /**
-   * Render GM tools section
+   * Render GM tools section (collapsible — same pattern as the map).
    */
   renderGMTools() {
+    const STORAGE_KEY = 'avatar_rpg_hub_gmtools_collapsed';
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+
     const section = createElement('div', {
       style: 'padding: 10px 12px; background: var(--bg2); border: 1px solid var(--gold); border-radius: 6px; margin-bottom: 14px;',
     });
 
-    const title = createElement('div', {
-      style: 'font-size: 12px; font-weight: 600; color: var(--gold); margin-bottom: 8px;',
-      textContent: '⚔ Ferramentas GM (simulado)',
+    const header = createElement('div', {
+      style: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;',
     });
-    section.appendChild(title);
+    const title = createElement('div', {
+      style: 'font-size: 12px; font-weight: 600; color: var(--gold);',
+      textContent: '⚔ Ferramentas GM',
+    });
+    const toggleBtn = createElement('button', {
+      type: 'button',
+      style: 'padding: 3px 10px; border-radius: 5px; border: 1px solid var(--gold); background: transparent; color: var(--gold); cursor: pointer; font-size: 11px;',
+      textContent: collapsed ? '▼ Mostrar' : '▲ Esconder',
+      title: collapsed ? 'Mostrar ferramentas' : 'Esconder ferramentas',
+    });
+    header.append(title, toggleBtn);
+    section.appendChild(header);
+
+    const body = createElement('div', { class: 'gm-tools-body' });
+    if (collapsed) body.hidden = true;
+    section.appendChild(body);
+
+    on(toggleBtn, 'click', () => {
+      const next = !body.hidden;
+      body.hidden = next;
+      toggleBtn.textContent = next ? '▼ Mostrar' : '▲ Esconder';
+      toggleBtn.title = next ? 'Mostrar ferramentas' : 'Esconder ferramentas';
+      try { localStorage.setItem(STORAGE_KEY, next ? '1' : '0'); } catch {}
+    });
 
     const btnRow = createElement('div', { style: 'display: flex; gap: 8px; flex-wrap: wrap;' });
 
@@ -426,7 +452,7 @@ export class HubPage {
     });
     btnRow.appendChild(addXpBtn);
 
-    section.appendChild(btnRow);
+    body.appendChild(btnRow);
 
     const groupRewardsContainer = createElement('div');
     on(groupRewardsContainer, 'group-rewards:updated', (event) => {
@@ -439,7 +465,7 @@ export class HubPage {
 
       this.refresh();
     });
-    section.appendChild(groupRewardsContainer);
+    body.appendChild(groupRewardsContainer);
 
     if (!this.groupRewards) {
       this.groupRewards = new GroupRewards(groupRewardsContainer, this.authManager);
@@ -449,7 +475,7 @@ export class HubPage {
     this.groupRewards.render();
 
     const lootDeliveryContainer = createElement('div');
-    section.appendChild(lootDeliveryContainer);
+    body.appendChild(lootDeliveryContainer);
 
     if (!this.lootDelivery) {
       this.lootDelivery = new LootDelivery(lootDeliveryContainer, this.authManager);
@@ -469,7 +495,7 @@ export class HubPage {
 
       this.refresh();
     });
-    section.appendChild(giftContainer);
+    body.appendChild(giftContainer);
 
     if (!this.giftTransfer) {
       this.giftTransfer = new GiftTransfer(giftContainer, this.authManager);
