@@ -2,9 +2,15 @@
  * EncounterPanel — read-only overlay rendered inside the Hub.
  *
  * Subscribes to encounter changes (Supabase Realtime when available),
- * shows the initiative order, highlights the current turn and offers:
- *   - GM/Admin → "Próximo turno", "Terminar batalha"
- *   - Each player → "Fim do meu turno" on their own combatant row
+ * shows the initiative order, highlights the current "vez" (combatant
+ * slot) and offers:
+ *   - GM/Admin → "Próxima vez", "Terminar batalha"
+ *   - Each player → "Fim da minha vez" on their own combatant row
+ *
+ * Combat vocabulary (post 2026-06-30 rename):
+ *   - "Turno" (display)  = full round   (internal: `current_round`)
+ *   - "Vez"   (display)  = single combatant slot (internal: `current_turn_index`)
+ * Internal field names stay as-is to avoid a Supabase schema migration.
  *
  * Actual battle creation lives in `BattleLauncher.js` so this file stays
  * focused on display + minimal turn controls.
@@ -14,6 +20,7 @@ import { createElement, on } from '../utils/dom.js';
 import { toast, confirmDialog } from '../utils/toast.js';
 import * as Encounters from '../api/encounters.js';
 import { applyTickFor, applyAttackerEffects } from './statusTicks.js';
+import { applyChiRegen, isChiRegenDue } from './regen.js';
 
 export const ENCOUNTER_UPDATED_EVENT = 'encounters:updated';
 
@@ -73,7 +80,7 @@ export class EncounterPanel {
     header.appendChild(createElement('h2', { textContent: `⚔ ${enc.name}` }));
     header.appendChild(createElement('span', {
       class: 'encounter-round',
-      textContent: `Ronda ${enc.current_round}`,
+      textContent: `Turno ${enc.current_round}`,
     }));
     this.root.appendChild(header);
 
@@ -99,7 +106,7 @@ export class EncounterPanel {
           const endBtn = createElement('button', {
             type: 'button',
             class: 'encounter-end-mine',
-            textContent: 'Fim do meu turno',
+            textContent: 'Fim da minha vez',
           });
           on(endBtn, 'click', () => this._handleEndOwnTurn(c));
           li.appendChild(endBtn);
@@ -122,7 +129,7 @@ export class EncounterPanel {
 
     if (isGm) {
       const controls = createElement('div', { class: 'encounter-gm-controls' });
-      const nextBtn = createElement('button', { type: 'button', class: 'btn btn-primary', textContent: 'Próximo turno →' });
+      const nextBtn = createElement('button', { type: 'button', class: 'btn btn-primary', textContent: 'Próxima vez →' });
       on(nextBtn, 'click', () => this._handleAdvance());
       const endBtn = createElement('button', { type: 'button', class: 'btn btn-danger', textContent: 'Terminar batalha' });
       on(endBtn, 'click', () => this._handleEnd());
@@ -136,36 +143,46 @@ export class EncounterPanel {
   async _handleAdvance() {
     const enc = this.encounter;
     if (!enc) return;
+    const prevRound = enc.current_round;
     const leaving = enc.combatants[enc.current_turn_index];
     const nextIdx = (enc.current_turn_index + 1) % enc.combatants.length;
     const arriving = enc.combatants[nextIdx];
+    const nextRound = nextIdx === 0 ? prevRound + 1 : prevRound;
 
     if (leaving) await applyTickFor(leaving, 'end', enc);
     await Encounters.advanceTurn(enc.id);
+    if (isChiRegenDue(prevRound, nextRound)) {
+      await applyChiRegen({ ...enc, current_round: nextRound });
+    }
     if (arriving) await applyTickFor(arriving, 'start', enc);
 
     this.refresh();
   }
 
   /**
-   * Player-side end-of-turn. Runs the same tick lifecycle as the GM's
-   * "Próximo turno →" but using the player-callable `endOwnTurn` API.
+   * Player-side end-of-vez. Runs the same tick lifecycle as the GM's
+   * "Próxima vez →" but using the player-callable `endOwnTurn` API.
    */
   async _handleEndOwnTurn(combatant) {
     const enc = this.encounter;
     if (!enc) return;
     const username = this.getCurrentUsername?.();
     if (!username) return;
+    const prevRound = enc.current_round;
     const nextIdx = (enc.current_turn_index + 1) % enc.combatants.length;
     const arriving = enc.combatants[nextIdx];
+    const nextRound = nextIdx === 0 ? prevRound + 1 : prevRound;
 
     try {
       await applyTickFor(combatant, 'end', enc);
       await Encounters.endOwnTurn(enc.id, username);
+      if (isChiRegenDue(prevRound, nextRound)) {
+        await applyChiRegen({ ...enc, current_round: nextRound });
+      }
       if (arriving) await applyTickFor(arriving, 'start', enc);
-      toast('Turno terminado.', 'success');
+      toast('Vez terminada.', 'success');
     } catch (err) {
-      toast(err.message || 'Falha a terminar o turno.', 'error');
+      toast(err.message || 'Falha a terminar a vez.', 'error');
     }
     this.refresh();
   }

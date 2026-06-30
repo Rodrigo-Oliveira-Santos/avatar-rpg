@@ -5,6 +5,11 @@
  * by Supabase when enabled; falls back to localStorage so the UI keeps
  * working offline (without realtime updates).
  *
+ * Combat vocabulary (post 2026-06-30 rename) — UI strings reflect this,
+ * but internal column names are unchanged to avoid a schema migration:
+ *   - "Turno" (UI)  = full round   → internal `current_round`
+ *   - "Vez"   (UI)  = single combatant slot → internal `current_turn_index`
+ *
  * Schema:
  *   - `encounters` (id, name, status, current_round, current_turn_index, …)
  *   - `encounter_combatants` (id, encounter_id, kind, ref_id, name,
@@ -159,8 +164,9 @@ export async function start({ name, combatants }) {
 }
 
 /**
- * Advance the turn pointer. GM-only entry point — for the player-side
- * "Fim do meu turno" use {@link endOwnTurn}.
+ * Advance the turn pointer (i.e. pass to the next combatant's "vez").
+ * GM-only entry point — for the player-side "Fim da minha vez" use
+ * {@link endOwnTurn}.
  */
 export async function advanceTurn(encounterId) {
   assertGm();
@@ -170,7 +176,7 @@ export async function advanceTurn(encounterId) {
 /**
  * Same as `advanceTurn` but callable by a player when they own the
  * currently-active combatant. Validates that the username matches the
- * combatant whose turn is ending, then advances.
+ * combatant whose vez is ending, then advances.
  */
 export async function endOwnTurn(encounterId, username) {
   const current = await getActive();
@@ -180,10 +186,10 @@ export async function endOwnTurn(encounterId, username) {
   const idx = current.current_turn_index % total;
   const active = current.combatants[idx];
   if (!active || active.kind !== 'character') {
-    throw new Error('Não é o turno de um jogador.');
+    throw new Error('Não é a vez de um jogador.');
   }
   if (String(active.name || '').trim().toLowerCase() !== String(username || '').trim().toLowerCase()) {
-    throw new Error('Só o jogador no turno actual pode encerrá-lo.');
+    throw new Error('Só o jogador na vez actual pode encerrá-la.');
   }
   return _advanceTurnUnchecked(encounterId);
 }
@@ -229,7 +235,7 @@ async function _advanceTurnUnchecked(encounterId) {
 
 /**
  * Player-side action: mark the player's current combatant as ready to end
- * their turn. The GM still has to confirm by clicking "Próximo turno"
+ * their vez. The GM still has to confirm by clicking "Próxima vez"
  * (this just sets `has_acted = true` for visibility).
  */
 export async function markActed(combatantId) {

@@ -25,8 +25,13 @@
 
 export const STATUS_EFFECTS = [
   // ── Negative (debuffs) ────────────────────────────────────
+  // DoT effects tick at END of the target's vez (post 2026-06-30):
+  // "Os efeitos devem ser aplicados por defaut no fim da vez de um jogador,
+  //  depois das suas acções". Damage-over-time = end. Action-restriction
+  // effects (stun/paralysis/fear/frozen) intentionally stay at 'start'
+  // since they need to take effect BEFORE the target can act this round.
   { id: 'sangrando',    name: 'Sangrando',    type: 'negative', icon: '🩸', description: 'Perde HP por turno até ser curado.',
-    default_duration: 3, tick_when: 'start', damage_per_turn: '1d4' },
+    default_duration: 3, tick_when: 'end', damage_per_turn: '1d4' },
   { id: 'atordoado',    name: 'Atordoado',    type: 'negative', icon: '💫', description: 'Perde a próxima ação.',
     default_duration: 1, tick_when: 'start' },
   { id: 'cego',         name: 'Cego',         type: 'negative', icon: '🕶️', description: 'Desvantagem em ataques e perceção visual.',
@@ -42,7 +47,7 @@ export const STATUS_EFFECTS = [
   { id: 'aterrorizado', name: 'Aterrorizado', type: 'negative', icon: '😱', description: 'Tem de afastar-se da fonte do medo.',
     default_duration: 2, tick_when: 'start' },
   { id: 'queimadura',   name: 'Queimadura',   type: 'negative', icon: '🔥', description: 'Sofre dano de fogo por turno.',
-    default_duration: 3, tick_when: 'start', damage_per_turn: '1d6' },
+    default_duration: 3, tick_when: 'end', damage_per_turn: '1d6' },
   { id: 'congelado',    name: 'Congelado',    type: 'negative', icon: '❄️', description: 'Movimento bloqueado; vulnerável a contundente.',
     default_duration: 1, tick_when: 'start', attribute_mod: { AGI: -3 } },
   { id: 'envenenado',   name: 'Envenenado',   type: 'negative', icon: '☠️', description: 'Perde HP por turno; desvantagem em CON.',
@@ -50,7 +55,7 @@ export const STATUS_EFFECTS = [
 
   // ── Positive (buffs) ──────────────────────────────────────
   { id: 'regeneracao',  name: 'Regeneração',  type: 'positive', icon: '💚', description: 'Recupera HP por turno.',
-    default_duration: 3, tick_when: 'start', damage_per_turn: '-1d4' /* negative = heal */ },
+    default_duration: 3, tick_when: 'end', damage_per_turn: '-1d4' /* negative = heal */ },
   { id: 'acelerado',    name: 'Acelerado',    type: 'positive', icon: '⚡', description: 'Movimento e ações extra.',
     default_duration: 2, tick_when: 'end', attribute_mod: { AGI: 2 } },
   { id: 'escudo',       name: 'Escudo',       type: 'positive', icon: '🛡️', description: 'Defesa temporária aumentada.',

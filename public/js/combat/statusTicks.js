@@ -1,11 +1,16 @@
 /**
  * Status-effect tick engine.
  *
- * Called by `EncounterPanel` when the turn advances:
+ * Called by `EncounterPanel` when the encounter advances:
  *   - `applyTickFor(combatant, 'end', encounter)`  → on the combatant
- *     whose turn is ending.
+ *     whose vez is ending.
  *   - `applyTickFor(combatant, 'start', encounter)` → on the combatant
- *     whose turn is starting.
+ *     whose vez is starting.
+ *
+ * By default, status effects tick at the **END** of the affected
+ * combatant's vez (i.e. after their actions). Effects that need to
+ * fire *before* the target can act this round (stun / paralysis /
+ * fear / frozen) override `tick_when: 'start'` in the catalog.
  *
  * Responsibilities per tick:
  *   1. For each `status_effects` entry on the combatant whose `tick_when`
@@ -20,7 +25,7 @@
  *      via the character sheet, so we just toast the suggested change.
  *
  * Errors are non-fatal: a failed tick logs to console + toasts, but
- * the turn advance still proceeds.
+ * the vez advance still proceeds.
  */
 
 import { toast } from '../utils/toast.js';
@@ -38,7 +43,7 @@ import {
 import * as Monsters from '../api/monsters.js';
 
 /**
- * Public entry point. `phase` is 'start' or 'end' of the target's turn.
+ * Public entry point. `phase` is 'start' or 'end' of the target's vez.
  */
 export async function applyTickFor(combatant, phase, encounter) {
   if (!combatant) return;
@@ -132,7 +137,9 @@ async function processEffects(effects, phase, combatant, encounter) {
   let hpDelta = 0;
 
   for (const effect of effects) {
-    const when = effect.tick_when || (effect.custom ? 'end' : 'end');
+    // Default tick timing is 'end' of the target's vez (post 2026-06-30).
+    // Catalog overrides via `tick_when: 'start'` are still honoured.
+    const when = effect.tick_when || 'end';
     if (when !== phase) {
       kept.push(effect);
       continue;
