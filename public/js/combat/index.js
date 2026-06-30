@@ -23,3 +23,4 @@ export {
 export { EncounterPanel, ENCOUNTER_UPDATED_EVENT } from './EncounterPanel.js';
 export { BattleLauncher } from './BattleLauncher.js';
 export { applyTickFor } from './statusTicks.js';
+export { getCooldownState, makeCooldownChecker } from './cooldown.js';
