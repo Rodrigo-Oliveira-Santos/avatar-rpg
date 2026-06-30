@@ -46,7 +46,8 @@ function getToastContainer() {
 
 /**
  * Show a toast notification
- * @param {string} message - Message text
+ * @param {string} message - Message text. Can include "\n" for multi-line
+ *   layout — each line is rendered on its own row inside the toast body.
  * @param {'success'|'error'|'warning'|'info'} type - Toast type
  * @param {number} duration - Auto-dismiss in ms (default 3000). Pass 0 to keep it sticky.
  */
@@ -57,9 +58,17 @@ export function toast(message, type = 'info', duration = 3000) {
 
   const el = document.createElement('div');
   el.className = `toast toast-${type}`;
+  // Render multi-line messages as <br>-separated lines so the toast
+  // can show several short statements (e.g. action + cost + uses) on
+  // their own rows instead of one cramped paragraph. Each line is
+  // escaped individually to keep us safe from HTML injection.
+  const lines = String(message ?? '').split('\n').map(escapeHtml);
+  const body = lines.length > 1
+    ? `<span class="toast-msg toast-msg-multi">${lines.join('<br>')}</span>`
+    : `<span class="toast-msg">${lines[0]}</span>`;
   el.innerHTML = `
     <span class="toast-icon">${icons[type] || 'ℹ'}</span>
-    <span class="toast-msg">${escapeHtml(message)}</span>
+    ${body}
     <button type="button" class="toast-close" aria-label="Fechar">×</button>
   `;
 
