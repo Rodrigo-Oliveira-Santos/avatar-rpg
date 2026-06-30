@@ -101,6 +101,7 @@ export function rowToCharacter(row = {}) {
     },
     atributos: fromAttributeColumns(row),
     pontos_disponiveis: row.points_available || 0,
+    ouro: Number.isFinite(row.gold) ? row.gold : 0,
     combat_path: row.combat_path || null,
     non_bender_path: row.non_bender_path || null,
     habilidades: row.skills_data || {},

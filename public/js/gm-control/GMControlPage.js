@@ -3,30 +3,42 @@
  *
  * Goal: a single screen the GM keeps open during a session, with
  * compact cards for every player and every monster currently relevant.
- * Each card surfaces:
- *   - HP read-out + quick adjust buttons (−5 / −1 / +1 / +5 / SET)
- *   - Active skills as clickable chips (logs a "uses skill" entry; future
- *     iteration will resolve targets + apply effects)
- *   - Shortcut actions: ⚡ Efeitos, 💰 Gold, ⭐ XP, 🎁 Loot, 📝 Notas (GM-side)
- *   - For monsters: list of attacks (clickable to log)
+ *
+ * **Player card surfaces:**
+ *   - Clickable name + 👤 button → read-only character sheet (CharacterModal)
+ *   - HP / Chi / Espírito with quick adjust buttons (−5 / −1 / +1 / +5 / SET)
+ *     persisted via `api/supabase-characters.updateVitals` (targeted column
+ *     write — sidesteps races with the player's AutoSave)
+ *   - Active skills as clickable chips (logs a "uses skill" entry)
+ *   - Shortcut actions:
+ *       ⚡ Efeitos        → StatusEffectManager
+ *       💰 Ouro / ⭐ XP   → numeric delta on the character row
+ *       🌳 Skills        → PlayerSkillsModal (delegated skill-tree editing)
+ *       🎒 Inventário    → PlayerInventoryModal (equip / unequip / use)
+ *       🛒 Comprar       → PlayerShopModal (buy-on-behalf with player wallet)
+ *       📝 Notas         → gm_notes editor (targeted column write)
+ *
+ * **Monster card surfaces:**
+ *   - HP +/-, attack chips, ⚰ Cemitério button
+ *
+ * **Header toolbar:**
+ *   - 💰 Recompensas em Grupo → GroupRewards modal (reused from Hub)
+ *   - 🎁 Entregar Loot       → LootDelivery modal (reused from Hub)
+ *   - ⚔ Iniciar batalha      → BattleLauncher
  *
  * The EncounterPanel from `combat/` is reused at the top so the GM never
  * loses the turn-order context.
  *
- * Persistence:
- *   - Monsters' HP writes through the existing `api/monsters.update` flow.
- *   - Players' HP doesn't have a dedicated column yet — for now we toast
- *     the change and rely on the GM telling the player to update their
- *     sheet. Adding `hp_current` to characters is a future iteration.
- *   - Gold/XP write through `api/supabase-characters.saveCharacter` (full
- *     row). There's a known race with the player's AutoSave — accepted
- *     for this iteration.
+ * Cross-user reads/writes go through `api/gm-characters.js` (the helper
+ * that wraps Supabase + localStorage with the right fallback).
  */
 
 import { createElement, on, $ } from '../utils/dom.js';
 import { toast, promptDialog, confirmDialog } from '../utils/toast.js';
 import { EncounterPanel, ENCOUNTER_UPDATED_EVENT, BattleLauncher } from '../combat/index.js';
 import { StatusEffectManager } from '../hub/StatusEffectManager.js';
+import { GroupRewards } from '../hub/GroupRewards.js';
+import { LootDelivery } from '../hub/LootDelivery.js';
 import { getPlayersAsync } from '../hub/data.js';
 import * as Monsters from '../api/monsters.js';
 import { MONSTERS_UPDATED_EVENT } from '../monsters/index.js';
@@ -38,6 +50,10 @@ import {
   updateVitals,
 } from '../api/supabase-characters.js';
 import { NotesEditor } from '../character/NotesEditor.js';
+import { PlayerShopModal } from './PlayerShopModal.js';
+import { PlayerInventoryModal } from './PlayerInventoryModal.js';
+import { PlayerSkillsModal } from './PlayerSkillsModal.js';
+import { CharacterModal } from '../hub/CharacterModal.js';
 
 export class GMControlPage {
   constructor(container, authManager) {
@@ -86,6 +102,12 @@ export class GMControlPage {
     this.battleLauncher?.close?.();
     this.statusEffectManager?.close?.();
     this._notesOverlay?.remove?.();
+    this._groupRewardsOverlay?.remove?.();
+    this._lootOverlay?.remove?.();
+    this._playerShopModal?.close?.();
+    this._playerInventoryModal?.close?.();
+    this._playerSkillsModal?.close?.();
+    this._characterModal?.close?.();
   }
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -168,6 +190,25 @@ export class GMControlPage {
     // Header with the "Iniciar batalha" launcher.
     const header = createElement('div', { class: 'gm-control-header' });
     header.appendChild(createElement('h2', { textContent: 'Controlo do GM' }));
+
+    const headerActions = createElement('div', { class: 'gm-control-header-actions' });
+
+    const groupBtn = createElement('button', {
+      type: 'button',
+      class: 'btn',
+      textContent: '💰 Recompensas em Grupo',
+    });
+    on(groupBtn, 'click', () => this._openGroupRewards());
+    headerActions.appendChild(groupBtn);
+
+    const lootBtn = createElement('button', {
+      type: 'button',
+      class: 'btn',
+      textContent: '🎁 Entregar Loot',
+    });
+    on(lootBtn, 'click', () => this._openLootDelivery());
+    headerActions.appendChild(lootBtn);
+
     const battleBtn = createElement('button', {
       type: 'button',
       class: 'btn btn-primary',
@@ -177,7 +218,9 @@ export class GMControlPage {
       if (!this.battleLauncher) this.battleLauncher = new BattleLauncher({ authManager: this.authManager });
       this.battleLauncher.open();
     });
-    header.appendChild(battleBtn);
+    headerActions.appendChild(battleBtn);
+
+    header.appendChild(headerActions);
     this.container.appendChild(header);
 
     // Sticky encounter panel up top.
@@ -216,7 +259,7 @@ export class GMControlPage {
     const card = createElement('article', { class: 'gm-card kind-player' });
     card.style.position = 'relative';
     this._mountOrderBadge(card, 'character', player.username);
-    card.appendChild(this._cardHeader(player.name, `Nv. ${player.level}`));
+    card.appendChild(this._playerCardHeader(player));
 
     // Vitals — HP, CP (Chi) and SP (Spirit) get the same +/- controls.
     card.appendChild(this._vitalsBlock(player));
@@ -246,6 +289,9 @@ export class GMControlPage {
       this._actionButton('⚡ Efeitos', () => this.statusEffectManager.openFor(player)),
       this._actionButton('💰 Ouro', () => this._promptDelta('Ouro', (n) => this._adjustPlayerField(player, 'ouro', n))),
       this._actionButton('⭐ XP', () => this._promptDelta('XP', (n) => this._adjustPlayerField(player, 'identidade.xp_atual', n))),
+      this._actionButton('🌳 Skills', () => this._openPlayerSkills(player)),
+      this._actionButton('🎒 Inventário', () => this._openPlayerInventory(player)),
+      this._actionButton('🛒 Comprar', () => this._openPlayerShop(player)),
       this._actionButton('📝 Notas', () => this._openGmNotes(player)),
     );
     card.appendChild(actions);
@@ -369,6 +415,41 @@ export class GMControlPage {
     wrap.appendChild(createElement('h3', { textContent: name }));
     wrap.appendChild(createElement('span', { class: 'gm-card-sub', textContent: sub }));
     head.appendChild(wrap);
+    return head;
+  }
+
+  /**
+   * Like `_cardHeader` but for players — the name becomes a clickable
+   * link and an extra 👤 button opens the read-only character sheet
+   * modal (same one used by the Hub when clicking a player card).
+   */
+  _playerCardHeader(player) {
+    const head = createElement('header', { class: 'gm-card-head' });
+    const wrap = createElement('div', { class: 'gm-card-name-wrap' });
+
+    const nameBtn = createElement('button', {
+      type: 'button',
+      class: 'gm-card-name-btn',
+      textContent: player.name,
+      title: 'Abrir ficha completa',
+    });
+    on(nameBtn, 'click', () => this._openCharacterSheet(player));
+    wrap.appendChild(nameBtn);
+    wrap.appendChild(createElement('span', {
+      class: 'gm-card-sub',
+      textContent: `Nv. ${player.level}`,
+    }));
+    head.appendChild(wrap);
+
+    const sheetBtn = createElement('button', {
+      type: 'button',
+      class: 'btn btn-icon gm-card-sheet-btn',
+      title: 'Abrir ficha completa',
+      textContent: '👤',
+    });
+    on(sheetBtn, 'click', () => this._openCharacterSheet(player));
+    head.appendChild(sheetBtn);
+
     return head;
   }
 
@@ -498,13 +579,6 @@ export class GMControlPage {
     this._renderCards();
   }
 
-  async _adjustPlayerHp(player, delta) {
-    return this._adjustPlayerVital(player, 'hp_current', delta, 'hp', 'hpMax');
-  }
-  async _setPlayerHp(player, value) {
-    return this._setPlayerVital(player, 'hp_current', value, 'hp', 'hpMax');
-  }
-
   /**
    * Add `delta` to a (possibly nested) field on the player's character.
    * Writes via `saveCharacter` (full row). Race with the player's
@@ -575,5 +649,181 @@ export class GMControlPage {
     });
     on(close, 'click', () => { overlay.remove(); this._notesOverlay = null; });
     on(overlay, 'click', (e) => { if (e.target === overlay) close.click(); });
+  }
+
+  // ── Group rewards / loot / per-player shop ─────────────────
+
+  /**
+   * Open a modal hosting the GroupRewards picker. Reuses the same
+   * component used by the Hub page, so logic for divvying gold/XP/coins
+   * across the selected players is shared. Updates persist via the
+   * Supabase-aware `gm-characters` helper (see GroupRewards refactor).
+   */
+  _openGroupRewards() {
+    this._groupRewardsOverlay?.remove?.();
+
+    const overlay = createElement('div', { class: 'modal-overlay' });
+    const box = createElement('div', {
+      class: 'modal-box',
+      style: 'max-width: 640px; max-height: 85vh; overflow-y: auto;',
+    });
+    box.appendChild(createElement('h2', {
+      class: 'modal-title',
+      textContent: '💰 Recompensas em Grupo',
+    }));
+
+    const host = createElement('div');
+    box.appendChild(host);
+
+    const actions = createElement('div', { class: 'modal-actions' });
+    const close = createElement('button', {
+      type: 'button',
+      class: 'modal-btn modal-btn-cancel',
+      textContent: 'Fechar',
+    });
+    actions.appendChild(close);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    this._groupRewardsOverlay = overlay;
+
+    const groupRewards = new GroupRewards(host, this.authManager);
+    groupRewards.render();
+    // Refresh dashboard once rewards are distributed so changed gold/XP
+    // show up immediately on the player cards.
+    on(host, 'group-rewards:updated', () => this.refresh());
+
+    on(close, 'click', () => { overlay.remove(); this._groupRewardsOverlay = null; });
+    on(overlay, 'click', (e) => {
+      if (e.target === overlay) { overlay.remove(); this._groupRewardsOverlay = null; }
+    });
+  }
+
+  /**
+   * Open a modal hosting the LootDelivery picker so the GM can hand an
+   * item directly to a specific player from the control dashboard.
+   */
+  _openLootDelivery() {
+    this._lootOverlay?.remove?.();
+
+    const overlay = createElement('div', { class: 'modal-overlay' });
+    const box = createElement('div', {
+      class: 'modal-box',
+      style: 'max-width: 640px; max-height: 85vh; overflow-y: auto;',
+    });
+    box.appendChild(createElement('h2', {
+      class: 'modal-title',
+      textContent: '🎁 Entregar Loot',
+    }));
+
+    const host = createElement('div');
+    box.appendChild(host);
+
+    const actions = createElement('div', { class: 'modal-actions' });
+    const close = createElement('button', {
+      type: 'button',
+      class: 'modal-btn modal-btn-cancel',
+      textContent: 'Fechar',
+    });
+    actions.appendChild(close);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    this._lootOverlay = overlay;
+
+    const loot = new LootDelivery(host, this.authManager);
+    loot.render();
+
+    on(close, 'click', () => { overlay.remove(); this._lootOverlay = null; });
+    on(overlay, 'click', (e) => {
+      if (e.target === overlay) { overlay.remove(); this._lootOverlay = null; }
+    });
+  }
+
+  /**
+   * Open the per-player shop modal so the GM can make the targeted player
+   * buy an item (paid with the player's own gold / nation coins).
+   */
+  async _openPlayerShop(player) {
+    if (!this._playerShopModal) {
+      this._playerShopModal = new PlayerShopModal({ authManager: this.authManager });
+    }
+    await this._playerShopModal.open(player);
+    // Refresh after the modal closes so vitals/gold reflect changes.
+    // (We refresh immediately too — the modal mutates the character and
+    // saves; subsequent refresh will load the updated row.)
+    setTimeout(() => this.refresh(), 100);
+  }
+
+  /**
+   * Open the per-player inventory modal so the GM can equip / unequip /
+   * consume items on the targeted player's behalf. The modal wraps the
+   * loaded character in a throwaway `Character` instance to reuse the
+   * existing equip/unequip helpers, then writes back via
+   * `gm-characters.savePlayerCharacter`.
+   */
+  async _openPlayerInventory(player) {
+    if (!this._playerInventoryModal) {
+      this._playerInventoryModal = new PlayerInventoryModal({
+        authManager: this.authManager,
+        onChanged: () => this.refresh(),
+      });
+    }
+    await this._playerInventoryModal.open(player);
+  }
+
+  /**
+   * Open the per-player skill-tree modal so the GM can unlock /
+   * activate habilities on the targeted player's behalf. Reuses the
+   * regular `SkillTree` UI bound to a wrapped Character instance.
+   */
+  async _openPlayerSkills(player) {
+    if (!this._playerSkillsModal) {
+      this._playerSkillsModal = new PlayerSkillsModal({
+        authManager: this.authManager,
+        onChanged: () => this.refresh(),
+      });
+    }
+    await this._playerSkillsModal.open(player);
+  }
+
+  /**
+   * Open the read-only `CharacterModal` for the targeted player. Reuses
+   * the same modal the Hub page already shows when a GM clicks a player
+   * card, with the same Supabase-first → localStorage fallback so seeded
+   * profiles that only live in the DB still resolve.
+   */
+  async _openCharacterSheet(player) {
+    const username = player?.username || player?.id;
+    if (!username) {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    let characterData = null;
+    try {
+      if (isSupabaseEnabled()) {
+        characterData = await loadCharFromSupabase(username);
+      }
+    } catch (err) {
+      console.warn('[GMControlPage._openCharacterSheet] Supabase fetch failed', err);
+    }
+
+    if (!characterData && typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(`avatar_rpg_character_${username}`);
+      if (raw) {
+        try { characterData = JSON.parse(raw); } catch {}
+      }
+    }
+
+    if (!characterData) {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    if (!this._characterModal) this._characterModal = new CharacterModal();
+    this._characterModal.show(characterData, username);
   }
 }
