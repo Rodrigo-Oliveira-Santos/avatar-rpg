@@ -1158,14 +1158,31 @@ export class App {
       slotsEl.textContent = `${slots.available} / ${slots.total}`;
     }
 
-    // Cap current values to new max
+    // Sync the App's shadow currentHp/Sp/Cp from the freshly-notified
+    // character data. This is what keeps the combat bars reactive when
+    // Character.useSkill (or any other mutation) changes a vital and
+    // calls notify() — without this resync the bar would only update
+    // after a full page refresh.
+    //
+    // We bias towards the character's authoritative `*_current` field
+    // when present; the App-side shadows only "win" when the character
+    // has no value yet (initial bootstrap).
+    if (Number.isFinite(data.hp_current)) this.currentHp = data.hp_current;
+    if (Number.isFinite(data.sp_current)) this.currentSp = data.sp_current;
+    if (Number.isFinite(data.cp_current)) this.currentCp = data.cp_current;
+
+    // Cap current values to new max (e.g. after a level-down or attr edit).
     if (this.currentHp > stats.maxHP) this.currentHp = stats.maxHP;
     if (this.currentSp > stats.maxSP) this.currentSp = stats.maxSP;
     if (this.currentCp > stats.maxCP) this.currentCp = stats.maxCP;
     this.updateCombatBars();
 
-    // Active skills
-    this.updateActiveSkills(data);
+    // Active skills — section commented out in index.html (2026-06-30):
+    // "Todas as Habilidades" below already covers the same use case
+    // (cards with use button + 'inactive' visual state). The method
+    // stays defined for quick reversal — calling it is a no-op when
+    // the host element is missing.
+    // this.updateActiveSkills(data);
     // All unlocked skills (active + inactive)
     this.updateAllSkills(data);
 
