@@ -188,6 +188,14 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.gm-skills:hover {
+  background: rgba(212, 168, 73, 0.04);
 }
 
 .gm-skill-chip {
@@ -199,9 +207,83 @@
   color: var(--text2);
   cursor: pointer;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: filter .12s, transform .12s;
 }
 
-.gm-skill-chip:hover { color: var(--text); border-color: var(--text2); }
+.gm-skill-chip:hover:not(:disabled) {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.gm-skill-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Branch tints — same palette as the SkillPanel BRANCH_ACCENT map. */
+.gm-skill-chip.branch-sp {
+  background: rgba(127, 119, 221, 0.18);
+  color: #c4bff5;
+  border-color: rgba(127, 119, 221, 0.45);
+}
+.gm-skill-chip.branch-ag {
+  background: rgba(29, 158, 117, 0.18);
+  color: #5DCAA5;
+  border-color: rgba(29, 158, 117, 0.45);
+}
+.gm-skill-chip.branch-cb {
+  background: rgba(216, 136, 64, 0.18);
+  color: #f0c890;
+  border-color: rgba(216, 136, 64, 0.45);
+}
+.gm-skill-chip.branch-pr {
+  background: rgba(232, 132, 74, 0.18);
+  color: #f0c0a0;
+  border-color: rgba(232, 132, 74, 0.45);
+}
+.gm-skill-chip.branch-br {
+  background: rgba(192, 48, 32, 0.18);
+  color: #f08070;
+  border-color: rgba(192, 48, 32, 0.45);
+}
+
+.gm-skill-chip.insufficient {
+  background: rgba(196, 48, 48, 0.12);
+  color: #f08070;
+  border-color: rgba(196, 48, 48, 0.5);
+  text-decoration: line-through;
+}
+
+.gm-skill-chip-cost {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(79, 140, 255, 0.18);
+  color: #9fc2ff;
+  font-weight: 700;
+}
+
+.gm-skill-chip-restore {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(34, 134, 75, 0.18);
+  color: #6fd99c;
+  font-weight: 700;
+}
+
+.gm-skill-chip-mastery {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(239, 159, 39, 0.16);
+  color: #ef9f27;
+  font-weight: 700;
+}
+
 .gm-skill-chip.monster { color: #f08070; border-color: rgba(196, 48, 48, 0.5); }
 
 .gm-empty-row {
@@ -334,7 +416,7 @@
   font-style: italic;
 }
 
-/* ── Per-player skill use grid block ─────────────────────── */
+/* ── Per-player skill chip row + detail modal ─────────────── */
 .gm-skills-block {
   display: flex;
   flex-direction: column;
@@ -342,17 +424,127 @@
   margin-top: 4px;
 }
 
-.gm-skills-block-label {
+/* Clickable label that opens the detail modal. */
+.gm-skills-block-label-btn {
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
   font-size: 10px;
   font-weight: 600;
   color: var(--text2, #9a9890);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  padding: 2px 0;
+  transition: color .12s;
 }
 
-/* Compact mode tweaks specific to the GM Control card layout — the
-   cards already use `.suc-compact` styles from skill-use-grid.css. */
-.gm-card .suc-grid-compact {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+.gm-skills-block-label-btn:hover {
+  color: var(--gold, #d4a849);
+}
+
+/* Detail modal — same visual family as the effects detail modal. */
+.gm-skills-modal {
+  max-width: 580px;
+}
+
+.gm-skills-modal-chi {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}
+
+.gm-skills-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.gm-skills-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--text2, #9a9890);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
   gap: 6px;
+}
+
+.gm-skills-item.branch-sp { border-left-color: #7F77DD; background: rgba(127, 119, 221, 0.06); }
+.gm-skills-item.branch-ag { border-left-color: #1D9E75; background: rgba(29, 158, 117, 0.06); }
+.gm-skills-item.branch-cb { border-left-color: #D88840; background: rgba(216, 136, 64, 0.06); }
+.gm-skills-item.branch-pr { border-left-color: #E8844A; background: rgba(232, 132, 74, 0.06); }
+.gm-skills-item.branch-br { border-left-color: #C03020; background: rgba(192, 48, 32, 0.06); }
+
+.gm-skills-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gm-skills-item-name {
+  font-size: 14px;
+  color: var(--text, #e8e3d4);
+  flex: 1;
+}
+
+.gm-skills-item-tier {
+  font-size: 9px;
+  color: var(--text2, #9a9890);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.gm-skills-item-mastery {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(239, 159, 39, 0.18);
+  color: #ef9f27;
+  font-weight: 700;
+}
+
+.gm-skills-item-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text, #e8e3d4);
+  line-height: 1.4;
+}
+
+.gm-skills-item-meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}
+
+.gm-skills-item-use-btn {
+  align-self: flex-start;
+  padding: 5px 12px;
+  border: 1px solid #E8844A;
+  background: transparent;
+  color: #E8844A;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.gm-skills-item-use-btn:hover:not(:disabled) {
+  background: #E8844A;
+  color: #fff;
+}
+
+.gm-skills-item-use-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: var(--border, #3a3a48);
+  color: var(--text3, #5a5856);
 }

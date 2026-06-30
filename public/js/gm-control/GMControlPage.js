@@ -52,7 +52,6 @@ import {
 import { NotesEditor } from '../character/NotesEditor.js';
 import { Character } from '../character/Character.js';
 import { loadPlayerCharacter, savePlayerCharacter } from '../api/gm-characters.js';
-import { mountSkillUseGrid } from '../skills/index.js';
 import { PlayerShopModal } from './PlayerShopModal.js';
 import { PlayerInventoryModal } from './PlayerInventoryModal.js';
 import { PlayerSkillsModal } from './PlayerSkillsModal.js';
@@ -306,6 +305,25 @@ export class GMControlPage {
    * disables itself when chi is insufficient and fires the same
    * `_usePlayerSkill` flow we use for the legacy chip click.
    */
+  /**
+   * Render the per-player skills block as a chip row + click-for-details
+   * popup, mirroring the visual pattern of the effects block above.
+   *
+   * Each chip:
+   *   - branch-coloured background (sp/ag/cb/pr/br) — same visual
+   *     language as the effects row uses for buff/debuff polarity.
+   *   - inline `Chi: N` cost when present.
+   *   - mastery dots (M0..M3).
+   *   - direct click → fires Character.useSkill on the player (the
+   *     existing _usePlayerSkill flow).
+   *   - chi-insufficient → red tint + disabled + tooltip explains.
+   *
+   * Clicking the row's label opens a detail modal listing each skill
+   * with description, chi cost / restore, current chi vs cost, uses,
+   * mastery level + next threshold, plus a per-skill Usar button.
+   * Same pattern as the effects detail modal so the GM has one
+   * mental model for both.
+   */
   _renderPlayerSkillsBlock(player) {
     const charSkills = player.habilidades || {};
     const activeIds = Object.keys(charSkills).filter((id) => charSkills[id]?.active);
@@ -315,46 +333,189 @@ export class GMControlPage {
     const resolved = activeIds.map((id) => defs?.get?.(id)).filter(Boolean);
     if (resolved.length === 0) return null;
 
-    const block = createElement('div', { class: 'gm-skills-block' });
-    block.appendChild(createElement('div', {
-      class: 'gm-skills-block-label',
-      textContent: '🌳 Habilidades activas',
-    }));
+    const currentCp = Number.isFinite(player.chi) ? player.chi : (player.chiMax || 0);
+    const maxCp = Number(player.chiMax) || 0;
 
-    const gridHost = createElement('div');
-    block.appendChild(gridHost);
-
-    // Build a minimal "character-like" facade so SkillUseGrid can read
-    // chi / uses / mastery without actually owning a Character instance
-    // for every player on screen. No subscribe — the grid re-renders
-    // when the whole GM Control card is rebuilt (after a use action,
-    // status update, etc.).
-    const charLike = {
-      getData: () => ({
-        skill_uses: player.skill_uses || {},
-        cp_current: player.chi,
-        stats_derived: { maxCP: player.chiMax },
-      }),
-      getMasteryLevel: (skillId) => {
-        const uses = Number(player.skill_uses?.[skillId]) || 0;
-        if (uses >= 150) return 3;
-        if (uses >= 50) return 2;
-        if (uses >= 15) return 1;
-        return 0;
-      },
-      subscribe: () => () => {},
-    };
-
-    mountSkillUseGrid({
-      container: gridHost,
-      skills: resolved,
-      character: charLike,
-      compact: true,
-      onUse: (skill) => this._usePlayerSkill(player, skill.id, skill),
-      emptyMessage: 'Sem habilidades activas.',
+    const wrap = createElement('div', {
+      class: 'gm-skills',
+      title: 'Click numa skill para a usar · click no título para ver detalhes',
     });
 
+    resolved.forEach((skill) => {
+      const cost = Number(skill.chi_cost) || 0;
+      const restore = Number(skill.chi_restore) || 0;
+      const uses = Number(player.skill_uses?.[skill.id]) || 0;
+      const mastery = this._masteryFromUses(uses);
+      const insufficient = cost > 0 && currentCp < cost;
+
+      const chip = createElement('button', {
+        type: 'button',
+        class: `gm-skill-chip branch-${skill.branch || 'cb'}${insufficient ? ' insufficient' : ''}`,
+      });
+      chip.appendChild(createElement('span', {
+        class: 'gm-skill-chip-name',
+        textContent: skill.name,
+      }));
+      if (cost > 0) {
+        chip.appendChild(createElement('span', {
+          class: 'gm-skill-chip-cost',
+          textContent: `${cost}c`,
+        }));
+      }
+      if (restore > 0) {
+        chip.appendChild(createElement('span', {
+          class: 'gm-skill-chip-restore',
+          textContent: `+${restore}c`,
+        }));
+      }
+      chip.appendChild(createElement('span', {
+        class: 'gm-skill-chip-mastery',
+        textContent: `M${mastery}`,
+      }));
+      if (insufficient) chip.disabled = true;
+
+      const tooltipBits = [skill.tier_label, skill.description].filter(Boolean);
+      if (cost > 0) tooltipBits.push(`Custo: ${cost} chi`);
+      if (restore > 0) tooltipBits.push(`Restaura: ${restore} chi`);
+      tooltipBits.push(`${uses} usos · M${mastery}`);
+      if (insufficient) tooltipBits.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
+      chip.title = tooltipBits.join('\n');
+
+      on(chip, 'click', (event) => {
+        event.stopPropagation();
+        if (insufficient) return;
+        this._usePlayerSkill(player, skill.id, skill);
+      });
+      wrap.appendChild(chip);
+    });
+
+    on(wrap, 'click', (event) => {
+      // Only treat clicks on the bare wrapper as "open details" — chip
+      // clicks bubble up too but they've called stopPropagation above.
+      if (event.target === wrap) {
+        this._openSkillsDetail(player, resolved);
+      }
+    });
+
+    const block = createElement('div', { class: 'gm-skills-block' });
+    const label = createElement('button', {
+      type: 'button',
+      class: 'gm-skills-block-label-btn',
+      textContent: `🌳 Habilidades activas (${resolved.length}) — ver detalhes`,
+    });
+    on(label, 'click', () => this._openSkillsDetail(player, resolved));
+    block.appendChild(label);
+    block.appendChild(wrap);
     return block;
+  }
+
+  _masteryFromUses(uses) {
+    const n = Number(uses) || 0;
+    if (n >= 150) return 3;
+    if (n >= 50) return 2;
+    if (n >= 15) return 1;
+    return 0;
+  }
+
+  /**
+   * Centered modal listing every active skill on the player with full
+   * detail + a Usar button. Read/write: the Usar button runs the same
+   * _usePlayerSkill flow so chi + use counter persist.
+   */
+  _openSkillsDetail(player, skills) {
+    const overlay = createElement('div', { class: 'modal-overlay' });
+    const box = createElement('div', { class: 'modal-box gm-skills-modal' });
+    box.appendChild(createElement('h2', {
+      class: 'modal-title',
+      textContent: `Habilidades — ${player.name || player.username}`,
+    }));
+
+    const currentCp = Number.isFinite(player.chi) ? player.chi : (player.chiMax || 0);
+    const maxCp = Number(player.chiMax) || 0;
+    box.appendChild(createElement('p', {
+      class: 'gm-skills-modal-chi',
+      textContent: `💠 Chi disponível: ${currentCp} / ${maxCp}`,
+    }));
+
+    const list = createElement('ul', { class: 'gm-skills-list' });
+    skills.forEach((skill) => {
+      const cost = Number(skill.chi_cost) || 0;
+      const restore = Number(skill.chi_restore) || 0;
+      const uses = Number(player.skill_uses?.[skill.id]) || 0;
+      const mastery = this._masteryFromUses(uses);
+      const insufficient = cost > 0 && currentCp < cost;
+
+      const li = createElement('li', { class: `gm-skills-item branch-${skill.branch || 'cb'}` });
+
+      const head = createElement('div', { class: 'gm-skills-item-head' });
+      head.appendChild(createElement('strong', {
+        class: 'gm-skills-item-name',
+        textContent: skill.name,
+      }));
+      if (skill.tier_label) {
+        head.appendChild(createElement('span', {
+          class: 'gm-skills-item-tier',
+          textContent: skill.tier_label,
+        }));
+      }
+      head.appendChild(createElement('span', {
+        class: 'gm-skills-item-mastery',
+        textContent: `M${mastery}`,
+      }));
+      li.appendChild(head);
+
+      if (skill.description) {
+        li.appendChild(createElement('p', {
+          class: 'gm-skills-item-desc',
+          textContent: skill.description,
+        }));
+      }
+
+      const meta = [];
+      if (cost > 0) meta.push(`💠 Custo: ${cost} chi`);
+      if (restore > 0) meta.push(`✦ Restaura: ${restore} chi`);
+      meta.push(`⚡ Usos: ${uses}`);
+      if (mastery < 3) {
+        const thresholds = [15, 50, 150];
+        const nextLevel = mastery + 1;
+        meta.push(`📈 Próx. M${nextLevel}: ${thresholds[mastery]} usos`);
+      } else {
+        meta.push('⭐ Maestria máxima');
+      }
+      if (insufficient) meta.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
+      li.appendChild(createElement('p', {
+        class: 'gm-skills-item-meta',
+        textContent: meta.join(' · '),
+      }));
+
+      const useBtn = createElement('button', {
+        type: 'button',
+        class: 'gm-skills-item-use-btn',
+        textContent: insufficient ? '⚠ Chi insuficiente' : `⚡ Usar (${cost > 0 ? '−' + cost + ' chi' : 'sem custo'})`,
+      });
+      if (insufficient) useBtn.disabled = true;
+      on(useBtn, 'click', async () => {
+        if (insufficient) return;
+        overlay.remove();
+        await this._usePlayerSkill(player, skill.id, skill);
+      });
+      li.appendChild(useBtn);
+
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+
+    const actions = createElement('div', { class: 'modal-actions' });
+    const close = createElement('button', {
+      type: 'button', class: 'modal-btn modal-btn-confirm', textContent: 'Fechar',
+    });
+    on(close, 'click', () => overlay.remove());
+    actions.appendChild(close);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    on(overlay, 'click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
   }
 
   /**
