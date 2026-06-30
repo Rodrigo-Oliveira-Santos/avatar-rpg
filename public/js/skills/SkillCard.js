@@ -307,6 +307,15 @@ export function createSkillCard(skill, unlocked = false, active = false, onToggl
       title: `Custo de chi para usar esta habilidade: ${skill.chi_cost}`,
     }));
   }
+  // Restorative skills: separate green chip so the player can tell at a
+  // glance whether the skill spends or refills chi.
+  if (Number.isFinite(skill.chi_restore) && skill.chi_restore > 0) {
+    meta.appendChild(createElement('span', {
+      class: 'sbadge sb-chi-restore',
+      textContent: `+${skill.chi_restore} chi`,
+      title: `Restaura ${skill.chi_restore} de chi (próprio ou alvo, ver descrição).`,
+    }));
+  }
   card.appendChild(meta);
 
   // Requirements

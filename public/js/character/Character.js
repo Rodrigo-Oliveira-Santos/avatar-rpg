@@ -347,6 +347,84 @@ export class Character {
   }
 
   /**
+   * Apply a chi delta to `cp_current`, clamped to [0, maxCP]. Returns
+   * the new value. Used by both the regen engine (positive delta) and
+   * `useSkill` (typically negative cost + smaller positive restore).
+   *
+   * @param {number} delta
+   * @returns {number} new cp_current
+   */
+  applyChiDelta(delta) {
+    const max = Number(this.data.stats_derived?.maxCP) || 0;
+    if (max <= 0) return this.data.cp_current ?? 0;
+    const cur = Number.isFinite(this.data.cp_current) ? this.data.cp_current : max;
+    const next = Math.max(0, Math.min(max, cur + (Number(delta) || 0)));
+    this.data.cp_current = next;
+    this.notify();
+    return next;
+  }
+
+  /**
+   * Use a skill: applies the chi cost/restore on `cp_current` and bumps
+   * the mastery counter. Returns a summary the caller can use for the
+   * toast (uses count, mastery level, chi delta applied).
+   *
+   * The chi calculation is "best effort": when the player doesn't have
+   * enough chi to fully pay the cost, the pool clamps at 0 and the
+   * caller is informed via `insufficientChi: true`. We don't BLOCK the
+   * use because the GM may overrule (e.g. narrative reasons), and the
+   * mastery counter still represents an actual use of the skill at the
+   * table.
+   *
+   * @param {object} skill — the skill definition (must have `id`,
+   *   optional `chi_cost` + `chi_restore`).
+   * @returns {{
+   *   uses: number,
+   *   mastery: number,
+   *   masteryBefore: number,
+   *   chiCost: number,
+   *   chiRestore: number,
+   *   chiDelta: number,
+   *   newChi: number|null,
+   *   insufficientChi: boolean,
+   * }}
+   */
+  useSkill(skill) {
+    if (!skill || !skill.id) {
+      throw new Error('useSkill: skill com id em falta');
+    }
+    const chiCost = Number(skill.chi_cost) || 0;
+    const chiRestore = Number(skill.chi_restore) || 0;
+    const masteryBefore = this.getMasteryLevel(skill.id);
+
+    // Apply chi cost/restore (net delta), clamped to [0, maxCP].
+    const max = Number(this.data.stats_derived?.maxCP) || 0;
+    let newChi = null;
+    let insufficientChi = false;
+    if (max > 0 && (chiCost > 0 || chiRestore > 0)) {
+      const cur = Number.isFinite(this.data.cp_current) ? this.data.cp_current : max;
+      if (cur < chiCost) insufficientChi = true;
+      const desired = cur - chiCost + chiRestore;
+      newChi = Math.max(0, Math.min(max, desired));
+      this.data.cp_current = newChi;
+    }
+
+    const uses = this.recordSkillUse(skill.id, 1);
+    const mastery = this.getMasteryLevel(skill.id);
+
+    return {
+      uses,
+      mastery,
+      masteryBefore,
+      chiCost,
+      chiRestore,
+      chiDelta: chiRestore - chiCost,
+      newChi,
+      insufficientChi,
+    };
+  }
+
+  /**
    * Lock the combat path (precise vs brute). Once set, the player cannot
    * unlock tier 3+ skills from the other branch.
    * @param {'precise'|'brute'|null} path

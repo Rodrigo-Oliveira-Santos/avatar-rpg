@@ -625,27 +625,47 @@ export class SkillTree {
     toast(`✦ Desbloqueaste: ${skill.name}`, 'success');
   }
 
-  /** Increment usage counter for an unlocked skill. */
+  /** Increment usage counter for an unlocked skill + apply chi cost/restore. */
   requestUse(skill) {
     const active = !!this.character.getData().habilidades?.[skill.id]?.active;
     if (!active) return;
-    const uses = this.character.recordSkillUse(skill.id, 1);
-    const level = this.character.getMasteryLevel(skill.id);
-    toast(`⚡ ${skill.name} usada (${uses} usos, M${level})`, 'info');
+    const result = this.character.useSkill(skill);
+    toast(this._formatUseToast(skill, result), this._toastLevelForUse(result));
   }
 
   /** Same effect as a use, but with a distinct toast for mastery milestones. */
   requestUpgrade(skill) {
     const active = !!this.character.getData().habilidades?.[skill.id]?.active;
     if (!active) return;
-    const before = this.character.getMasteryLevel(skill.id);
-    const uses = this.character.recordSkillUse(skill.id, 1);
-    const after = this.character.getMasteryLevel(skill.id);
-    if (after > before) {
-      toast(`⭐ Maestria M${after}: ${skill.name}`, 'success');
+    const result = this.character.useSkill(skill);
+    if (result.mastery > result.masteryBefore) {
+      toast(`⭐ Maestria M${result.mastery}: ${skill.name}`, 'success');
     } else {
-      toast(`Usos: ${uses}`, 'info');
+      toast(this._formatUseToast(skill, result), this._toastLevelForUse(result));
     }
+  }
+
+  /**
+   * Compose the use-toast text. Always shows the basic uses + mastery
+   * counter; appends the chi delta when the skill actually moves the
+   * chi pool, and flags `insufficientChi` so the player notices when
+   * they over-extended.
+   */
+  _formatUseToast(skill, result) {
+    let msg = `⚡ ${skill.name} usada (${result.uses} usos, M${result.mastery})`;
+    const parts = [];
+    if (result.chiCost > 0) parts.push(`−${result.chiCost} chi`);
+    if (result.chiRestore > 0) parts.push(`+${result.chiRestore} chi`);
+    if (parts.length) {
+      const newChi = result.newChi != null ? ` → ${result.newChi}` : '';
+      msg += ` · ${parts.join(' / ')}${newChi}`;
+    }
+    if (result.insufficientChi) msg += ' ⚠ chi insuficiente';
+    return msg;
+  }
+
+  _toastLevelForUse(result) {
+    return result.insufficientChi ? 'warning' : 'info';
   }
 
   /**

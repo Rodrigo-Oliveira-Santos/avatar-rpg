@@ -346,6 +346,12 @@
   font-weight: 600;
 }
 
+.sb-chi-restore {
+  background: rgba(34, 134, 75, 0.18);
+  color: #6fd99c;
+  font-weight: 600;
+}
+
 /* ---------- Canvas tree view ---------- */
 .skill-view-toggle {
   display: inline-flex;
