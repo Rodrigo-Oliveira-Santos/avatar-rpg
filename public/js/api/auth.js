@@ -9,7 +9,8 @@
 import { isSupabaseEnabled } from './config.js';
 import { getSupabaseClient } from './supabase-client.js';
 
-const USERS_REGISTRY_KEY = 'avatar_rpg_users_registry';
+const USERS_REGISTRY_KEY = 'avatar_users_registry';
+const LEGACY_REGISTRY_KEY = 'avatar_rpg_users_registry';
 
 /**
  * Pre-defined test profiles. Mirrors `supabase/seed.sql` so behaviour is
@@ -32,8 +33,23 @@ function normalizeUsername(username) {
 function readUserRegistry() {
   try {
     const stored = localStorage.getItem(USERS_REGISTRY_KEY);
-    const parsed = stored ? JSON.parse(stored) : null;
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;
+    }
+    // First-time-after-split migration: copy the legacy cross-app
+    // registry into the new Avatar-only key so existing installs keep
+    // their users without manual intervention. Idempotent — runs only
+    // when the new key is still empty.
+    const legacy = localStorage.getItem(LEGACY_REGISTRY_KEY);
+    if (legacy) {
+      const parsedLegacy = JSON.parse(legacy);
+      if (parsedLegacy && typeof parsedLegacy === 'object' && !Array.isArray(parsedLegacy)) {
+        localStorage.setItem(USERS_REGISTRY_KEY, JSON.stringify(parsedLegacy));
+        return parsedLegacy;
+      }
+    }
+    return {};
   } catch {
     return {};
   }

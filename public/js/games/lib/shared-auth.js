@@ -9,8 +9,8 @@
  *   • Substituição segura do "Perfis de teste" estático por uma frase
  *     contextual (ou ocultação total).
  *   • Chave de sessão por jogo (`storageKey`) — completamente isolada.
- *   • Inferência de role a partir do registry partilhado do Avatar
- *     (`avatar_rpg_users_registry`).
+ *   • Inferência de role a partir do registry da PRÓPRIA app
+ *     (per-app accounts, post 2026-06-30 split).
  *
  * Nota: o botão "← Início" do overlay é gerido globalmente em
  * `public/js/main.js` (boot-time) para que esteja disponível em
@@ -18,6 +18,11 @@
  */
 
 import { $, on } from '../../utils/dom.js';
+import {
+  APP_REGISTRY_KEYS,
+  APP_SESSION_KEYS,
+  ensureAppSeed,
+} from './users-registry.js';
 
 const HINTS_NODE_SELECTOR = '#login-overlay .login-test-hints';
 const TITLE_SELECTOR = '#login-overlay .login-title';
@@ -26,19 +31,46 @@ const BOX_SELECTOR = '#login-overlay .login-box';
 
 const DEFAULT_LOGO = '⚡ Avatar RPG';
 
-function inferRole(username) {
-  try {
-    const raw = localStorage.getItem('avatar_rpg_users_registry');
-    const reg = raw ? JSON.parse(raw) : {};
-    if (reg[username]?.role) return reg[username].role;
-  } catch {}
-  if (username === 'admin') return 'admin';
-  if (username === 'gm') return 'gm';
-  return 'player';
+/**
+ * Map a session storageKey back to an app id so we can look up the
+ * right per-app registry. Falls back to 'avatar' when the key is
+ * unrecognised (defensive — keeps the old behaviour for unknown
+ * callers).
+ */
+function resolveAppId(storageKey) {
+  for (const [appId, key] of Object.entries(APP_SESSION_KEYS)) {
+    if (key === storageKey) return appId;
+  }
+  return 'avatar';
+}
+
+/**
+ * Build an `inferRole(username)` function scoped to one app. Each
+ * shared-auth instance binds to a single app via its `storageKey`
+ * (e.g. `dnd_user` → D&D), so role lookups don't leak across apps.
+ */
+function makeInferRole(appId) {
+  const key = APP_REGISTRY_KEYS[appId] || APP_REGISTRY_KEYS.avatar;
+  // First call seeds the per-app registry (idempotent) so the test
+  // profiles + their default roles work even if the player never went
+  // through any admin panel yet.
+  try { ensureAppSeed(appId); } catch {}
+  return (username) => {
+    try {
+      const raw = localStorage.getItem(key);
+      const reg = raw ? JSON.parse(raw) : {};
+      if (reg[username]?.role) return reg[username].role;
+    } catch {}
+    if (username === 'admin') return 'admin';
+    if (username === 'gm') return 'gm';
+    return 'player';
+  };
 }
 
 export function createSharedAuth({ storageKey, defaultTitle, hintText, brand = null }) {
   if (!storageKey) throw new Error('createSharedAuth: storageKey is required');
+  const appId = resolveAppId(storageKey);
+  const inferRole = makeInferRole(appId);
 
   function readUser() {
     try {

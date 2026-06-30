@@ -22,7 +22,7 @@
  */
 
 import { isSupabaseEnabled } from '../api/config.js';
-import { STORAGE_KEY as REGISTRY_KEY } from '../games/lib/users-registry.js';
+import { APP_REGISTRY_KEYS } from '../games/lib/users-registry.js';
 
 const CHARACTER_PREFIX = 'avatar_rpg_character_';
 export const LOCAL_SEED_MARKER = 'avatar_rpg_local_seed_v2';
@@ -280,28 +280,33 @@ function writeMarker() {
 }
 
 function ensureRegistry() {
-  // Touch the registry so its self-seed kicks in and every preset has
-  // the right role, even when the marker says the seed already ran.
-  let raw;
-  try { raw = localStorage.getItem(REGISTRY_KEY); } catch { return; }
-  let parsed = {};
-  if (raw) {
-    try { parsed = JSON.parse(raw) || {}; } catch { parsed = {}; }
-  }
-  let mutated = false;
+  // Per-app accounts (post 2026-06-30 split): seed each of the three
+  // registries independently so the same preset username exists as a
+  // separate account in Avatar, D&D and MC. The admin can later
+  // diverge their roles per-app — we just set the same defaults
+  // everywhere on first run.
   const now = new Date().toISOString();
-  for (const [username, role] of Object.entries(PRESET_ROLES)) {
-    const existing = parsed[username];
-    if (!existing) {
-      parsed[username] = { role, created_at: now };
-      mutated = true;
-    } else if (!existing.role) {
-      existing.role = role;
-      mutated = true;
+  for (const key of Object.values(APP_REGISTRY_KEYS)) {
+    let raw;
+    try { raw = localStorage.getItem(key); } catch { continue; }
+    let parsed = {};
+    if (raw) {
+      try { parsed = JSON.parse(raw) || {}; } catch { parsed = {}; }
     }
-  }
-  if (mutated) {
-    try { localStorage.setItem(REGISTRY_KEY, JSON.stringify(parsed)); } catch {}
+    let mutated = false;
+    for (const [username, role] of Object.entries(PRESET_ROLES)) {
+      const existing = parsed[username];
+      if (!existing) {
+        parsed[username] = { role, created_at: now };
+        mutated = true;
+      } else if (!existing.role) {
+        existing.role = role;
+        mutated = true;
+      }
+    }
+    if (mutated) {
+      try { localStorage.setItem(key, JSON.stringify(parsed)); } catch {}
+    }
   }
 }
 
