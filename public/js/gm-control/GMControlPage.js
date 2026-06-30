@@ -685,18 +685,22 @@ export class GMControlPage {
    * Adjust one of the vital pools (hp/cp/sp) for a player. `column` is the
    * Supabase column to patch, `currentKey`/`maxKey` are the projection
    * fields on the hub player object.
+   *
+   * Offline mode writes the same column straight into the target's
+   * localStorage character (avatar_rpg_character_<username>) so the
+   * change survives reloads even without a Supabase backend.
    */
   async _adjustPlayerVital(player, column, delta, currentKey, maxKey) {
     const next = Math.max(0, Math.min(player[maxKey], player[currentKey] + delta));
     player[currentKey] = next;
+    const verb = column === 'hp_current' ? 'HP' : column === 'cp_current' ? 'Chi' : 'Espírito';
     try {
       if (isSupabaseEnabled()) {
         await updateVitals(player.username, { [column]: next });
-        const verb = column === 'hp_current' ? 'HP' : column === 'cp_current' ? 'Chi' : 'Espírito';
-        toast(`${player.name}: ${delta > 0 ? '+' : ''}${delta} ${verb} → ${next}`, delta < 0 ? 'warning' : 'success');
       } else {
-        toast('Supabase desligado — alteração não persistiu.', 'warning');
+        this._patchLocalCharacter(player.username, { [column]: next });
       }
+      toast(`${player.name}: ${delta > 0 ? '+' : ''}${delta} ${verb} → ${next}`, delta < 0 ? 'warning' : 'success');
     } catch (err) {
       toast(`Falha: ${err.message}`, 'error');
     }
@@ -706,12 +710,14 @@ export class GMControlPage {
   async _setPlayerVital(player, column, value, currentKey, maxKey) {
     const next = Math.max(0, Math.min(player[maxKey], Math.floor(value)));
     player[currentKey] = next;
+    const verb = column === 'hp_current' ? 'HP' : column === 'cp_current' ? 'Chi' : 'Espírito';
     try {
       if (isSupabaseEnabled()) {
         await updateVitals(player.username, { [column]: next });
-        const verb = column === 'hp_current' ? 'HP' : column === 'cp_current' ? 'Chi' : 'Espírito';
-        toast(`${player.name}: ${verb} = ${next}`, 'info');
+      } else {
+        this._patchLocalCharacter(player.username, { [column]: next });
       }
+      toast(`${player.name}: ${verb} = ${next}`, 'info');
     } catch (err) {
       toast(`Falha: ${err.message}`, 'error');
     }
@@ -719,28 +725,72 @@ export class GMControlPage {
   }
 
   /**
+   * Targeted localStorage patch on the target player's character entry.
+   * Used by the offline branches of _adjustPlayerVital / _setPlayerVital
+   * / _adjustPlayerField. Merges shallow keys; for nested paths use
+   * `_patchLocalCharacterPath`.
+   */
+  _patchLocalCharacter(username, patch) {
+    if (typeof localStorage === 'undefined') return;
+    const key = `avatar_rpg_character_${username}`;
+    let data;
+    try { data = JSON.parse(localStorage.getItem(key) || 'null') || {}; }
+    catch { data = {}; }
+    Object.assign(data, patch);
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  /** Same as _patchLocalCharacter but applies an additive delta on a dotted path (e.g. "identidade.xp_atual"). */
+  _patchLocalCharacterPath(username, path, delta) {
+    if (typeof localStorage === 'undefined') return null;
+    const key = `avatar_rpg_character_${username}`;
+    let data;
+    try { data = JSON.parse(localStorage.getItem(key) || 'null') || {}; }
+    catch { data = {}; }
+    const parts = path.split('.');
+    let target = data;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!target[parts[i]] || typeof target[parts[i]] !== 'object') target[parts[i]] = {};
+      target = target[parts[i]];
+    }
+    const last = parts[parts.length - 1];
+    const newValue = (Number(target[last]) || 0) + delta;
+    target[last] = newValue;
+    localStorage.setItem(key, JSON.stringify(data));
+    return newValue;
+  }
+
+  /**
    * Add `delta` to a (possibly nested) field on the player's character.
-   * Writes via `saveCharacter` (full row). Race with the player's
-   * AutoSave is acknowledged — see file header.
+   * Writes via `saveCharacter` (full row) when Supabase is on; falls
+   * back to a localStorage patch otherwise so the GM can still grant
+   * gold / XP in offline mode.
+   *
+   * Race with the player's AutoSave is acknowledged — see file header.
    */
   async _adjustPlayerField(player, path, delta) {
-    if (!isSupabaseEnabled()) {
-      toast('Supabase desligado — sem persistência remota.', 'warning');
-      return;
-    }
     try {
-      const char = await loadCharFromSupabase(player.username);
-      if (!char) { toast(`Sem ficha de ${player.name}.`, 'warning'); return; }
-      const parts = path.split('.');
-      let target = char;
-      for (let i = 0; i < parts.length - 1; i++) {
-        target[parts[i]] ??= {};
-        target = target[parts[i]];
+      if (isSupabaseEnabled()) {
+        const char = await loadCharFromSupabase(player.username);
+        if (!char) { toast(`Sem ficha de ${player.name}.`, 'warning'); return; }
+        const parts = path.split('.');
+        let target = char;
+        for (let i = 0; i < parts.length - 1; i++) {
+          target[parts[i]] ??= {};
+          target = target[parts[i]];
+        }
+        const last = parts[parts.length - 1];
+        target[last] = (Number(target[last]) || 0) + delta;
+        await saveCharToSupabase(player.username, char);
+      } else {
+        const newValue = this._patchLocalCharacterPath(player.username, path, delta);
+        if (newValue === null) {
+          toast('Sem armazenamento local disponível.', 'warning');
+          return;
+        }
       }
-      const last = parts[parts.length - 1];
-      target[last] = (Number(target[last]) || 0) + delta;
-      await saveCharToSupabase(player.username, char);
       toast(`${player.name}: ${path} ${delta > 0 ? '+' : ''}${delta}`, delta > 0 ? 'success' : 'warning');
+      this._renderCards();
     } catch (err) {
       toast(`Falha: ${err.message}`, 'error');
     }
