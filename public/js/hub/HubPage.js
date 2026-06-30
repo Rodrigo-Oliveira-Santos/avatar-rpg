@@ -213,6 +213,10 @@ export class HubPage {
     encounterHost.appendChild(encounterList);
     this.container.appendChild(encounterHost);
 
+    // Interactive ATLA map embed — cached on the instance so render()
+    // doesn't reload the iframe every time a trade/status update fires.
+    this.container.appendChild(this._getOrCreateMapSection());
+
     Promise.all([
       this.activeEncounter ? Promise.resolve(this.activeEncounter) : Promise.resolve(null),
       listMonstersStaged().then(() => null).catch(() => null), // warm cache only
@@ -477,27 +481,42 @@ export class HubPage {
     this.container.appendChild(section);
   }
 
-  openCharacterModal(player) {
+  async openCharacterModal(player) {
     if (!this.authManager?.hasRole('gm')) return;
 
-    const username = player?.id;
-    if (!username || typeof localStorage === 'undefined') {
+    const username = player?.username || player?.id;
+    if (!username) {
       toast('Ficha completa indisponível para este jogador.', 'warning');
       return;
     }
 
-    const rawCharacter = localStorage.getItem(`avatar_rpg_character_${username}`);
-    if (!rawCharacter) {
-      toast('Ficha completa indisponível para este jogador.', 'warning');
-      return;
-    }
-
+    // 1. Prefer Supabase when enabled — that's where the canonical seed
+    //    lives for test profiles like sokka/aang/toph.
+    let characterData = null;
     try {
-      const characterData = JSON.parse(rawCharacter);
-      this.characterModal.show(characterData, username);
-    } catch {
-      toast('Não foi possível carregar a ficha do jogador.', 'error');
+      const { isSupabaseEnabled } = await import('../api/config.js');
+      if (isSupabaseEnabled()) {
+        const { loadCharacter } = await import('../api/supabase-characters.js');
+        characterData = await loadCharacter(username);
+      }
+    } catch (err) {
+      console.warn('[HubPage.openCharacterModal] Supabase fetch failed', err);
     }
+
+    // 2. Fall back to localStorage for offline / pure-local mode.
+    if (!characterData && typeof localStorage !== 'undefined') {
+      const rawCharacter = localStorage.getItem(`avatar_rpg_character_${username}`);
+      if (rawCharacter) {
+        try { characterData = JSON.parse(rawCharacter); } catch {}
+      }
+    }
+
+    if (!characterData) {
+      toast('Ficha completa indisponível para este jogador.', 'warning');
+      return;
+    }
+
+    this.characterModal.show(characterData, username);
   }
 
   openTradeModal(targetUsername) {
@@ -507,6 +526,85 @@ export class HubPage {
     }
 
     this.tradeModal.showCreate(targetUsername);
+  }
+
+  /**
+   * Build (once) and return the interactive ATLA map embed section. The
+   * iframe is cached on the instance so subsequent `render()` calls just
+   * re-append the same node — preventing the map from reloading every
+   * time a status effect / trade / monster update triggers a refresh.
+   *
+   * Map by iYiyo (https://iyiyo.itch.io/avatarlastairbendermap) — embedded
+   * via the public itch.zone HTML host with a credit link back.
+   *
+   * Requires Cross-Origin Isolation (COOP=same-origin + COEP=require-corp)
+   * because the Godot WASM runtime inside the iframe asks for
+   * SharedArrayBuffer. Those headers are emitted by `public/serve.json`
+   * (local dev via `serve`) and `netlify.toml` (production). The Supabase
+   * client loader was moved to jsdelivr.net (which sends CORP) so that the
+   * isolation doesn't break our other cross-origin fetches.
+   */
+  _getOrCreateMapSection() {
+    if (this._mapSection) return this._mapSection;
+
+    const STORAGE_KEY = 'avatar_rpg_hub_map_collapsed';
+    let collapsed = false;
+    try { collapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch {}
+
+    const section = createElement('section', { class: 'hub-map-section' });
+
+    const header = createElement('div', { class: 'hub-map-header' });
+    const title = createElement('h2', {
+      class: 'hub-map-title',
+      textContent: '🗺 Mapa Interativo do Mundo',
+    });
+    const credit = createElement('a', {
+      class: 'hub-map-credit',
+      href: 'https://iyiyo.itch.io/avatarlastairbendermap',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      textContent: 'por iYiyo ↗',
+    });
+    const toggleBtn = createElement('button', {
+      type: 'button',
+      class: 'hub-map-toggle',
+      textContent: collapsed ? '▼ Mostrar' : '▲ Esconder',
+      title: collapsed ? 'Mostrar mapa' : 'Esconder mapa',
+    });
+
+    const titleWrap = createElement('div', { class: 'hub-map-title-wrap' });
+    titleWrap.append(title, credit);
+    header.append(titleWrap, toggleBtn);
+    section.appendChild(header);
+
+    const frameWrap = createElement('div', {
+      class: 'hub-map-frame-wrap',
+    });
+    if (collapsed) frameWrap.hidden = true;
+
+    const iframe = createElement('iframe', {
+      class: 'hub-map-iframe',
+      src: 'https://html.itch.zone/html/8396265/index.html',
+      title: 'Mapa Interativo Avatar: The Last Airbender',
+      loading: 'lazy',
+      allowfullscreen: 'true',
+      scrolling: 'no',
+    });
+    iframe.setAttribute('allow', 'fullscreen; gamepad; gyroscope; accelerometer; cross-origin-isolated');
+    iframe.setAttribute('frameborder', '0');
+    frameWrap.appendChild(iframe);
+    section.appendChild(frameWrap);
+
+    on(toggleBtn, 'click', () => {
+      const next = !frameWrap.hidden;
+      frameWrap.hidden = next;
+      toggleBtn.textContent = next ? '▼ Mostrar' : '▲ Esconder';
+      toggleBtn.title = next ? 'Mostrar mapa' : 'Esconder mapa';
+      try { localStorage.setItem(STORAGE_KEY, next ? '1' : '0'); } catch {}
+    });
+
+    this._mapSection = section;
+    return section;
   }
 
   /**
@@ -765,5 +863,6 @@ export class HubPage {
     this.encounterPanel = null;
     this.statusEffectManager?.close?.();
     this.characterModal.close();
+    this._mapSection = null;
   }
 }

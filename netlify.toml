@@ -109,3 +109,17 @@
 [dev]
   port = 3000
   autoLaunch = false
+
+# Cross-Origin Isolation — required by the Godot interactive map
+# (https://iyiyo.itch.io/avatarlastairbendermap) embedded in the Hub.
+# `require-corp` enables COI in every browser that supports COEP.
+# All cross-origin resources we depend on send compatible headers:
+#   • html.itch.zone (the map iframe) sends CORP cross-origin
+#   • jsdelivr.net (supabase-js loader) sends CORP cross-origin
+#   • Supabase REST (CORS fetches) is exempt from CORP under cors-mode
+#   • Supabase Realtime is WebSocket, not subject to COEP
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
