@@ -1,8 +1,8 @@
 # Multi-Game Platform — Design
 
-**Status:** Avatar (Phases 1-6) ✓ · D&D 5e (MVP) ✓ · Minecraft (MVP) ✓
+**Status:** Avatar (Phases 1-6 + Admin) ✓ · D&D 5e (MVP + Admin) ✓ · Minecraft (MVP + Admin) ✓
 **Branch:** `feature/multi-game-platform`
-**Updated:** 2026-06-29
+**Updated:** 2026-06-30
 
 > Cada app tem um doc próprio:
 > [`AVATAR-APP.md`](AVATAR-APP.md) · [`DND-APP.md`](DND-APP.md) · [`MINECRAFT-APP.md`](MINECRAFT-APP.md)
@@ -11,11 +11,11 @@
 
 Extend the site to host three independent "apps" sharing the same user/auth layer:
 
-| App        | Purpose                                                                    | Status              |
-|------------|----------------------------------------------------------------------------|---------------------|
-| `avatar`   | The existing Avatar: The Last Airbender RPG                                | Done (Phases 1-6)   |
-| `dnd`      | Plain D&D 5e character sheets — no Avatar customisations                   | MVP (full sheet)    |
-| `minecraft`| Showcase of Minecraft build schematics, hosted via external file links     | MVP (gallery + CRUD)|
+| App        | Purpose                                                                    | Status                  |
+|------------|----------------------------------------------------------------------------|-------------------------|
+| `avatar`   | The existing Avatar: The Last Airbender RPG                                | Done (Phases 1-6 + Admin)|
+| `dnd`      | Plain D&D 5e character sheets — no Avatar customisations                   | MVP + Admin tab         |
+| `minecraft`| Showcase of Minecraft build schematics, hosted via external file links     | MVP + Admin tab         |
 
 ## Top-level navigation
 
@@ -76,7 +76,60 @@ público + cartões dos 3 jogos.
     centraliza o reuso do `#login-overlay` (título por jogo, hints
     contextuais, clone de form para evitar leak de listeners).
 
-## Next steps (backlog)
+## Admin panels & role sync cross-app
+
+Adicionado a 2026-06-30. O registry de utilizadores
+(`avatar_rpg_users_registry`, chave herdada do Avatar) passou a ser
+consumido por **todos** os admin panels via um módulo partilhado:
+
+```
+public/js/games/lib/
+  users-registry.js   ← seed defaults, validação, applyRoleChange,
+                        deleteUser cascata, getActiveSessions,
+                        getCurrentAdmin, hasAnyAdminSession
+  delete-user-ui.js   ← confirmação DUPLA + summary do que foi removido
+  user-picker.js      ← modal "escolhe um username" (transfer builds)
+```
+
+Painéis admin disponíveis:
+
+- **Avatar — `js/admin/AdminPanel.js`**: vista clássica com users +
+  `BackupRestore` + `LogViewer`. Role-change delega ao
+  `users-registry.applyRoleChange` (sincroniza as 4 chaves de sessão).
+  "Apagar conta" usa `confirmAndDeleteUser`.
+- **D&D — `games/dnd/pages/AdminPage.js`**: lista users + ficha D&D
+  (Nv/classes), role mgmt, "Editar" entra em **modo impersonate** no
+  app (banner "👁 A editar como ..."); os saves vão para o username
+  alvo. "Apagar ficha" só remove a ficha D&D (não toca em Avatar/MC).
+  "Apagar conta" usa o helper partilhado (cascata cross-app).
+- **Minecraft — `games/minecraft/pages/AdminPage.js`**: role mgmt +
+  listagem de TODAS as builds com edit/delete/transfer; bulk-transfer
+  por utilizador. "Apagar conta" idem.
+- **Landing — `games/landing/pages/AdminLandingPage.js`**: painel
+  agregador, visível via botão "🛡️ Admin Global" sempre que
+  `hasAnyAdminSession()` for true (admin em qualquer das 4 chaves).
+  Lista todos os utilizadores conhecidos (registry + extras
+  detectados em `avatar_rpg_character_*`, `dnd_character_*`,
+  `mc_builds`), com colunas por jogo a mostrar se têm ficha/builds.
+
+Regras comuns (validação no módulo partilhado):
+- Player → só pode promover a GM.
+- GM → pode promover a Admin ou rebaixar a Player.
+- Admin → só pode ser rebaixado a GM.
+- Máximo `MAX_ADMINS = 3`.
+- Tem de existir sempre ≥ 1 admin.
+- Quem executa não se pode rebaixar a si próprio.
+- Quem executa não se pode apagar a si próprio.
+
+`deleteUser` (cascata local + Supabase via APIs dedicadas):
+- Remove entrada do `avatar_rpg_users_registry`.
+- Apaga `avatar_rpg_character_{username}`.
+- Apaga ficha D&D (`api/dnd-characters.deleteCharacter`).
+- Apaga **todas** as builds Minecraft do utilizador
+  (`api/mc-builds.deleteBuild` por build; cleanup de reactions/listas).
+- Remove qualquer reaction MC desse user (mesmo em builds de outros).
+- Apaga listas MC do user (`mc_lists_{username}`).
+- Limpa qualquer sessão activa (avatar/dnd/mc/landing) com esse user.
 
 ## Folder layout
 
@@ -87,20 +140,28 @@ public/js/
 ├── router.js            ← hash router
 ├── games/
 │   ├── lib/             ← código partilhado entre os jogos novos
-│   │   └── shared-auth.js   ← createSharedAuth({ storageKey, defaultTitle })
+│   │   ├── shared-auth.js       ← createSharedAuth({ storageKey, … })
+│   │   ├── users-registry.js    ← registry + role rules + deleteUser
+│   │   ├── delete-user-ui.js    ← confirm dupla + summary
+│   │   └── user-picker.js       ← modal escolhe username
+│   ├── landing/
+│   │   ├── index.js     ← seletor de jogos + entry para Admin Global
+│   │   └── pages/       ← LandingPage, AdminLandingPage
+│   ├── back-widget.js   ← "← Início" flutuante
 │   ├── avatar/          ← Avatar entrypoint (delegates to existing modules)
 │   ├── dnd/
-│   │   ├── index.js     ← D&D entrypoint (mount/unmount, tabs, autosave)
+│   │   ├── index.js     ← D&D entrypoint (mount/unmount, tabs, autosave, impersonate)
 │   │   ├── data/srd.js  ← tabelas SRD (skills, classes, races, XP)
 │   │   ├── dnd-character.js  ← modelo + cálculos (modifiers, prof, saves)
 │   │   ├── dnd-trade.js      ← trade entre jogadores (state machine)
 │   │   ├── dnd-import.js     ← packs (spells/subclasses/items/races)
 │   │   └── pages/            ← Character, Skills, Spells, Inventory, Trade,
-│   │                            Hub, Import
+│   │                            Hub, Import, Admin
 │   └── minecraft/
 │       ├── index.js     ← Minecraft entrypoint
 │       ├── lib/         ← drive.js (link helpers), social.js (YT/IG)
-│       └── pages/       ← Gallery, MyPanel, BuildForm
+│       ├── components/  ← reactions-bookmarks.js (like/dislike + playlists)
+│       └── pages/       ← Gallery, MyPanel, BuildForm, Lists, Admin
 └── utils/, character/, … (existing shared)
 ```
 

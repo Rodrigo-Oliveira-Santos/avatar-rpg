@@ -1,12 +1,12 @@
 # Avatar RPG — Documento de Features
 
-**Última atualização:** 2026-06-26
+**Última atualização:** 2026-06-30
 **Status:** Documento de referência
 
 > **Nota multi-game:** Este documento descreve apenas a app Avatar.
-> Para D&D 5e e Minecraft Builds (adicionadas em 2026-06-29), ver:
-> [`docs/DND-APP.md`](./docs/DND-APP.md) · [`docs/MINECRAFT-APP.md`](./docs/MINECRAFT-APP.md)
-> · [`docs/MULTI-GAME-DESIGN.md`](./docs/MULTI-GAME-DESIGN.md)
+> Para D&D 5e, Minecraft Builds e arquitetura cross-app, ver:
+> [`DND-APP.md`](./DND-APP.md) · [`MINECRAFT-APP.md`](./MINECRAFT-APP.md)
+> · [`MULTI-GAME-DESIGN.md`](./MULTI-GAME-DESIGN.md)
 
 **Legenda:**
 - ✅ Implementado
@@ -387,8 +387,8 @@ Usernames disponíveis no login — cada um carrega um personagem pré-configura
 
 ## Diagramas
 
-- **Diagrama Não-Técnico Principal:** `DIAGRAMAS-NÃO-TÉCNICOS.md`
-- **Diagrama Técnico Principal:** `DIAGRAMAS-TÉCNICOS.md`
+- **Diagrama Não-Técnico Principal:** [`DIAGRAMAS-NÃO-TÉCNICOS.md`](./DIAGRAMAS-NÃO-TÉCNICOS.md)
+- **Diagrama Técnico Principal:** [`DIAGRAMAS-TÉCNICOS.md`](./DIAGRAMAS-TÉCNICOS.md)
 
 ---
 

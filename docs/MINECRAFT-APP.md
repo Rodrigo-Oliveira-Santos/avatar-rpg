@@ -1,7 +1,7 @@
 # Minecraft Builds — App Reference
 
-**Status:** MVP implementado (galeria pública + painel pessoal autenticado)
-**Updated:** 2026-06-29
+**Status:** MVP + Admin (galeria pública + painel pessoal + tab admin com transfer/delete)
+**Updated:** 2026-06-30
 
 ## Intuito
 
@@ -18,8 +18,11 @@ upload de imagens — só URLs.
 
 - **Visitantes** — qualquer pessoa pode ver a galeria sem login.
 - **Utilizadores autenticados** — têm um "Painel Pessoal" para adicionar,
-  editar e apagar as suas próprias builds.
-- **Admins** — podem editar/apagar builds de outros (moderação).
+  editar e apagar as suas próprias builds + "Minhas Listas" para
+  organizar bookmarks.
+- **Admins** — têm uma tab "Admin" adicional: gerir roles, apagar
+  contas, listar/editar/apagar/transferir TODAS as builds (single ou
+  bulk por utilizador).
 
 ## Pilares de design
 
@@ -74,10 +77,25 @@ Para uma imagem ou ficheiro no Drive:
 | Galeria        | Público             | Lista todas as builds com filtros e duas vistas        |
 | Painel Pessoal | Autenticado         | CRUD das builds do utilizador                          |
 | Minhas Listas  | Autenticado         | Cria/renomeia/apaga playlists; vê builds por lista     |
+| Admin          | Admin               | Gerir users (roles, apagar conta), edit/delete/transfer builds |
+
+### Tab Admin (Admin only)
+
+- **Utilizadores**: tabela com role mgmt (mesmas regras do registry
+  partilhado), contagem de builds por user e botão
+  "📦 Transferir N builds" para passar **todas** as builds de um user
+  para outro (escolha de destino via modal `lib/user-picker`).
+- **Todas as builds**: lista cada build com botões "✎ Editar"
+  (reutiliza o form), "📦 Transferir" (single, escolha de novo dono)
+  e "🗑 Apagar".
+
+API que suporta isto: `api/mc-builds.js` adicionou
+`transferBuild(buildId, toUsername)` e
+`transferAllBuildsFromUser(fromUsername, toUsername)`.
 
 ## Schema (Supabase, opcional)
 
-Ver `docs/MULTI-GAME-DESIGN.md` (`mc_builds`). Migration adicional em
+Ver [`MULTI-GAME-DESIGN.md`](MULTI-GAME-DESIGN.md) (`mc_builds`). Migration adicional em
 `supabase/migrations/20260629100000_multi_game_extras.sql` adiciona
 `video_url` e `social_url`. Versão completa guardada na DB:
 

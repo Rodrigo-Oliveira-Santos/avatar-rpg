@@ -1,4 +1,8 @@
-# Como Correr Localmente — Avatar RPG
+# Como Correr Localmente — Avatar RPG (Multi-game)
+
+> **Plataforma multi-app**: este projeto aloja Avatar RPG + D&D 5e +
+> Minecraft Builds. Por defeito abre a landing com seletor de jogo.
+> Para arrancar uma app individual, ver "Comandos" abaixo.
 
 ## Pré-requisitos
 
@@ -15,8 +19,13 @@ Todos os dados são guardados no `localStorage` do browser.
 # 1. Instalar dependências
 npm install
 
-# 2. Correr servidor local
+# 2. Correr servidor local (landing + 3 apps)
 npm run dev
+
+# … ou abrir apenas uma app (esconde a landing)
+npm run dev:avatar
+npm run dev:dnd
+npm run dev:minecraft
 ```
 
 Abre o browser em **http://localhost:3000**
@@ -42,14 +51,18 @@ Podes também escrever qualquer username novo — será criado como jogador.
 ## Testes
 
 ```bash
-# Correr todos os testes (101+ testes unitários)
+# Correr todos os testes (332 testes unitários, 25 ficheiros)
 npm test
 
 # Modo watch (re-corre ao guardar ficheiros)
 npm run test:watch
 ```
 
-Os testes cobrem lógica de jogo: stats, XP, slots, inventário, moedas, scrolls, subclasses e trocas.
+Os testes cobrem lógica de jogo Avatar (stats, XP, slots, inventário,
+moedas, scrolls, subclasses, trocas), API Avatar, e os módulos das
+apps adicionais (D&D character/trade/import/mapper, MC reactions/
+lists/transfer/social/drive, router, users-registry partilhado,
+delete-user cascata, dnd-delete-character).
 
 ---
 
@@ -58,20 +71,33 @@ Os testes cobrem lógica de jogo: stats, XP, slots, inventário, moedas, scrolls
 ```
 avatar-rpg/
 ├── public/            ← Frontend (HTML, CSS, JS)
-│   ├── index.html     ← Página principal (SPA)
+│   ├── index.html     ← SPA (todos os jogos)
 │   ├── css/           ← Estilos (main.css + components/)
-│   └── js/            ← Módulos ES6 (app.js, character/, skills/, etc.)
-├── tests/             ← Testes unitários (vitest)
+│   └── js/
+│       ├── main.js, router.js, app.js
+│       ├── games/     ← Multi-game scaffolding
+│       │   ├── landing/   (game selector + Admin Global)
+│       │   ├── lib/       (shared-auth, users-registry, …)
+│       │   ├── back-widget.js
+│       │   ├── avatar/    (delega no App existente)
+│       │   ├── dnd/       (entrypoint + pages + data SRD)
+│       │   └── minecraft/ (entrypoint + pages + lib)
+│       ├── admin/, auth/, character/, skills/, items/, shop/, hub/,
+│       │   import/, trade/, combat/, storage/, utils/   ← Avatar
+│       └── api/       ← Avatar + dnd-characters + mc-builds/…
+├── tests/             ← Testes unitários (vitest, 25 ficheiros / 332 testes)
 ├── netlify/
-│   └── functions/     ← API serverless (futuro — não ativo)
+│   └── functions/     ← API serverless (Avatar)
 ├── supabase/
-│   ├── schema.sql     ← Estrutura da BD (futuro — não ativo)
-│   └── seed.sql       ← (vazio — dados via importação JSON)
-├── Initial Files/     ← JSONs de referência do protótipo
-├── package.json       ← Dependencies e scripts
-├── vitest.config.js   ← Configuração de testes
-├── netlify.toml       ← Config Netlify (futuro)
-└── .env.example       ← Template variáveis ambiente (futuro)
+│   ├── migrations/    ← 5 migrations (init + relax-RLS + multi-game + extras + mc-reactions/lists)
+│   ├── schema.sql     ← Legacy (referência; migrations são canónicas)
+│   └── seed.sql       ← Utilizadores de teste + fichas iniciais
+├── docs/              ← Documentação humana (FEATURES, DECISIONS, DIAGRAMAS-*, *-APP, MULTI-GAME-DESIGN)
+├── scripts/dev-game.js ← launcher single-game (?game=<id>)
+├── CLAUDE.md, .github/copilot-instructions.md  ← context p/ agentes
+├── package.json, vitest.config.js
+├── netlify.toml
+└── .env.example
 ```
 
 ---
@@ -80,8 +106,11 @@ avatar-rpg/
 
 | Comando | Descrição |
 |---------|-----------|
-| `npm run dev` | Servidor local (http://localhost:3000) |
-| `npm test` | Correr testes unitários |
+| `npm run dev` | Servidor local com **landing + 3 apps** (http://localhost:3000) |
+| `npm run dev:avatar` | Apenas a app Avatar RPG (esconde a landing) |
+| `npm run dev:dnd` | Apenas a app D&D 5e |
+| `npm run dev:minecraft` | Apenas a app Minecraft Builds |
+| `npm test` | Correr testes unitários (332 testes) |
 | `npm run test:watch` | Testes em modo watch |
 | `npm run build` | (placeholder — sem bundler) |
 | `npm run db:start` | (opcional) Arranca Supabase local |

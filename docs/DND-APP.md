@@ -1,7 +1,7 @@
 # D&D 5e — App Reference
 
-**Status:** MVP implementado (ficha completa 5e + Hub + GM básico)
-**Updated:** 2026-06-29
+**Status:** MVP + Admin (ficha completa 5e + Hub + GM + Admin tab com impersonate)
+**Updated:** 2026-06-30
 
 ## Intuito
 
@@ -17,7 +17,9 @@ níveis 1–20.
   perícias, HP, AC, inventário, magias, features, XP/nível).
 - **GM** — ver todas as fichas no Hub, atribuir XP/ouro, ver detalhes dos
   personagens.
-- **Admin** — herda permissões do GM (sem painel próprio para já).
+- **Admin** — herda permissões do GM **e** tem uma tab dedicada para
+  gerir utilizadores (roles, apagar conta) e editar/apagar qualquer ficha
+  via modo "impersonate".
 
 ## Pilares de design
 
@@ -43,6 +45,24 @@ níveis 1–20.
 | Hub        | Todos      | Lista de jogadores e respetivas fichas                                    |
 | GM         | GM/Admin   | Atribuir XP/ouro (rows individuais + bulk com confirmação visual)         |
 | Importar   | GM/Admin   | Carregar JSON em 4 domínios: spells, subclasses, magic items, races       |
+| Admin      | Admin      | Gerir utilizadores (roles, apagar conta), editar/apagar qualquer ficha    |
+
+### Modo "impersonate" (Admin)
+
+No tab Admin, o botão "✎ Editar" ao lado de outro utilizador entra em
+**modo impersonate**:
+- Aparece um **banner roxo** no topo da app: "👁 A editar como
+  {username} (modo admin)" com um botão "← Voltar a mim".
+- As tabs `Ficha`, `Perícias`, `Magias` e `Inventário` passam a editar
+  a ficha do alvo. Todos os saves (autosave incluído) vão para o
+  username alvo.
+- Tabs `Trade`, `Hub` e `GM` continuam a operar com a sessão do admin
+  (não fazem sentido em modo impersonate).
+- "Voltar a mim" faz `flush` da ficha alvo e regressa à tab Admin.
+
+API que suporta isto: `api/dnd-characters.deleteCharacter(username)` —
+remove ficha do Supabase (se activo), do localStorage e do registry
+secundário `dnd_characters_registry`.
 
 ## Fórmulas 5e
 
@@ -78,7 +98,7 @@ XP table segue a tabela canónica 5e (300 → 355 000) — código em
 
 ## Schema (Supabase, opcional)
 
-Ver `docs/MULTI-GAME-DESIGN.md` (`dnd_characters`). Migration adicional
+Ver [`MULTI-GAME-DESIGN.md`](MULTI-GAME-DESIGN.md) (`dnd_characters`). Migration adicional
 em `supabase/migrations/20260629100000_multi_game_extras.sql` adiciona a
 coluna `classes jsonb` para multiclass.
 

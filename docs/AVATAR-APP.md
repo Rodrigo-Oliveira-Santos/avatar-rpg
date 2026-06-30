@@ -1,7 +1,7 @@
 # Avatar RPG — App Reference
 
-**Status:** Phases 1–6 complete (production-ready in localStorage mode; Supabase opt-in)
-**Updated:** 2026-06-29
+**Status:** Phases 1–6 complete (production-ready em modo localStorage; Supabase opt-in)
+**Updated:** 2026-06-30
 
 ## Intuito
 
@@ -17,7 +17,11 @@ conteúdos e gerir a sessão.
   inventário, XP, ouro, level-up).
 - **GM (Game Master)** — distribuir recompensas (XP, ouro, loot), importar
   packs de skills/items via JSON, ver todos os personagens.
-- **Admin** — gerir utilizadores, fazer backup/restore, ver logs do sistema.
+- **Admin** — gerir utilizadores (promover/rebaixar, **apagar conta em
+  cascata**), fazer backup/restore, ver logs do sistema. O role registry
+  é **partilhado** com D&D / Minecraft (chave `avatar_rpg_users_registry`)
+  e existe um painel **Admin Global** na landing para gerir as 3 apps
+  em conjunto — ver [`MULTI-GAME-DESIGN.md`](MULTI-GAME-DESIGN.md).
 
 ## Pilares de design
 
@@ -26,7 +30,8 @@ conteúdos e gerir a sessão.
    de Metal, Dobra de Sangue, Raio Azul).
 2. **Stats próprias do sistema** — atributos FOR/AGI/CHI/PER/RES/ESP e
    recursos Vida / Espírito / Chi com fórmulas próprias (ver
-   `copilot-instructions.md`).
+   [`../README.md`](../README.md) ou
+   [`../.github/copilot-instructions.md`](../.github/copilot-instructions.md)).
 3. **Multi-moeda por nação** — cada nação tem moeda própria (`ouro_terra`,
    `gelo_polar`, etc.), conversíveis entre si na loja.
 4. **Sessão isolada** — quando se sai da app, a sessão é fechada;
@@ -96,7 +101,7 @@ no domínio. Para correr tudo (multi-game) usa `npm run dev`.
 
 ## Referências cruzadas
 
-- `FEATURES.md` — checklist de funcionalidades.
-- `DIAGRAMAS-NÃO-TÉCNICOS.md` — fluxos de jogo.
-- `DIAGRAMAS-TÉCNICOS.md` — arquitetura, schema, API, JSON de import.
-- `DEV-LOCAL.md` — Supabase local.
+- [`FEATURES.md`](./FEATURES.md) — checklist de funcionalidades.
+- [`DIAGRAMAS-NÃO-TÉCNICOS.md`](./DIAGRAMAS-NÃO-TÉCNICOS.md) — fluxos de jogo.
+- [`DIAGRAMAS-TÉCNICOS.md`](./DIAGRAMAS-TÉCNICOS.md) — arquitetura, schema, API, JSON de import.
+- [`DEV-LOCAL.md`](./DEV-LOCAL.md) — Supabase local.

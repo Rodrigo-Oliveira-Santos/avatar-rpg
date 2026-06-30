@@ -1,8 +1,14 @@
 # Avatar RPG — Decisões e Pendentes
 
-**Última atualização:** 2026-06-26
+**Última atualização:** 2026-06-30
 
 Este documento centraliza decisões de design tomadas (ou ainda em aberto) que afectam a implementação. Manter aqui evita-as perderem-se no histórico.
+
+> **Nota:** Este documento é específico da app Avatar. Para D&D 5e e
+> Minecraft Builds, ver respectivamente
+> [`DND-APP.md`](./DND-APP.md) e [`MINECRAFT-APP.md`](./MINECRAFT-APP.md).
+> Para arquitetura multi-game e admin panels cross-app, ver
+> [`MULTI-GAME-DESIGN.md`](./MULTI-GAME-DESIGN.md).
 
 ---
 
@@ -41,7 +47,7 @@ Este documento centraliza decisões de design tomadas (ou ainda em aberto) que a
 - Seed em `supabase/seed.sql` insere os utilizadores de teste e personagens iniciais.
 - Frontend ganha um caminho dual: localStorage continua a ser o default, Supabase activa-se quando `useSupabase: true` em `public/config.js` (ou `?supabase=1` na URL).
 - AutoSave dispara um upsert no Supabase além do save local; falhas remotas não destroem a cópia em localStorage.
-- Ver `DEV-LOCAL.md` → secção "Modo BD local".
+- Ver [`DEV-LOCAL.md`](./DEV-LOCAL.md) → secção "Modo BD local".
 
 ---
 
