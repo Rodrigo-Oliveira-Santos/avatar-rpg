@@ -48,7 +48,17 @@ const BRANCH_ICON = {
  *
  * @param {object} args
  * @param {object} args.skill            — Full skill definition (id, name, chi_cost, chi_restore, branch, description, …)
- * @param {object} args.state            — { uses, mastery, currentCp, maxCp, cooldown?: {remaining_vezes, reason} }
+ * @param {object} args.state            — {
+ *     uses, mastery, currentCp, maxCp,
+ *     cooldown?: { remaining_vezes, reason },
+ *     inactive?: boolean,
+ *   }
+ *   - `inactive: true` flags an unlocked-but-not-equipped skill. The
+ *     card is dimmed, the Use button is disabled with a "Activa
+ *     primeiro" hint and a small "inativa" badge replaces the chi
+ *     banner. Used by the profile's "Todas as habilidades" section
+ *     so the player sees skills they own without an extra trip to
+ *     the skill tree.
  * @param {boolean} args.compact         — Compact mode (smaller font, no description preview).
  * @param {(skill) => void} args.onUse   — Click handler for the Usar button.
  */
@@ -62,23 +72,33 @@ export function createSkillUseCard({ skill, state, compact = false, onUse }) {
 
   const insufficientChi = cost > 0 && currentCp < cost;
   const cooldown = state?.cooldown || null; // { remaining_vezes, reason } or null
-  const disabled = insufficientChi || !!cooldown;
+  const inactive = !!state?.inactive;
+  const disabled = inactive || insufficientChi || !!cooldown;
 
   const accent = BRANCH_ACCENT[skill.branch] || '#D88840';
   const icon = BRANCH_ICON[skill.branch] || '⚡';
 
   const card = createElement('article', {
-    class: `suc${compact ? ' suc-compact' : ''}${disabled ? ' suc-disabled' : ''}${insufficientChi ? ' suc-no-chi' : ''}${cooldown ? ' suc-cooldown' : ''}`,
+    class: [
+      'suc',
+      compact && 'suc-compact',
+      disabled && 'suc-disabled',
+      inactive && 'suc-inactive',
+      insufficientChi && !inactive && 'suc-no-chi',
+      cooldown && !inactive && 'suc-cooldown',
+    ].filter(Boolean).join(' '),
   });
   card.style.setProperty('--suc-accent', accent);
 
-  // Tooltip: full description + state explanation. Lets the player
-  // hover to learn why a card is greyed out without expanding it.
+  // Tooltip: full description + reason for any disabled state. Lets
+  // the player hover to learn why a card is greyed out without
+  // expanding the card body.
   const tooltip = [];
   if (skill.description) tooltip.push(skill.description);
   if (cost > 0) tooltip.push(`Custo: ${cost} chi`);
   if (restore > 0) tooltip.push(`Restaura: ${restore} chi`);
-  if (insufficientChi) tooltip.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
+  if (inactive) tooltip.push('ℹ Skill desbloqueada mas não ativa — activa-a na skill tree para a usar.');
+  else if (insufficientChi) tooltip.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
   if (cooldown) tooltip.push(`⏱ Cooldown: ${cooldown.reason || `${cooldown.remaining_vezes} vez(es)`}`);
   card.title = tooltip.join('\n');
 
@@ -103,7 +123,7 @@ export function createSkillUseCard({ skill, state, compact = false, onUse }) {
   const chips = createElement('div', { class: 'suc-chips' });
   if (cost > 0) {
     chips.appendChild(createElement('span', {
-      class: `suc-chip suc-chip-cost${insufficientChi ? ' insufficient' : ''}`,
+      class: `suc-chip suc-chip-cost${insufficientChi && !inactive ? ' insufficient' : ''}`,
       textContent: `Chi: ${cost}`,
     }));
   }
@@ -119,9 +139,22 @@ export function createSkillUseCard({ skill, state, compact = false, onUse }) {
       textContent: `${uses} usos`,
     }));
   }
+  if (inactive) {
+    chips.appendChild(createElement('span', {
+      class: 'suc-chip suc-chip-inactive',
+      textContent: 'Inativa',
+    }));
+  }
   if (chips.childNodes.length > 0) card.appendChild(chips);
 
-  if (cooldown) {
+  // Inline status banner — only one shows at a time. Inactive takes
+  // precedence (it's the structural state), then cooldown, then chi.
+  if (inactive) {
+    card.appendChild(createElement('div', {
+      class: 'suc-state-banner',
+      textContent: 'ℹ Activa esta skill na skill tree para a poderes usar.',
+    }));
+  } else if (cooldown) {
     card.appendChild(createElement('div', {
       class: 'suc-state-banner',
       textContent: `⏱ ${cooldown.reason || `Cooldown ${cooldown.remaining_vezes} vez(es)`}`,
@@ -136,7 +169,7 @@ export function createSkillUseCard({ skill, state, compact = false, onUse }) {
   const btn = createElement('button', {
     type: 'button',
     class: 'suc-use-btn',
-    textContent: '⚡ Usar',
+    textContent: inactive ? 'Inativa' : '⚡ Usar',
   });
   if (disabled) btn.disabled = true;
   on(btn, 'click', (event) => {
@@ -161,6 +194,10 @@ export function createSkillUseCard({ skill, state, compact = false, onUse }) {
  * @param {(skill) => object|null} [args.getCooldown]
  *     — Optional callback returning a cooldown descriptor `{ remaining_vezes, reason }`
  *       per skill. Used to disable cards mid-cooldown.
+ * @param {(skill) => boolean} [args.getInactive]
+ *     — Optional callback returning true when the skill is unlocked
+ *       but not currently active (equipped). Cards in this state get
+ *       dimmed + "Activa primeiro" hint instead of the Usar button.
  * @param {string} [args.emptyMessage]     — Text when no skills.
  * @returns {{ root: HTMLElement, refresh: () => void, destroy: () => void }}
  */
@@ -171,6 +208,7 @@ export function mountSkillUseGrid({
   onUse,
   compact = false,
   getCooldown = null,
+  getInactive = null,
   emptyMessage = 'Sem habilidades activas — desbloqueia algumas na skill tree para as poderes usar aqui.',
 }) {
   const root = createElement('div', { class: `suc-grid${compact ? ' suc-grid-compact' : ''}` });
@@ -198,6 +236,7 @@ export function mountSkillUseGrid({
         currentCp,
         maxCp,
         cooldown: getCooldown ? getCooldown(skill) : null,
+        inactive: getInactive ? !!getInactive(skill) : false,
       };
       root.appendChild(createSkillUseCard({ skill, state, compact, onUse }));
     });
