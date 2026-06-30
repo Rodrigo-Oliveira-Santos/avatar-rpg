@@ -45,14 +45,6 @@ function readLocal(username) {
   }
 }
 
-function getSessionUsername() {
-  try {
-    return JSON.parse(localStorage.getItem('avatar_rpg_user') || 'null')?.username || null;
-  } catch {
-    return null;
-  }
-}
-
 async function loadTargetCharacter(username) {
   if (isSupabaseEnabled()) {
     try {
@@ -72,30 +64,28 @@ async function loadTargetCharacter(username) {
  *   • Supabase mode: targeted UPDATE on just the `status_effects` column
  *     (see `updateStatusEffects` in supabase-characters.js). AutoSave
  *     itself is configured to skip this column.
- *   • Offline mode: we patch the target's localStorage record. We only
- *     touch the *own* user's local cache when the GM is operating on
- *     their own card; otherwise we leave the player's local copy alone
- *     so a future re-login fetches the truth from Supabase.
+ *   • Offline mode: localStorage is the *only* source of truth, so we
+ *     write directly to the target's `avatar_rpg_character_<username>`
+ *     entry — including when the GM is editing another player's card.
+ *     (Before 2026-06-30 this path threw to avoid polluting a stale
+ *     local cache when a remote source existed; that risk doesn't apply
+ *     when Supabase is off.)
  */
 async function persistStatusEffects(username, effects) {
   if (isSupabaseEnabled()) {
     await updateStatusEffectsOnSupabase(username, effects);
     return;
   }
-  // Offline path: only safe to write the local cache for the logged-in
-  // user (otherwise we'd pollute another user's "saved" character if
-  // somebody else later logs in on this browser).
-  const sessionUser = getSessionUsername();
-  if (sessionUser && sessionUser === username) {
-    const cur = readLocal(username) || {};
-    cur.status_effects = effects;
-    try {
-      localStorage.setItem(localKey(username), JSON.stringify(cur));
-    } catch (err) {
-      console.warn('[StatusEffectManager] localStorage write failed', err);
-    }
-  } else {
-    throw new Error('Sem Supabase ligado, não é possível aplicar efeitos a outro jogador.');
+  // Offline path: write straight to the target's local cache. In offline
+  // mode there's no remote source to come "fix it later", so the GM
+  // applying effects across users is safe.
+  const cur = readLocal(username) || {};
+  cur.status_effects = effects;
+  try {
+    localStorage.setItem(localKey(username), JSON.stringify(cur));
+  } catch (err) {
+    console.warn('[StatusEffectManager] localStorage write failed', err);
+    throw new Error('Falha ao gravar efeitos no armazenamento local.');
   }
 }
 
