@@ -252,6 +252,26 @@
   pointer-events: none;
 }
 
+/* When the back widget is mounted, every nav row inside the same game
+   root gets pushed right so the fixed widget doesn't cover the first
+   tab (e.g. "Personagem" on the Avatar skill tree pages). Keeps both
+   on the same visual line. The selector targets ANY .nav anywhere
+   under the game root — Avatar's top nav, D&D's nav, etc. — so we
+   don't need per-game CSS. */
+.game-back-widget ~ .nav,
+.game-back-widget ~ * .nav {
+  padding-left: 120px;
+}
+
+@media (max-width: 720px) {
+  .game-back-widget ~ .nav,
+  .game-back-widget ~ * .nav {
+    /* On narrow screens the nav already wraps; just reserve a smaller
+       slot so the first tab clears the icon-only widget. */
+    padding-left: 64px;
+  }
+}
+
 .game-back-btn {
   pointer-events: auto;
   background: var(--game-accent);
