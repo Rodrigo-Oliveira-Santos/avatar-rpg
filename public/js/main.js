@@ -30,6 +30,7 @@ import { landingGame } from './games/landing/index.js';
 import { avatarGame } from './games/avatar/index.js';
 import { dndGame } from './games/dnd/index.js';
 import { minecraftGame } from './games/minecraft/index.js';
+import { bootstrapLocalSeed } from './storage/local-seed.js';
 
 const ALL_GAMES = {
   avatar: avatarGame,
@@ -66,6 +67,18 @@ function wireLoginHomeButton(singleGameMode) {
 }
 
 function init() {
+  // Populate localStorage with full preset characters in offline mode so
+  // the GM dashboard sees every test profile without each one needing to
+  // log in first. Idempotent + skipped entirely when Supabase is on.
+  try {
+    const result = bootstrapLocalSeed();
+    if (result.created.length > 0) {
+      console.log('[local-seed] seeded characters:', result.created.join(', '));
+    }
+  } catch (err) {
+    console.warn('[local-seed] bootstrap failed', err);
+  }
+
   const single = readSingleGameFlag();
 
   if (single) {
