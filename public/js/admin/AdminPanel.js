@@ -372,6 +372,7 @@ export class AdminPanel {
         const ok = await confirmAndDeleteUser({
           username,
           actor,
+          app: 'avatar',
           onDone: (res) => {
             log('admin_action', {
               action: 'delete_account',

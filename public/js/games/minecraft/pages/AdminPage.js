@@ -23,16 +23,17 @@ import {
 } from '../../../api/mc-builds.js';
 import { driveThumbnailUrl } from '../lib/drive.js';
 import {
-  getUsers,
+  createRegistryAPI,
   getActionsFor,
-  applyRoleChange,
-  validateRoleChange,
-  validateDeleteUser,
   ROLE_LABELS,
   MAX_ADMINS,
 } from '../../lib/users-registry.js';
 import { confirmAndDeleteUser } from '../../lib/delete-user-ui.js';
 import { pickUserDialog } from '../../lib/user-picker.js';
+
+// Minecraft admin operates on its own per-app registry — same username
+// can have a different role here vs Avatar / D&D.
+const REG = createRegistryAPI('mc');
 
 function escapeHtml(value) {
   const div = document.createElement('div');
@@ -58,7 +59,7 @@ export async function renderAdminPage(ctx) {
       return acc;
     }, {});
 
-    const users = getUsers(Object.keys(buildsByOwner));
+    const users = REG.list(Object.keys(buildsByOwner));
     const adminCount = users.filter((u) => u.role === 'admin').length;
     const actor = { username: ctx.user?.username, role: ctx.user?.role };
 
@@ -81,7 +82,7 @@ export async function renderAdminPage(ctx) {
     // ---- Note -----------------------------------------------------
     root.appendChild(createElement('div', {
       class: 'admin-panel-note',
-      html: 'Roles partilhados com Avatar / D&D. Apagar build remove também reacções e referências em listas (cleanup automático).',
+      html: 'Contas Minecraft são independentes do Avatar e do D&D (post 2026-06-30). Mudanças de role aqui só afetam o Minecraft. Apagar build remove também reacções e referências em listas (cleanup automático).',
     }));
 
     // ---- Users table ---------------------------------------------
@@ -123,7 +124,7 @@ export async function renderAdminPage(ctx) {
         rolesCell.appendChild(createElement('span', { class: 'admin-empty-actions', textContent: '—' }));
       } else {
         actions.forEach((a) => {
-          const validation = validateRoleChange({
+          const validation = REG.validateRoleChange({
             username: u.username, fromRole: u.role, toRole: a.toRole, actor,
           });
           const btn = createElement('button', {
@@ -134,14 +135,14 @@ export async function renderAdminPage(ctx) {
           if (!validation.allowed) btn.title = validation.reason;
           on(btn, 'click', async () => {
             const ok = await confirmDialog(
-              `Alterar ${u.username} de ${ROLE_LABELS[u.role]} para ${ROLE_LABELS[a.toRole]}?`,
+              `Alterar ${u.username} de ${ROLE_LABELS[u.role]} para ${ROLE_LABELS[a.toRole]} em Minecraft?`,
             );
             if (!ok) return;
-            const res = applyRoleChange({
+            const res = REG.applyRoleChange({
               username: u.username, fromRole: u.role, toRole: a.toRole, actor,
             });
             if (!res.ok) { toast(res.reason, 'warning'); return; }
-            toast(`${u.username} é agora ${ROLE_LABELS[a.toRole]}.`, 'success');
+            toast(`${u.username} é agora ${ROLE_LABELS[a.toRole]} em Minecraft.`, 'success');
             refresh();
           });
           rolesCell.appendChild(btn);
@@ -191,17 +192,19 @@ export async function renderAdminPage(ctx) {
       });
       rolesCell.appendChild(transferAllBtn);
 
-      // Botão "Apagar conta" — apaga TUDO (registry + ficha Avatar/D&D + builds + listas + reações + sessões)
-      const accountValidation = validateDeleteUser({ username: u.username, actor });
+      // Botão "Apagar conta" — apenas a conta MC do utilizador. Contas
+      // Avatar e D&D com o mesmo username ficam intactas (independentes
+      // desde 2026-06-30).
+      const accountValidation = REG.validateDeleteUser({ username: u.username, actor });
       const deleteAccountBtn = createElement('button', {
         class: 'admin-action-btn danger',
-        textContent: '🗑 Apagar conta',
+        textContent: '🗑 Apagar conta MC',
       });
       deleteAccountBtn.disabled = !accountValidation.allowed;
       if (!accountValidation.allowed) deleteAccountBtn.title = accountValidation.reason;
       on(deleteAccountBtn, 'click', async () => {
         const ok = await confirmAndDeleteUser({
-          username: u.username, actor, onDone: () => refresh(),
+          username: u.username, actor, app: 'mc', onDone: () => refresh(),
         });
         if (ok) refresh();
       });
