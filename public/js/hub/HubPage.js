@@ -170,7 +170,16 @@ export class HubPage {
   render() {
     this.characterModal.close();
     this.tradeModal.currentUsername = this.getCurrentUsername();
-    this.container.innerHTML = '';
+
+    // Detach every child EXCEPT the cached map section. The Godot WASM
+    // iframe inside the map loses state every time it's detached from
+    // the DOM, so we deliberately keep that node in place across the
+    // many re-renders triggered by Realtime / trade / status / encounter
+    // events. Pre-map items are re-inserted via insertBefore(map) below
+    // so the visual order stays unchanged.
+    Array.from(this.container.children).forEach((child) => {
+      if (child !== this._mapSection) child.remove();
+    });
 
     const currentUsername = this.getCurrentUsername();
     const isGameMaster = this.authManager?.hasRole('gm');
@@ -178,13 +187,21 @@ export class HubPage {
 
     updateTradeBadge(currentUsername);
 
+    // Make sure the map is in the container. On the very first render
+    // it doesn't exist yet → append once. On subsequent renders it's
+    // already there (we kept it above) so this is a no-op.
+    const mapSection = this._getOrCreateMapSection();
+    if (!this.container.contains(mapSection)) {
+      this.container.appendChild(mapSection);
+    }
+
     // Header rendered immediately with a placeholder count; refreshed
     // below once Supabase responds.
     const header = createElement('div', { class: 'hub-header' });
     header.appendChild(createElement('div', { class: 'hub-title', textContent: 'Hub de Jogadores' }));
     const countEl = createElement('div', { class: 'hub-count', textContent: '…' });
     header.appendChild(countEl);
-    this.container.appendChild(header);
+    this.container.insertBefore(header, mapSection);
 
     // Encounter panel — shown to everyone (read-only for players, with
     // GM controls when the user is GM). The launcher / "Iniciar batalha"
@@ -193,14 +210,14 @@ export class HubPage {
     // players can see the battle they're part of.
     if (!this.encounterPanel) {
       const panelHost = createElement('div');
-      this.container.appendChild(panelHost);
+      this.container.insertBefore(panelHost, mapSection);
       this.encounterPanel = new EncounterPanel({
         host: panelHost,
         authManager: this.authManager,
         getCurrentUsername: () => this.getCurrentUsername(),
       });
     } else {
-      this.container.appendChild(this.encounterPanel.root);
+      this.container.insertBefore(this.encounterPanel.root, mapSection);
     }
 
     // Hub encounter overlay: when a battle is active, surface the monster
@@ -211,11 +228,7 @@ export class HubPage {
     encounterHost.appendChild(createElement('h2', { textContent: '⚔ Monstros em batalha' }));
     const encounterList = createElement('div', { class: 'hub-encounter-list' });
     encounterHost.appendChild(encounterList);
-    this.container.appendChild(encounterHost);
-
-    // Interactive ATLA map embed — cached on the instance so render()
-    // doesn't reload the iframe every time a trade/status update fires.
-    this.container.appendChild(this._getOrCreateMapSection());
+    this.container.insertBefore(encounterHost, mapSection);
 
     Promise.all([
       this.activeEncounter ? Promise.resolve(this.activeEncounter) : Promise.resolve(null),
