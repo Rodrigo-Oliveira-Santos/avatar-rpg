@@ -14,7 +14,9 @@
       "is_legendary": false,
       "tier_label": "Espírito N1",
       "description": "Técnica de respiração que regenera chi e estabiliza o espírito.",
-      "damage_summary": "1d6 chi/turno",
+      "damage_summary": "Restaura 1d6 chi/turno",
+      "chi_cost": 1,
+      "chi_restore": 5,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 2,
@@ -46,6 +48,8 @@
       "tier_label": "Espírito N1",
       "description": "Mantém uma chama estável. Símbolo de equilíbrio interno.",
       "damage_summary": "Passivo",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 1
@@ -71,6 +75,8 @@
       "tier_label": "Espírito N2",
       "description": "Aumenta passivamente o dano de todas as habilidades de fogo.",
       "damage_summary": "+1d4 a todo dano fogo",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Resp. Dragão",
       "attribute_requirements": {
         "ESP": 6,
@@ -101,6 +107,8 @@
       "tier_label": "Espírito N2",
       "description": "Percebe fontes de calor e vida ao redor em meditação.",
       "damage_summary": "Percepção calor 18m",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Chama Medit.",
       "attribute_requirements": {
         "ESP": 5,
@@ -131,6 +139,8 @@
       "tier_label": "Espírito N2",
       "description": "Resistência passiva a dano de fogo, calor extremo e vapor.",
       "damage_summary": "Imunidade calor/vapor",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Resp. Dragão",
       "attribute_requirements": {
         "ESP": 6,
@@ -161,6 +171,8 @@
       "tier_label": "Espírito N3",
       "description": "Chama dourada que afasta espíritos malignos.",
       "damage_summary": "Afasta espíritos, raio 9m",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Chama Interior+Chama Medit.",
       "attribute_requirements": {
         "ESP": 13,
@@ -193,6 +205,8 @@
       "tier_label": "Espírito N3",
       "description": "Deteta qualquer fonte de calor, inclusive paredes.",
       "damage_summary": "Vê calor 18m incl. paredes",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Medit. Fogo+Resist. Calor",
       "attribute_requirements": {
         "ESP": 11,
@@ -226,6 +240,8 @@
       "tier_label": "Espírito N3",
       "description": "Alinha o chi com a origem do fogo. Bónus após 3 turnos de combate.",
       "damage_summary": "+1d6 após 3 turnos",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Chama Interior+Resp. Dragão",
       "attribute_requirements": {
         "ESP": 12,
@@ -256,6 +272,8 @@
       "tier_label": "Espírito N4",
       "description": "Vê o calor corporal de qualquer ser, incluindo invisíveis.",
       "damage_summary": "Vê inimigos invisíveis",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Sentido Térm.+Medit. Fogo",
       "attribute_requirements": {
         "ESP": 18,
@@ -286,6 +304,8 @@
       "tier_label": "Espírito N4",
       "description": "Envolve o corpo numa aura de calor. Queima inimigos corpo a corpo.",
       "damage_summary": "1d6 Queimadura em 1,5m",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Harm. Dragão+Resist. Calor",
       "attribute_requirements": {
         "ESP": 19,
@@ -319,6 +339,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "O fogo não pode ser extinto por meios naturais.",
       "damage_summary": "Fogo não pode ser extinto",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Aura Chamas+Luz da Alma",
       "attribute_requirements": {
         "ESP": 27,
@@ -352,6 +374,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Perceção total pelo calor, raio 30m, sem ponto cego.",
       "damage_summary": "Perceção total calor, 30m",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Visão Infrav.+Sentido Térm.",
       "attribute_requirements": {
         "ESP": 26,
@@ -382,6 +406,8 @@
       "tier_label": "Agilidade N1",
       "description": "Jatos de fogo aumentam a velocidade de movimento em +6m.",
       "damage_summary": "Velocidade +6m",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2,
@@ -408,6 +434,8 @@
       "tier_label": "Agilidade N1",
       "description": "Ao ser atacado: esquiva e contraataca com 1d4 de fogo.",
       "damage_summary": "Reação: 1d4 contraataque",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 1,
@@ -439,6 +467,8 @@
       "tier_label": "Agilidade N2",
       "description": "Deixa rastro de fogo ao mover-se.",
       "damage_summary": "1d4 Queimadura a quem pisar",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Prop. Chama",
       "attribute_requirements": {
         "AGI": 5,
@@ -469,6 +499,8 @@
       "tier_label": "Agilidade N2",
       "description": "Movimentos imprevisíveis — ataques contra ti têm desvantagem.",
       "damage_summary": "Ataques têm desvantagem",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Reflexo Ardente",
       "attribute_requirements": {
         "AGI": 6,
@@ -499,6 +531,8 @@
       "tier_label": "Agilidade N2",
       "description": "Impulsiona saltos com explosões de fogo nos pés.",
       "damage_summary": "Salta até 9m verticais",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Prop. Chama",
       "attribute_requirements": {
         "AGI": 6,
@@ -529,6 +563,8 @@
       "tier_label": "Agilidade N3",
       "description": "Mantém-se no ar com jatos contínuos nos pés e mãos.",
       "damage_summary": "Velocidade voo 12m",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Salto Chama+Prop. Chama",
       "attribute_requirements": {
         "AGI": 13,
@@ -559,6 +595,8 @@
       "tier_label": "Agilidade N3",
       "description": "Cada esquiva deixa uma chama enganosa no local.",
       "damage_summary": "1d6 ao inimigo que avança",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Dança Fogo+Reflexo Ardente",
       "attribute_requirements": {
         "AGI": 11,
@@ -594,6 +632,8 @@
       "tier_label": "Agilidade N3",
       "description": "Velocidade triplicada em linha reta. 2d4 Queimadura.",
       "damage_summary": "2d4 a inimigos no caminho",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Rastro Chamas+Salto Chama",
       "attribute_requirements": {
         "AGI": 12,
@@ -631,6 +671,8 @@
       "tier_label": "Agilidade N4",
       "description": "Asas de chama. Velocidade de voo 18m.",
       "damage_summary": "Velocidade voo 18m",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Voo Sustentado+Rastro Chamas",
       "attribute_requirements": {
         "AGI": 20,
@@ -661,6 +703,8 @@
       "tier_label": "Agilidade N4",
       "description": "Cria cópias de chama que imitam os teus movimentos.",
       "damage_summary": "1d3 cópias de chama",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Esq. Ardente+Dança Fogo",
       "attribute_requirements": {
         "AGI": 18,
@@ -691,6 +735,8 @@
       "tier_label": "Agilidade N4",
       "description": "Gira a velocidade extrema criando um furacão de fogo.",
       "damage_summary": "3d6 a todos em 6m",
+      "chi_cost": 11,
+      "chi_restore": 0,
       "requirements_text": "Corredor Chamas+Voo Sustentado",
       "attribute_requirements": {
         "AGI": 19,
@@ -729,6 +775,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Move-se a velocidade de projétil com cauda de fogo devastadora.",
       "damage_summary": "4d10 + área",
+      "chi_cost": 50,
+      "chi_restore": 0,
       "requirements_text": "Asa Fogo+Turbina Fogo",
       "attribute_requirements": {
         "AGI": 27,
@@ -767,6 +815,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Cria 1d6 cópias enquanto se move invisível.",
       "damage_summary": "1d6 cópias — impossível rastrear",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Miragem Chamas+Esq. Ardente",
       "attribute_requirements": {
         "AGI": 28,
@@ -799,6 +849,8 @@
       "tier_label": "Combate N1",
       "description": "Feixe de fogo concentrado e preciso a distância.",
       "damage_summary": "M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -830,6 +882,8 @@
       "tier_label": "Combate N1",
       "description": "Descarga elétrica curta. Atordoa 1 ação em falha.",
       "damage_summary": "M0:1d4 · M1:2d4+Ch · M2:3d4 · M3:5d4",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 1,
@@ -861,6 +915,8 @@
       "tier_label": "Combate N1",
       "description": "Massa de fogo explosiva. Área de 1,5m.",
       "damage_summary": "M0:1d10 · M1:2d10+Q · M2:3d10 · M3:5d10",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2,
@@ -892,6 +948,8 @@
       "tier_label": "Combate N1",
       "description": "Expele fogo em cone de 6m.",
       "damage_summary": "M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -923,6 +981,8 @@
       "tier_label": "Combate N2",
       "description": "Projéteis precisíssimos. Alcance 18m, ignora cobertura.",
       "damage_summary": "M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Jato de Chama",
       "attribute_requirements": {
         "PER": 6,
@@ -958,6 +1018,8 @@
       "tier_label": "Combate N2",
       "description": "Chicote de fogo que derruba o alvo. Alcance 3m.",
       "damage_summary": "M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Jato de Chama",
       "attribute_requirements": {
         "PER": 5,
@@ -994,6 +1056,8 @@
       "tier_label": "Combate N2",
       "description": "Descarga elétrica que paralisa um membro.",
       "damage_summary": "M0:1d10 · M1:2d10+Ch · M2:3d10 · M3:5d10",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Faísca",
       "attribute_requirements": {
         "PER": 6,
@@ -1029,6 +1093,8 @@
       "tier_label": "Combate N2",
       "description": "Barreira de fogo em área que dura 1 min.",
       "damage_summary": "2d6 Queimadura a quem atravessar",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Bola de Fogo",
       "attribute_requirements": {
         "FOR": 6,
@@ -1060,6 +1126,8 @@
       "tier_label": "Combate N2",
       "description": "Cone de fogo alargado de 9m.",
       "damage_summary": "M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Sopro de Fogo",
       "attribute_requirements": {
         "FOR": 5,
@@ -1095,6 +1163,8 @@
       "tier_label": "Combate N2 ★",
       "description": "Projétil explosivo em área 3m. Queimadura+Atordoado M3.",
       "damage_summary": "M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8+At",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Bola de Fogo",
       "attribute_requirements": {
         "FOR": 6,
@@ -1130,6 +1200,8 @@
       "tier_label": "Preciso N3",
       "description": "Projétil de fogo estreito. Ignora resistência a fogo.",
       "damage_summary": "2d8, penetra resistência",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Dedo Fogo+Jato Chama",
       "attribute_requirements": {
         "PER": 13,
@@ -1165,6 +1237,8 @@
       "tier_label": "Preciso N3",
       "description": "Raio elétrico contínuo que salta para um segundo alvo.",
       "damage_summary": "2d6 elétrico, salta 2º alvo",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Desc. Estática+Faísca",
       "attribute_requirements": {
         "PER": 12,
@@ -1200,6 +1274,8 @@
       "tier_label": "Preciso N3",
       "description": "Dezenas de micro-projéteis em leque atingem até 4 alvos.",
       "damage_summary": "4d4 a até 4 alvos",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Dedo de Fogo",
       "attribute_requirements": {
         "PER": 13,
@@ -1236,6 +1312,8 @@
       "tier_label": "Preciso N4",
       "description": "Raio elétrico devastador. Requer Harm. Dragão (ESP).",
       "damage_summary": "4d10 elétrico — Choque+Atord.",
+      "chi_cost": 50,
+      "chi_restore": 0,
       "requirements_text": "Harm. Dragão(ESP)+Corrente Elét.",
       "attribute_requirements": {
         "PER": 20,
@@ -1274,6 +1352,8 @@
       "tier_label": "Preciso N4",
       "description": "Feixe de fogo focado num alvo por múltiplos turnos.",
       "damage_summary": "2d6 Queimadura/turno",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Lança Fogo",
       "attribute_requirements": {
         "PER": 19,
@@ -1304,6 +1384,8 @@
       "tier_label": "Preciso N4",
       "description": "Descarga elétrica em área que salta entre múltiplos inimigos.",
       "damage_summary": "3d8 em área 6m, salta alvos",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Corrente Elét.+Agulhas Fogo",
       "attribute_requirements": {
         "PER": 20,
@@ -1341,6 +1423,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Absorve e redireciona energia elétrica de qualquer fonte.",
       "damage_summary": "Absorve + redireciona +2d10",
+      "chi_cost": 12,
+      "chi_restore": 0,
       "requirements_text": "Dobra Relâmp.",
       "attribute_requirements": {
         "PER": 26,
@@ -1372,6 +1456,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Fogo de temperatura extrema. Ignora imunidade a fogo normal.",
       "damage_summary": "6d8 — ignora imunidade fogo",
+      "chi_cost": 73,
+      "chi_restore": 0,
       "requirements_text": "Dobra Relâmp.+Voo Sustentado(AGI)",
       "attribute_requirements": {
         "PER": 27,
@@ -1410,6 +1496,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Dois raios simultâneos com precisão absoluta.",
       "damage_summary": "4d10×2 alvos no mesmo turno",
+      "chi_cost": 48,
+      "chi_restore": 0,
       "requirements_text": "Dobra Relâmp.+Tempest. Elét.",
       "attribute_requirements": {
         "PER": 28,
@@ -1442,6 +1530,8 @@
       "tier_label": "Bruto N3 ★",
       "description": "Círculo de chamas em expansão. Queimadura+Medo no M3.",
       "damage_summary": "2d8 6m — Queim+Medo",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Muro Chamas+Bola Fogo",
       "attribute_requirements": {
         "FOR": 12,
@@ -1477,6 +1567,8 @@
       "tier_label": "Bruto N3 ★",
       "description": "Serpente de fogo viva que persegue inimigos. Queim+Medo no M3.",
       "damage_summary": "3d8, persegue — Queim+Medo",
+      "chi_cost": 20,
+      "chi_restore": 0,
       "requirements_text": "Cone Fogo+Sopro Fogo",
       "attribute_requirements": {
         "FOR": 13,
@@ -1513,6 +1605,8 @@
       "tier_label": "Bruto N3 ★",
       "description": "Explosões pela testa à distância. Queim+Atord. no M3.",
       "damage_summary": "2d10 área 3m — Queim+Atord.",
+      "chi_cost": 14,
+      "chi_restore": 0,
       "requirements_text": "Chama Interior(ESP)+Bomba Fogo",
       "attribute_requirements": {
         "FOR": 11,
@@ -1551,6 +1645,8 @@
       "tier_label": "Bruto N4 ★",
       "description": "Explosão total em todas as direções. Queim+Cegueira no M3.",
       "damage_summary": "4d8 360° 9m — Queim+Cegueira",
+      "chi_cost": 34,
+      "chi_restore": 0,
       "requirements_text": "Anel Fogo+Harm. Dragão(ESP)",
       "attribute_requirements": {
         "FOR": 19,
@@ -1589,6 +1685,8 @@
       "tier_label": "Bruto N4",
       "description": "Zona de fogo contínuo que cresce a cada turno.",
       "damage_summary": "Zona cresce 1d6 raio/turno",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Dragão Chamas+Muro Chamas",
       "attribute_requirements": {
         "FOR": 20,
@@ -1620,6 +1718,8 @@
       "tier_label": "Bruto N4 ★",
       "description": "Até 3 explosões por turno. Queim+Atord. no M3.",
       "damage_summary": "2d10×3 — Queim+Atord.",
+      "chi_cost": 14,
+      "chi_restore": 0,
       "requirements_text": "Dobra Combustão+Anel Fogo",
       "attribute_requirements": {
         "FOR": 20,
@@ -1658,6 +1758,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Explosão de fogo cataclísmica. Três efeitos simultâneos.",
       "damage_summary": "8d8 raio 18m — Queim+Ceg+Atord.",
+      "chi_cost": 134,
+      "chi_restore": 0,
       "requirements_text": "Explosão Solar+Chama Eterna(ESP)",
       "attribute_requirements": {
         "FOR": 27,
@@ -1691,6 +1793,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Dragão de fogo colossal permanente no campo de batalha.",
       "damage_summary": "3d10/turno — dragão 60PV",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Inferno Sustentado+Cometa Pessoal(AGI)",
       "attribute_requirements": {
         "FOR": 26,
@@ -1724,6 +1828,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Explosões guiadas por visão térmica. Sem ponto cego.",
       "damage_summary": "5d10 área — Queim+Cegueira",
+      "chi_cost": 78,
+      "chi_restore": 0,
       "requirements_text": "Expl. Combustão+Visão Infrav.(ESP)",
       "attribute_requirements": {
         "FOR": 28,

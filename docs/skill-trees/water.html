@@ -75,8 +75,15 @@ header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;disp
   <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
   <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
   <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
   <div style="margin-left:auto;display:flex;gap:8px">
     <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
     <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
   </div>
 </div>
@@ -130,11 +137,11 @@ const UTH=[0,15,50,150];
 // ── ATTR REQUIREMENTS ────────────────────────────────────
 const AREQ={
   // ESPÍRITO
-  sp1a:{ESP:1}, sp1b:{ESP:1,PER:2},
+  sp1a:{ESP:1}, sp1b:{ESP:1,PER:2}, sp1c:{ESP:2,CHI:1},
   sp2a:{ESP:5,CHI:3}, sp2b:{ESP:6}, sp2c:{ESP:5,CHI:4},
   sp3a:{ESP:11,CHI:7}, sp3b:{ESP:10,CHI:6,PER:6}, sp3c:{ESP:12,CHI:7},
   sp4a:{ESP:18,CHI:11}, sp4b:{ESP:16,CHI:10,FOR:8}, sp4c:{ESP:18,CHI:11,RES:8},
-  sp5a:{ESP:26,CHI:16}, sp5b:{ESP:24,CHI:17,PER:15}, sp5c:{ESP:27,CHI:16,RES:15},
+  sp5a:{ESP:26,CHI:16}, sp5b:{ESP:24,CHI:17,PER:15}, sp5c:{ESP:27,CHI:16,RES:15}, sp5d:{ESP:20,CHI:14,RES:10},
   // AGILIDADE
   ag1a:{AGI:1}, ag1b:{AGI:2,PER:1},
   ag2a:{AGI:5,CHI:3}, ag2b:{AGI:6}, ag2c:{AGI:5,PER:4},
@@ -142,7 +149,7 @@ const AREQ={
   ag4a:{AGI:18,PER:12}, ag4b:{AGI:16,RES:10,CHI:8}, ag4c:{AGI:17,PER:11},
   ag5a:{AGI:26,CHI:16,RES:15}, ag5b:{AGI:28,PER:17},
   // COMBATE PARTILHADO
-  cb1a:{PER:1,CHI:2}, cb1b:{PER:2,CHI:1},
+  cb1a:{PER:1,CHI:2}, cb1b:{PER:2,CHI:1}, cb1c:{ESP:3,CHI:2},
   cb2a:{PER:6,CHI:5}, cb2b:{PER:5,CHI:4,FOR:3}, cb2c:{PER:6,CHI:3},
   cb2d:{FOR:2,CHI:1}, cb2e:{CHI:2,RES:1},
   // PRECISO (gelo)
@@ -183,60 +190,63 @@ const MAE={
 // ── NODES ─────────────────────────────────────────────────
 const RAW=[
   // ESPÍRITO DA ÁGUA
-  {id:'sp1a',b:'sp',t:0,c:0,l:'Cura\nBásica',       tl:'Espírito N1', dmg:'1d6+Sab PV', ds:'Cura ferimentos superficiais usando água.', req:'—',deps:[]},
-  {id:'sp1b',b:'sp',t:0,c:1,l:'Sentido\nMaré',       tl:'Espírito N1', dmg:'Percepção CD 10', ds:'Percebe correntes de água próximas, mesmo ocultas.', req:'—',deps:[]},
-  {id:'sp2a',b:'sp',t:1,c:0,l:'Cura\nProfunda',      tl:'Espírito N2', dmg:'2d8+Sab PV', ds:'Cura ferimentos internos, ossos partidos e doenças.', req:'Cura Básica',deps:['sp1a']},
-  {id:'sp2b',b:'sp',t:1,c:1,l:'Véu\nPurificador',    tl:'Espírito N2', dmg:'Medicina CD 13', ds:'Remove venenos e toxinas do corpo de um aliado.', req:'Cura Básica',deps:['sp1a']},
-  {id:'sp2c',b:'sp',t:1,c:2,l:'Ligação\nLunar',      tl:'Espírito N2', dmg:'+1d4 à noite (passivo)', ds:'Aumenta o poder de todas as habilidades durante a noite.', req:'Sentido da Maré',deps:['sp1b']},
-  {id:'sp3a',b:'sp',t:2,c:0,l:'Cura em\nGrupo',      tl:'Espírito N3', dmg:'2d6+Sab até 3 alvos', ds:'Aplica cura simultânea a múltiplos aliados.', req:'Cura Profunda',deps:['sp2a']},
-  {id:'sp3b',b:'sp',t:2,c:1,l:'Sangue\nFrio',        tl:'Espírito N3', dmg:'Sal. Con CD 14 — Lentidão', ds:'Retarda inimigos manipulando os fluidos do corpo.', req:'Cura Profunda',deps:['sp2a']},
-  {id:'sp3c',b:'sp',t:2,c:2,l:'Visão\nEspiritual',   tl:'Espírito N3', dmg:'Arcana CD 13', ds:'Vê espíritos e auras de energia invisíveis a olho nu.', req:'Ligação Lunar',deps:['sp2c']},
-  {id:'sp4a',b:'sp',t:3,c:0,l:'Cura\nEspiritual',    tl:'Espírito N4', dmg:'3d8+Sab + Remove condição', ds:'Cura feridas de natureza espiritual e remove maldições.', req:'Cura em Grupo + Visão Espiritual',deps:['sp3a','sp3c']},
-  {id:'sp4b',b:'sp',t:3,c:1,l:'Dobra de\nPlantas',   tl:'Espírito N4', dmg:'2d6 + Enraizado', ds:'Manipula a água nas plantas para criar chicotes e barreiras.', req:'Sangue Frio',deps:['sp3b']},
-  {id:'sp4c',b:'sp',t:3,c:2,l:'Transf.\nde Vida',    tl:'Espírito N4', dmg:'Cede 2d10 PV para 4d10 aliado', ds:'Transfere energia vital para ressuscitar um aliado inconsciente.', req:'Cura em Grupo',deps:['sp3a']},
-  {id:'sp5a',b:'sp',t:4,c:0,l:'Dobra de\nEspírito',  tl:'Lendário — Espírito', dmg:'Religião CD 18', ds:'Purifica espíritos corrompidos e fecha portais espirituais.', req:'Cura Espiritual + Dobra de Plantas',deps:['sp4a','sp4b']},
-  {id:'sp5b',b:'sp',t:5,c:1,l:'Dobra\nSanguínea',    tl:'Lendário — Espírito ★PROIBIDA', dmg:'3d8/turno — controlo total', ds:'Controla os movimentos de um inimigo pelo sangue. PROIBIDA.', req:'Sangue Frio + Corrente Cortante(CB)',deps:['sp3b','cb2b']},
-  {id:'sp5c',b:'sp',t:4,c:2,l:'Renascimento\nÁguas', tl:'Lendário — Espírito', dmg:'4d8+Sab a todos aliados em 9m', ds:'Canaliza a energia lunar para curar toda uma área de batalha.', req:'Transf. Vida + Ligação Lunar',deps:['sp4c','sp2c']},
+  {id:'sp1a',chi:1,b:'sp',t:0,c:0,l:'Cura\nBásica',       tl:'Espírito N1', dmg:'1d6+Sab PV', ds:'Cura ferimentos superficiais usando água.', req:'—',deps:[]},
+  {id:'sp1b',chi:1,b:'sp',t:0,c:1,l:'Sentido\nMaré',       tl:'Espírito N1', dmg:'Percepção CD 10', ds:'Percebe correntes de água próximas, mesmo ocultas.', req:'—',deps:[]},
+  {id:'sp1c',chi:1,restore:6,b:'sp',t:0,c:2,l:'Fluxo\nInterior',     tl:'Espírito N1', dmg:'Restaura 1d8 chi', ds:'Sintoniza-se com o fluxo natural da água dentro do próprio corpo.', req:'—',deps:[]},
+  {id:'sp2a',chi:8,b:'sp',t:1,c:0,l:'Cura\nProfunda',      tl:'Espírito N2', dmg:'2d8+Sab PV', ds:'Cura ferimentos internos, ossos partidos e doenças.', req:'Cura Básica',deps:['sp1a']},
+  {id:'sp2b',chi:2,b:'sp',t:1,c:1,l:'Véu\nPurificador',    tl:'Espírito N2', dmg:'Medicina CD 13', ds:'Remove venenos e toxinas do corpo de um aliado.', req:'Cura Básica',deps:['sp1a']},
+  {id:'sp2c',chi:0,b:'sp',t:1,c:2,l:'Ligação\nLunar',      tl:'Espírito N2', dmg:'+1d4 à noite (passivo)', ds:'Aumenta o poder de todas as habilidades durante a noite.', req:'Sentido da Maré',deps:['sp1b']},
+  {id:'sp3a',chi:5,b:'sp',t:2,c:0,l:'Cura em\nGrupo',      tl:'Espírito N3', dmg:'2d6+Sab até 3 alvos', ds:'Aplica cura simultânea a múltiplos aliados.', req:'Cura Profunda',deps:['sp2a']},
+  {id:'sp3b',chi:3,b:'sp',t:2,c:1,l:'Sangue\nFrio',        tl:'Espírito N3', dmg:'Sal. Con CD 14 — Lentidão', ds:'Retarda inimigos manipulando os fluidos do corpo.', req:'Cura Profunda',deps:['sp2a']},
+  {id:'sp3c',chi:3,b:'sp',t:2,c:2,l:'Visão\nEspiritual',   tl:'Espírito N3', dmg:'Arcana CD 13', ds:'Vê espíritos e auras de energia invisíveis a olho nu.', req:'Ligação Lunar',deps:['sp2c']},
+  {id:'sp4a',chi:18,b:'sp',t:3,c:0,l:'Cura\nEspiritual',    tl:'Espírito N4', dmg:'3d8+Sab + Remove condição', ds:'Cura feridas de natureza espiritual e remove maldições.', req:'Cura em Grupo + Visão Espiritual',deps:['sp3a','sp3c']},
+  {id:'sp4b',chi:7,b:'sp',t:3,c:1,l:'Dobra de\nPlantas',   tl:'Espírito N4', dmg:'2d6 + Enraizado', ds:'Manipula a água nas plantas para criar chicotes e barreiras.', req:'Sangue Frio',deps:['sp3b']},
+  {id:'sp4c',chi:12,b:'sp',t:3,c:2,l:'Transf.\nde Vida',    tl:'Espírito N4', dmg:'Cede 2d10 PV para 4d10 aliado', ds:'Transfere energia vital para ressuscitar um aliado inconsciente.', req:'Cura em Grupo',deps:['sp3a']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'Dobra de\nEspírito',  tl:'Lendário — Espírito', dmg:'Religião CD 18', ds:'Purifica espíritos corrompidos e fecha portais espirituais.', req:'Cura Espiritual + Dobra de Plantas',deps:['sp4a','sp4b']},
+  {id:'sp5d',chi:14,restore:25,b:'sp',t:4,c:1,l:'Maré\nda Vida',  tl:'Lendário — Espírito (Grupo)', dmg:'Restaura 25 Chi a toda a equipa em 9m', ds:'Canaliza a maré para devolver energia vital e espiritual a todos os aliados próximos.', req:'Cura em Grupo + Fluxo Interior',deps:['sp3a','sp1c']},
+  {id:'sp5b',chi:22,b:'sp',t:5,c:1,l:'Dobra\nSanguínea',    tl:'Lendário — Espírito ★PROIBIDA', dmg:'3d8/turno — controlo total', ds:'Controla os movimentos de um inimigo pelo sangue. PROIBIDA.', req:'Sangue Frio + Corrente Cortante(CB)',deps:['sp3b','cb2b']},
+  {id:'sp5c',chi:32,b:'sp',t:4,c:2,l:'Renascimento\nÁguas', tl:'Lendário — Espírito', dmg:'4d8+Sab a todos aliados em 9m', ds:'Canaliza a energia lunar para curar toda uma área de batalha.', req:'Transf. Vida + Ligação Lunar',deps:['sp4c','sp2c']},
   // AGILIDADE DA ÁGUA
-  {id:'ag1a',b:'ag',t:0,c:0,l:'Deslize\nAquático',   tl:'Agilidade N1', dmg:'+3m em água/gelo (passivo)', ds:'+3 metros de movimento em superfícies de água ou gelo.', req:'—',deps:[]},
-  {id:'ag1b',b:'ag',t:0,c:2,l:'Esquiva\nFluída',     tl:'Agilidade N1', dmg:'Acrobacia CD 12 (reação)', ds:'Redireciona ataques inimigos com movimentos circulares.', req:'—',deps:[]},
-  {id:'ag2a',b:'ag',t:1,c:0,l:'Propulsão\nde Onda',  tl:'Agilidade N2', dmg:'Velocidade duplica em água', ds:'Usa ondas para se mover rapidamente em rios e mares.', req:'Deslize Aquático',deps:['ag1a']},
-  {id:'ag2b',b:'ag',t:1,c:1,l:'Caminhada\nno Gelo',  tl:'Agilidade N2', dmg:'Acrobacia CD 11', ds:'Congela água sob os pés para caminhar em superfícies verticais.', req:'Deslize Aquático',deps:['ag1a']},
-  {id:'ag2c',b:'ag',t:1,c:2,l:'Véu de\nNévoa',       tl:'Agilidade N2', dmg:'Furtividade CD 13 c/ vantagem', ds:'Cria névoa densa para se ocultar e reposicionar.', req:'Esquiva Fluída',deps:['ag1b']},
-  {id:'ag3a',b:'ag',t:2,c:0,l:'Surf de\nGelo',       tl:'Agilidade N3', dmg:'Vel. +6m, ignora terreno difícil', ds:'Cria plataforma de gelo e desliza a alta velocidade.', req:'Propulsão de Onda + Caminhada no Gelo',deps:['ag2a','ag2b']},
-  {id:'ag3b',b:'ag',t:2,c:1,l:'Reflexo\nAquático',   tl:'Agilidade N3', dmg:'Ilusionismo vs. Percepção', ds:'Cria uma cópia ilusória de água para confundir inimigos.', req:'Esquiva Fluída + Véu de Névoa',deps:['ag1b','ag2c']},
-  {id:'ag3c',b:'ag',t:2,c:2,l:'Corrente\nSubmarina', tl:'Agilidade N3', dmg:'Natação = velocidade terrestre', ds:'Move-se debaixo de água invisível à superfície.', req:'Propulsão de Onda',deps:['ag2a']},
-  {id:'ag4a',b:'ag',t:3,c:0,l:'Passo de\nNévoa',     tl:'Agilidade N4', dmg:'Teleporte até 9m', ds:'Teleporte curto usando a névoa como cobertura.', req:'Reflexo Aquático + Véu de Névoa',deps:['ag3b','ag2c']},
-  {id:'ag4b',b:'ag',t:3,c:1,l:'Armadura\nde Gelo',   tl:'Agilidade N4', dmg:'CA +3 (passivo)', ds:'Envolve o corpo em gelo protetor sem perder mobilidade.', req:'Surf de Gelo',deps:['ag3a']},
-  {id:'ag4c',b:'ag',t:3,c:2,l:'Dança das\nCorrentes',tl:'Agilidade N4', dmg:'Esquiva automática CD 16', ds:'Flui entre ataques inimigos como água.', req:'Corrente Submarina + Esquiva Fluída',deps:['ag3c','ag1b']},
-  {id:'ag5a',b:'ag',t:4,c:0,l:'Forma do\nOceano',    tl:'Lendário — Agilidade', dmg:'Transforma-se por 1d4 turnos', ds:'Funde-se com uma grande massa de água, tornando-se imensurável.', req:'Armadura Gelo + Dança Correntes',deps:['ag4b','ag4c']},
-  {id:'ag5b',b:'ag',t:4,c:2,l:'Fantasma\nde Névoa',  tl:'Lendário — Agilidade', dmg:'1d4 cópias — Furtividade CD 18', ds:'Cria múltiplas cópias de névoa enquanto se move invisível.', req:'Passo de Névoa + Reflexo Aquático',deps:['ag4a','ag3b']},
+  {id:'ag1a',chi:0,b:'ag',t:0,c:0,l:'Deslize\nAquático',   tl:'Agilidade N1', dmg:'+3m em água/gelo (passivo)', ds:'+3 metros de movimento em superfícies de água ou gelo.', req:'—',deps:[]},
+  {id:'ag1b',chi:1,b:'ag',t:0,c:2,l:'Esquiva\nFluída',     tl:'Agilidade N1', dmg:'Acrobacia CD 12 (reação)', ds:'Redireciona ataques inimigos com movimentos circulares.', req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Propulsão\nde Onda',  tl:'Agilidade N2', dmg:'Velocidade duplica em água', ds:'Usa ondas para se mover rapidamente em rios e mares.', req:'Deslize Aquático',deps:['ag1a']},
+  {id:'ag2b',chi:1,b:'ag',t:1,c:1,l:'Caminhada\nno Gelo',  tl:'Agilidade N2', dmg:'Acrobacia CD 11', ds:'Congela água sob os pés para caminhar em superfícies verticais.', req:'Deslize Aquático',deps:['ag1a']},
+  {id:'ag2c',chi:2,b:'ag',t:1,c:2,l:'Véu de\nNévoa',       tl:'Agilidade N2', dmg:'Furtividade CD 13 c/ vantagem', ds:'Cria névoa densa para se ocultar e reposicionar.', req:'Esquiva Fluída',deps:['ag1b']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Surf de\nGelo',       tl:'Agilidade N3', dmg:'Vel. +6m, ignora terreno difícil', ds:'Cria plataforma de gelo e desliza a alta velocidade.', req:'Propulsão de Onda + Caminhada no Gelo',deps:['ag2a','ag2b']},
+  {id:'ag3b',chi:3,b:'ag',t:2,c:1,l:'Reflexo\nAquático',   tl:'Agilidade N3', dmg:'Ilusionismo vs. Percepção', ds:'Cria uma cópia ilusória de água para confundir inimigos.', req:'Esquiva Fluída + Véu de Névoa',deps:['ag1b','ag2c']},
+  {id:'ag3c',chi:1,b:'ag',t:2,c:2,l:'Corrente\nSubmarina', tl:'Agilidade N3', dmg:'Natação = velocidade terrestre', ds:'Move-se debaixo de água invisível à superfície.', req:'Propulsão de Onda',deps:['ag2a']},
+  {id:'ag4a',chi:4,b:'ag',t:3,c:0,l:'Passo de\nNévoa',     tl:'Agilidade N4', dmg:'Teleporte até 9m', ds:'Teleporte curto usando a névoa como cobertura.', req:'Reflexo Aquático + Véu de Névoa',deps:['ag3b','ag2c']},
+  {id:'ag4b',chi:0,b:'ag',t:3,c:1,l:'Armadura\nde Gelo',   tl:'Agilidade N4', dmg:'CA +3 (passivo)', ds:'Envolve o corpo em gelo protetor sem perder mobilidade.', req:'Surf de Gelo',deps:['ag3a']},
+  {id:'ag4c',chi:4,b:'ag',t:3,c:2,l:'Dança das\nCorrentes',tl:'Agilidade N4', dmg:'Esquiva automática CD 16', ds:'Flui entre ataques inimigos como água.', req:'Corrente Submarina + Esquiva Fluída',deps:['ag3c','ag1b']},
+  {id:'ag5a',chi:6,b:'ag',t:4,c:0,l:'Forma do\nOceano',    tl:'Lendário — Agilidade', dmg:'Transforma-se por 1d4 turnos', ds:'Funde-se com uma grande massa de água, tornando-se imensurável.', req:'Armadura Gelo + Dança Correntes',deps:['ag4b','ag4c']},
+  {id:'ag5b',chi:6,b:'ag',t:4,c:2,l:'Fantasma\nde Névoa',  tl:'Lendário — Agilidade', dmg:'1d4 cópias — Furtividade CD 18', ds:'Cria múltiplas cópias de névoa enquanto se move invisível.', req:'Passo de Névoa + Reflexo Aquático',deps:['ag4a','ag3b']},
   // COMBATE PARTILHADO N1-N2
-  {id:'cb1a',b:'cb',t:0,c:0,l:'Chicote\nde Água',    tl:'Combate N1', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Projeta um chicote de água focado e rápido.', req:'—',deps:[]},
-  {id:'cb1b',b:'cb',t:0,c:1,l:'Bola de\nGelo',       tl:'Combate N1', dmg:'M0:1d4+2 · M1:2d4+2+Cong · M2:3d4+2 · M3:5d4+2', ds:'Projétil de gelo compacto de médio alcance.', req:'—',deps:[]},
-  {id:'cb2a',b:'cb',t:1,c:0,l:'Lança de\nGelo',      tl:'Combate N2', dmg:'M0:1d8+Sab · M1:2d8+Cong · M2:3d8 · M3:5d8', ds:'Dispara lanças de gelo afiadas com grande precisão.', req:'Chicote + Bola Gelo',deps:['cb1a','cb1b']},
-  {id:'cb2b',b:'cb',t:1,c:1,l:'Corrente\nCortante',  tl:'Combate N2', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Jato de alta pressão capaz de cortar pedra.', req:'Chicote de Água',deps:['cb1a']},
-  {id:'cb2c',b:'cb',t:1,c:2,l:'Disco de\nGelo',      tl:'Combate N2', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Projétil giratório que ricocheteia em superfícies.', req:'Bola de Gelo',deps:['cb1b']},
-  {id:'cb2d',b:'cb',t:1,c:3,l:'Onda de\nImpacto',    tl:'Combate N2', dmg:'M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8', ds:'Lança uma grande massa de água contra inimigos.', req:'—',deps:[]},
-  {id:'cb2e',b:'cb',t:1,c:4,l:'Muro de\nGelo',       tl:'Combate N2', dmg:'15 PV, CA 13', ds:'Ergue uma parede de gelo sólida como barreira.', req:'—',deps:[]},
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Chicote\nde Água',    tl:'Combate N1', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Projeta um chicote de água focado e rápido.', req:'—',deps:[]},
+  {id:'cb1b',chi:1,b:'cb',t:0,c:1,l:'Bola de\nGelo',       tl:'Combate N1', dmg:'M0:1d4+2 · M1:2d4+2+Cong · M2:3d4+2 · M3:5d4+2', ds:'Projétil de gelo compacto de médio alcance.', req:'—',deps:[]},
+  {id:'cb1c',chi:2,restore:8,b:'cb',t:0,c:2,l:'Partilha\nde Águas', tl:'Combate N1 (Suporte)', dmg:'Restaura 8 Chi a 1 aliado', ds:'Canaliza parte do próprio chi através da água para revitalizar um aliado.', req:'—',deps:[]},
+  {id:'cb2a',chi:2,b:'cb',t:1,c:0,l:'Lança de\nGelo',      tl:'Combate N2', dmg:'M0:1d8+Sab · M1:2d8+Cong · M2:3d8 · M3:5d8', ds:'Dispara lanças de gelo afiadas com grande precisão.', req:'Chicote + Bola Gelo',deps:['cb1a','cb1b']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Corrente\nCortante',  tl:'Combate N2', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Jato de alta pressão capaz de cortar pedra.', req:'Chicote de Água',deps:['cb1a']},
+  {id:'cb2c',chi:1,b:'cb',t:1,c:2,l:'Disco de\nGelo',      tl:'Combate N2', dmg:'M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6', ds:'Projétil giratório que ricocheteia em superfícies.', req:'Bola de Gelo',deps:['cb1b']},
+  {id:'cb2d',chi:2,b:'cb',t:1,c:3,l:'Onda de\nImpacto',    tl:'Combate N2', dmg:'M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8', ds:'Lança uma grande massa de água contra inimigos.', req:'—',deps:[]},
+  {id:'cb2e',chi:3,b:'cb',t:1,c:4,l:'Muro de\nGelo',       tl:'Combate N2', dmg:'15 PV, CA 13', ds:'Ergue uma parede de gelo sólida como barreira.', req:'—',deps:[]},
   // PRECISO (gelo)
-  {id:'pr3a',b:'pr',t:2,c:0,l:'Agulhas\nde Gelo',    tl:'Preciso N3', dmg:'3d4 em cone + Congelamento', ds:'Rajada de micro-projéteis gelados de alta velocidade.', req:'Lança de Gelo',deps:['cb2a']},
-  {id:'pr3b',b:'pr',t:2,c:1,l:'Fio\nCortante',       tl:'Preciso N3', dmg:'2d6 + Sangramento (armadilha)', ds:'Fio de água ultra-fino usado como armadilha.', req:'Corrente Cortante',deps:['cb2b']},
-  {id:'pr3c',b:'pr',t:2,c:2,l:'Serra de\nGelo',      tl:'Preciso N3', dmg:'2d6 persegue 1d3 turnos', ds:'Disco giratório de gelo que persegue o alvo.', req:'Disco + Corrente Cortante',deps:['cb2c','cb2b']},
-  {id:'pr4a',b:'pr',t:3,c:0,l:'Chuva de\nLanças',    tl:'Preciso N4', dmg:'4d6 em área + Congelamento', ds:'Invoca dezenas de lanças de gelo simultaneamente.', req:'Agulhas + Lança Gelo',deps:['pr3a','cb2a']},
-  {id:'pr4b',b:'pr',t:3,c:1,l:'Rede de\nFios',       tl:'Preciso N4', dmg:'2d4/turno + Enraizado+Sangramento', ds:'Teia invisível de fios de água que imobiliza e corta.', req:'Fio Cortante',deps:['pr3b']},
-  {id:'pr4c',b:'pr',t:3,c:2,l:'Explosão\nde Vapor',  tl:'Preciso N4', dmg:'3d6 calor + Cegueira', ds:'Aquece o gelo criando explosão de vapor escaldante.', req:'Serra Gelo + Corrente Cortante',deps:['pr3c','cb2b']},
-  {id:'pr5a',b:'pr',t:5,c:0,l:'Maré de\nAgulhas',    tl:'Lendário — Preciso', dmg:'6d6 em 6m + Cong+Enraizado', ds:'Cobre uma área inteira com projéteis de gelo.', req:'Chuva Lanças + Rede Fios',deps:['pr4a','pr4b']},
-  {id:'pr5b',b:'pr',t:5,c:2,l:'Dobra\nSanguínea',    tl:'Lendário — Preciso ★PROIBIDA', dmg:'3d8/turno — controlo total', ds:'Controla os movimentos de um inimigo pelo sangue. PROIBIDA.', req:'Sangue Frio + Corrente Cortante',deps:['sp3b','cb2b']},
+  {id:'pr3a',chi:8,b:'pr',t:2,c:0,l:'Agulhas\nde Gelo',    tl:'Preciso N3', dmg:'3d4 em cone + Congelamento', ds:'Rajada de micro-projéteis gelados de alta velocidade.', req:'Lança de Gelo',deps:['cb2a']},
+  {id:'pr3b',chi:7,b:'pr',t:2,c:1,l:'Fio\nCortante',       tl:'Preciso N3', dmg:'2d6 + Sangramento (armadilha)', ds:'Fio de água ultra-fino usado como armadilha.', req:'Corrente Cortante',deps:['cb2b']},
+  {id:'pr3c',chi:5,b:'pr',t:2,c:2,l:'Serra de\nGelo',      tl:'Preciso N3', dmg:'2d6 persegue 1d3 turnos', ds:'Disco giratório de gelo que persegue o alvo.', req:'Disco + Corrente Cortante',deps:['cb2c','cb2b']},
+  {id:'pr4a',chi:22,b:'pr',t:3,c:0,l:'Chuva de\nLanças',    tl:'Preciso N4', dmg:'4d6 em área + Congelamento', ds:'Invoca dezenas de lanças de gelo simultaneamente.', req:'Agulhas + Lança Gelo',deps:['pr3a','cb2a']},
+  {id:'pr4b',chi:6,b:'pr',t:3,c:1,l:'Rede de\nFios',       tl:'Preciso N4', dmg:'2d4/turno + Enraizado+Sangramento', ds:'Teia invisível de fios de água que imobiliza e corta.', req:'Fio Cortante',deps:['pr3b']},
+  {id:'pr4c',chi:13,b:'pr',t:3,c:2,l:'Explosão\nde Vapor',  tl:'Preciso N4', dmg:'3d6 calor + Cegueira', ds:'Aquece o gelo criando explosão de vapor escaldante.', req:'Serra Gelo + Corrente Cortante',deps:['pr3c','cb2b']},
+  {id:'pr5a',chi:48,b:'pr',t:5,c:0,l:'Maré de\nAgulhas',    tl:'Lendário — Preciso', dmg:'6d6 em 6m + Cong+Enraizado', ds:'Cobre uma área inteira com projéteis de gelo.', req:'Chuva Lanças + Rede Fios',deps:['pr4a','pr4b']},
+  {id:'pr5b',chi:22,b:'pr',t:5,c:2,l:'Dobra\nSanguínea',    tl:'Lendário — Preciso ★PROIBIDA', dmg:'3d8/turno — controlo total', ds:'Controla os movimentos de um inimigo pelo sangue. PROIBIDA.', req:'Sangue Frio + Corrente Cortante',deps:['sp3b','cb2b']},
   // BRUTO (força/gelo)
-  {id:'br3a',b:'br',t:2,c:0,l:'Prisão\nde Gelo',     tl:'Bruto N3', dmg:'2d6 + Enraizado + Congelamento', ds:'Encapsula inimigos em blocos de gelo.', req:'Muro de Gelo',deps:['cb2e']},
-  {id:'br3b',b:'br',t:2,c:1,l:'Onda de\nChoque',     tl:'Bruto N3', dmg:'2d6 + Derrubado', ds:'Onda que derruba tudo numa linha reta.', req:'Onda de Impacto',deps:['cb2d']},
-  {id:'br3c',b:'br',t:2,c:2,l:'Esmaga-\nmento Gelo', tl:'Bruto N3', dmg:'2d8 (dois muros)', ds:'Dois muros que se fecham sobre o inimigo.', req:'Muro de Gelo',deps:['cb2e']},
-  {id:'br4a',b:'br',t:3,c:0,l:'Vórtice\nAbissal',    tl:'Bruto N4', dmg:'4d8 + Aprisionado no centro', ds:'Redemoinho gigante que puxa e esmaga inimigos.', req:'Tsunami Pessoal',deps:['br3b']},
-  {id:'br4b',b:'br',t:3,c:1,l:'Fortaleza\nde Gelo',  tl:'Bruto N4', dmg:'Estrutura 60PV, CA 17', ds:'Constrói estruturas de gelo complexas para controlo do terreno.', req:'Torre Gelo + Surf de Gelo',deps:['br3a','ag3a']},
-  {id:'br4c',b:'br',t:3,c:2,l:'Nevasca\nem Área',    tl:'Bruto N4', dmg:'2d6/turno + Congelamento+Lentidão', ds:'Tempestade de gelo que imobiliza e causa dano contínuo.', req:'Bomba Gelo + Véu Névoa',deps:['br3c','ag2c']},
-  {id:'br5a',b:'br',t:5,c:0,l:'Kraken\nde Gelo',     tl:'Lendário — Bruto', dmg:'2d10/tentáculo × 1d4 tentáculos', ds:'Estrutura colossal de gelo animado que agarra e esmaga.', req:'Vórtice Abissal + Torre Gelo',deps:['br4a','br3a']},
-  {id:'br5b',b:'br',t:5,c:2,l:'Tempestade\nCongelante',tl:'Lendário — Bruto', dmg:'6d8 + Cong+Enraizado+Lentidão', ds:'Furacão de gelo e água que devasta uma área massiva.', req:'Nevasca + Vórtice Abissal',deps:['br4c','br4a']},
+  {id:'br3a',chi:9,b:'br',t:2,c:0,l:'Prisão\nde Gelo',     tl:'Bruto N3', dmg:'2d6 + Enraizado + Congelamento', ds:'Encapsula inimigos em blocos de gelo.', req:'Muro de Gelo',deps:['cb2e']},
+  {id:'br3b',chi:7,b:'br',t:2,c:1,l:'Onda de\nChoque',     tl:'Bruto N3', dmg:'2d6 + Derrubado', ds:'Onda que derruba tudo numa linha reta.', req:'Onda de Impacto',deps:['cb2d']},
+  {id:'br3c',chi:8,b:'br',t:2,c:2,l:'Esmaga-\nmento Gelo', tl:'Bruto N3', dmg:'2d8 (dois muros)', ds:'Dois muros que se fecham sobre o inimigo.', req:'Muro de Gelo',deps:['cb2e']},
+  {id:'br4a',chi:34,b:'br',t:3,c:0,l:'Vórtice\nAbissal',    tl:'Bruto N4', dmg:'4d8 + Aprisionado no centro', ds:'Redemoinho gigante que puxa e esmaga inimigos.', req:'Tsunami Pessoal',deps:['br3b']},
+  {id:'br4b',chi:4,b:'br',t:3,c:1,l:'Fortaleza\nde Gelo',  tl:'Bruto N4', dmg:'Estrutura 60PV, CA 17', ds:'Constrói estruturas de gelo complexas para controlo do terreno.', req:'Torre Gelo + Surf de Gelo',deps:['br3a','ag3a']},
+  {id:'br4c',chi:9,b:'br',t:3,c:2,l:'Nevasca\nem Área',    tl:'Bruto N4', dmg:'2d6/turno + Congelamento+Lentidão', ds:'Tempestade de gelo que imobiliza e causa dano contínuo.', req:'Bomba Gelo + Véu Névoa',deps:['br3c','ag2c']},
+  {id:'br5a',chi:18,b:'br',t:5,c:0,l:'Kraken\nde Gelo',     tl:'Lendário — Bruto', dmg:'2d10/tentáculo × 1d4 tentáculos', ds:'Estrutura colossal de gelo animado que agarra e esmaga.', req:'Vórtice Abissal + Torre Gelo',deps:['br4a','br3a']},
+  {id:'br5b',chi:79,b:'br',t:5,c:2,l:'Tempestade\nCongelante',tl:'Lendário — Bruto', dmg:'6d8 + Cong+Enraizado+Lentidão', ds:'Furacão de gelo e água que devasta uma área massiva.', req:'Nevasca + Vórtice Abissal',deps:['br4c','br4a']},
 ];
 
 // ── LAYOUT ────────────────────────────────────────────────
@@ -253,25 +263,50 @@ const EDGES=[];
 RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
 
 // ── GAME STATE ────────────────────────────────────────────
-let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
 function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
 function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
 function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
 function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
 function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
 function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
 
 function gainLevel(){
   if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
   S.lvl++;S.pts+=3;
-  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo.`,'g');
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+(mc-maxChiAtPrevLevel()),mc);
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
   document.getElementById('hv-lvl').textContent=S.lvl;
   document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
 function resetAll(){
-  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
   logs=[];document.getElementById('log-e').innerHTML='';
   document.getElementById('attr-row').innerHTML='';
   updHUD();render(null);closePanel();
@@ -285,12 +320,14 @@ function chAttr(a,d){
     const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
     if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
   }
+  const oldMax=maxChi();
   S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
-  // Only update the specific attribute value span — don't rebuild the whole HUD
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
   const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
   if(valEl)valEl.textContent=S.attr[a];
   document.getElementById('hv-pts').textContent=S.pts;
-  // Update panel status if open
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
@@ -299,7 +336,7 @@ function updHUD(){
   document.getElementById('hv-pts').textContent=S.pts;
   document.getElementById('hv-unl').textContent=S.unl.size;
   document.getElementById('hv-uses').textContent=totUses();
-  // Only rebuild attr row if it's empty (first render)
+  updChiBar();
   const row=document.getElementById('attr-row');
   if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
     row.innerHTML=ATTRS.map(a=>`
@@ -312,7 +349,6 @@ function updHUD(){
         </div>
       </div>`).join('');
   } else {
-    // Just update values in place
     ATTRS.forEach(a=>{
       const el=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
       if(el)el.textContent=S.attr[a];
@@ -324,7 +360,7 @@ function refreshPanelStatus(n){
   if(!n)return;
   const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
   const r=AREQ[n.id];
-  // Update attr badges
+  const cost=chiCost(n);
   let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
   if(r){
     ah+='<div style="font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Atributos necessários</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">';
@@ -334,8 +370,9 @@ function refreshPanelStatus(n){
     });
     ah+='</div>';
   }
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
   document.getElementById('p-attrs').innerHTML=ah;
-  // Update actions/status
   let act='',st='';
   if(!unl){
     let rs=[];
@@ -345,10 +382,15 @@ function refreshPanelStatus(n){
     act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
     st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
   } else {
-    act=`<button class="pb2 puse" onclick="doUse('${n.id}')">⚡ Usar (${u} usos)</button>`;
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
     const nx=m<3?UTH[m+1]:null;
     if(nx!==null){
       act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
       st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
     } else {
       st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
@@ -537,11 +579,24 @@ function doUnl(id){
 }
 function doUse(id){
   if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
   S.uses[id]=(S.uses[id]||0)+1;
   document.getElementById('hv-uses').textContent=totUses();
-  addLog(`⚡ Usaste: ${NM[id].l.replace('\n',' ')} (${S.uses[id]} usos, M${gm(id)})`);
-  // Refresh maestria dots
-  const n=NM[id],mae=MAE[id],m=gm(id),u=S.uses[id];
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
   if(mae){
     let mh=mae.l.map((lv,i)=>{
       const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
@@ -573,6 +628,7 @@ canvas.addEventListener('click',function(e){
 });
 canvas.addEventListener('mouseleave',()=>render(selId));
 
+S.chi=maxChi();
 render(null);updHUD();
 </script>
 </body>

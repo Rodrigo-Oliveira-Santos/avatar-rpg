@@ -15,6 +15,8 @@
       "tier_label": "Espírito N1",
       "description": "Deteta vibrações no solo, percebendo inimigos próximos.",
       "damage_summary": "Percepção CD 10 passivo",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 1,
@@ -46,6 +48,8 @@
       "tier_label": "Espírito N1",
       "description": "Resistência passiva a efeitos de atordoamento e empurrão.",
       "damage_summary": "Vantagem em saves empurrão",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 2,
@@ -56,6 +60,34 @@
       "mastery_levels": null,
       "position": {
         "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "earth-sp1c",
+      "raw_id": "sp1c",
+      "name": "Coração Montanha",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Ancora-se na imensidão da terra para recuperar energia espiritual.",
+      "damage_summary": "Restaura 1d6 chi",
+      "chi_cost": 1,
+      "chi_restore": 5,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
         "y_offset": 0
       }
     },
@@ -72,6 +104,8 @@
       "tier_label": "Espírito N2",
       "description": "Visão completa de tudo que toca o solo num raio alargado.",
       "damage_summary": "Percepção CD 12 / 18m",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Sentido da Terra",
       "attribute_requirements": {
         "ESP": 6,
@@ -107,6 +141,8 @@
       "tier_label": "Espírito N2",
       "description": "Recupera energia lentamente ao estar em contacto com o solo.",
       "damage_summary": "1d4 PV/turno em solo",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Paciência da Rocha",
       "attribute_requirements": {
         "ESP": 5,
@@ -138,6 +174,8 @@
       "tier_label": "Espírito N2",
       "description": "Identifica composição de rochas e minerais ao toque.",
       "damage_summary": "Natureza CD 11 ao toque",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Sentido da Terra",
       "attribute_requirements": {
         "ESP": 6,
@@ -168,6 +206,8 @@
       "tier_label": "Espírito N3",
       "description": "Deteta estruturas subterrâneas, armadilhas e minerais ocultos.",
       "damage_summary": "Investigação CD 14",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Visão Sísmica",
       "attribute_requirements": {
         "ESP": 12,
@@ -198,6 +238,8 @@
       "tier_label": "Espírito N3",
       "description": "Ancorado ao solo, torna-se imune a ser movido ou derrubado.",
       "damage_summary": "Imune a ser movido/derrubado",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Ligação Terra + Paciência Rocha",
       "attribute_requirements": {
         "ESP": 10,
@@ -236,6 +278,8 @@
       "tier_label": "Espírito N3",
       "description": "Lê a memória do terreno, descobrindo eventos passados.",
       "damage_summary": "História CD 15 via toque",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Memória Mineral + Visão Sísmica",
       "attribute_requirements": {
         "ESP": 13,
@@ -268,6 +312,8 @@
       "tier_label": "Espírito N4",
       "description": "Percebe tudo no campo de batalha através do solo.",
       "damage_summary": "Percebe tudo 30m via solo",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Escuta + Comunic. Pedra",
       "attribute_requirements": {
         "ESP": 20,
@@ -288,6 +334,41 @@
       }
     },
     {
+      "id": "earth-sp4d",
+      "raw_id": "sp4d",
+      "name": "Pedra Viva",
+      "element": "earth",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Funde-se com a rocha primordial, absorvendo a sua energia inesgotável.",
+      "damage_summary": "Restaura 3d8 chi",
+      "chi_cost": 6,
+      "chi_restore": 16,
+      "requirements_text": "Coração Montanha + Ligação Terra",
+      "attribute_requirements": {
+        "ESP": 19,
+        "CHI": 13,
+        "RES": 12
+      },
+      "prerequisites": [
+        "earth-sp1c",
+        "earth-sp2b"
+      ],
+      "prerequisites_raw": [
+        "sp1c",
+        "sp2b"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "earth-sp4b",
       "raw_id": "sp4b",
       "name": "Pulso de Terra",
@@ -300,6 +381,8 @@
       "tier_label": "Espírito N4",
       "description": "Envia pulsos de energia pelo solo que perturbam o equilíbrio inimigo.",
       "damage_summary": "Sal. Des CD 15 — Atordoado",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Raízes + Ligação Terra",
       "attribute_requirements": {
         "ESP": 18,
@@ -338,6 +421,8 @@
       "tier_label": "Espírito N4",
       "description": "Localiza depósitos de metal, cristais e recursos raros.",
       "damage_summary": "Investigação CD 14 / 90m",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Escuta + Memória Mineral",
       "attribute_requirements": {
         "ESP": 17,
@@ -370,6 +455,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Estado meditativo que expande a visão sísmica massivamente.",
       "damage_summary": "Perceção 90m via solo",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Perceção Total + Pulso de Terra",
       "attribute_requirements": {
         "ESP": 26,
@@ -403,6 +490,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Funde-se com o terreno, controlando o solo de uma área inteira.",
       "damage_summary": "Controla solo em 18m",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Raízes + Encontrar Minério",
       "attribute_requirements": {
         "ESP": 28,
@@ -436,6 +525,8 @@
       "tier_label": "Agilidade N1",
       "description": "Impulsiona o utilizador ao ar com um bloco de terra.",
       "damage_summary": "Atletismo CD 11 — salta 2x",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2,
@@ -462,6 +553,8 @@
       "tier_label": "Agilidade N1",
       "description": "Envolve o corpo em pedra para aumentar resistência.",
       "damage_summary": "CA +2 (passivo)",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "RES": 2,
@@ -488,6 +581,8 @@
       "tier_label": "Agilidade N2",
       "description": "Desloca-se sobre uma onda de terra a alta velocidade.",
       "damage_summary": "Velocidade +6m em solo",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Salto de Pedra",
       "attribute_requirements": {
         "AGI": 6,
@@ -518,6 +613,8 @@
       "tier_label": "Agilidade N2",
       "description": "Âncora os pés ao solo, tornando impossível ser derrubado.",
       "damage_summary": "Imune a empurrão/derrube",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Armadura de Terra",
       "attribute_requirements": {
         "RES": 5,
@@ -549,6 +646,8 @@
       "tier_label": "Agilidade N2",
       "description": "Cria um escudo portátil de pedra sólida.",
       "damage_summary": "Escudo 20PV, CA 14",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Armadura de Terra",
       "attribute_requirements": {
         "RES": 6,
@@ -579,6 +678,8 @@
       "tier_label": "Agilidade N3",
       "description": "Mergulha no solo e emerge noutro ponto do campo de batalha.",
       "damage_summary": "Acrobacia CD 13 — 9m sub.",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Surf de Terra",
       "attribute_requirements": {
         "AGI": 13,
@@ -609,6 +710,8 @@
       "tier_label": "Agilidade N3",
       "description": "Envolve o corpo inteiro em pedra sem perder velocidade.",
       "damage_summary": "CA +4, sem penalidade",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Botas + Escudo de Rocha",
       "attribute_requirements": {
         "RES": 12,
@@ -642,6 +745,8 @@
       "tier_label": "Agilidade N3",
       "description": "Corre em paredes e encostas verticais de pedra.",
       "damage_summary": "Corre em paredes de pedra",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Surf + Salto de Pedra",
       "attribute_requirements": {
         "AGI": 11,
@@ -674,6 +779,8 @@
       "tier_label": "Agilidade N4",
       "description": "Move-se pelo subsolo sem causar perturbações na superfície.",
       "damage_summary": "Subterrâneo sem perturbação",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Tunelização + Escuta Profunda",
       "attribute_requirements": {
         "AGI": 19,
@@ -707,6 +814,8 @@
       "tier_label": "Agilidade N4",
       "description": "Aumenta o tamanho físico com pedra.",
       "damage_summary": "Alcance +3m, tamanho aumenta",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Armadura Completa + Raízes Terra",
       "attribute_requirements": {
         "RES": 18,
@@ -740,6 +849,8 @@
       "tier_label": "Agilidade N4",
       "description": "Cada passo causa mini-sismos, desestabilizando inimigos.",
       "damage_summary": "Sal. Des CD 15 — Atordoado",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Passo + Surf de Terra",
       "attribute_requirements": {
         "AGI": 18,
@@ -773,6 +884,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Transforma-se numa entidade de pedra colossal.",
       "damage_summary": "Todos ataques +2d10 por 1d6t",
+      "chi_cost": 15,
+      "chi_restore": 0,
       "requirements_text": "Colossus de Pedra + Raízes da Terra",
       "attribute_requirements": {
         "RES": 26,
@@ -806,6 +919,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Move-se pelo subsolo a velocidade de sprint, emergindo em surpresa.",
       "damage_summary": "Sprint sub. + ataque surpresa",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Túnel Fantasma + Corrida Sísmica",
       "attribute_requirements": {
         "AGI": 27,
@@ -839,6 +954,8 @@
       "tier_label": "Combate N1",
       "description": "Lança pedras com precisão cirúrgica.",
       "damage_summary": "M0:1d6+FOR · M1:2d6+FOR · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -870,6 +987,8 @@
       "tier_label": "Combate N1",
       "description": "Faz emergir um espinho do solo num ponto específico.",
       "damage_summary": "M0:1d4+2+Enr · M1:2d4+2 · M2:3d4 · M3:5d4",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 1,
@@ -901,6 +1020,8 @@
       "tier_label": "Combate N2",
       "description": "Dispara múltiplos fragmentos em leque.",
       "damage_summary": "M0:2d4 cone · M1:3d4 · M2:5d4 · M3:8d4",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Projétil de Pedra",
       "attribute_requirements": {
         "PER": 6,
@@ -936,6 +1057,8 @@
       "tier_label": "Combate N2",
       "description": "Faz emergir uma linha de espinhos em sequência rápida.",
       "damage_summary": "M0:1d6 em linha · M1:2d6 · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Espinho de Terra",
       "attribute_requirements": {
         "PER": 5,
@@ -972,6 +1095,8 @@
       "tier_label": "Combate N2",
       "description": "Projétil que muda de direção após lançamento.",
       "damage_summary": "M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Projétil de Pedra",
       "attribute_requirements": {
         "PER": 7,
@@ -1007,6 +1132,8 @@
       "tier_label": "Combate N2",
       "description": "Ergue barreiras sólidas instantaneamente.",
       "damage_summary": "20 PV, CA 14",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2,
@@ -1033,6 +1160,8 @@
       "tier_label": "Combate N2",
       "description": "Soco amplificado por uma luva de pedra.",
       "damage_summary": "1d8+FOR + empurra 3m",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -1059,6 +1188,8 @@
       "tier_label": "Preciso N3",
       "description": "Manipula partículas de rocha para cegar, sufocar ou cortar.",
       "damage_summary": "1d6/turno + Cegueira+Lentidão",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Rajada + Visão Sísmica",
       "attribute_requirements": {
         "PER": 13,
@@ -1097,6 +1228,8 @@
       "tier_label": "Preciso N3",
       "description": "Zonas do solo que disparam espinhos ao serem pisadas.",
       "damage_summary": "2d6 ao pisar + Enraizado",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Espinhos em Série",
       "attribute_requirements": {
         "PER": 11,
@@ -1132,6 +1265,8 @@
       "tier_label": "Preciso N3",
       "description": "Nuvem de projéteis teleguiados simultaneamente.",
       "damage_summary": "3d6 em área distribuído",
+      "chi_cost": 11,
+      "chi_restore": 0,
       "requirements_text": "Pedra Teleguiada + Rajada",
       "attribute_requirements": {
         "PER": 12,
@@ -1169,6 +1304,8 @@
       "tier_label": "Preciso N4",
       "description": "Manipula metal como extensão da terra.",
       "damage_summary": "2d8 + ignora armadura",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Visão Sísmica + Espinhos em Série",
       "attribute_requirements": {
         "PER": 19,
@@ -1207,6 +1344,8 @@
       "tier_label": "Preciso N4",
       "description": "Nuvem de pó abrasivo que corrói armaduras em área 9m.",
       "damage_summary": "3d6/turno + Ceg+Sangramento",
+      "chi_cost": 15,
+      "chi_restore": 0,
       "requirements_text": "Dobra Pó + Armadilha Espinhos",
       "attribute_requirements": {
         "PER": 18,
@@ -1240,6 +1379,8 @@
       "tier_label": "Preciso N4",
       "description": "Projétil massivo de alta penetração.",
       "damage_summary": "3d10, penetra barreiras",
+      "chi_cost": 27,
+      "chi_restore": 0,
       "requirements_text": "Chuva Pedras + Pedra Teleguiada",
       "attribute_requirements": {
         "PER": 20,
@@ -1278,6 +1419,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Projeta fios de metal finos e cortantes com controlo absoluto.",
       "damage_summary": "2d6 + Enraizado+Sangramento",
+      "chi_cost": 9,
+      "chi_restore": 0,
       "requirements_text": "Dobra Metal + Chuva Pedras",
       "attribute_requirements": {
         "PER": 27,
@@ -1311,6 +1454,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Tornado de pó e fragmentos que tritura qualquer coisa.",
       "damage_summary": "6d6 + Ceg+Sangramento+Lent",
+      "chi_cost": 50,
+      "chi_restore": 0,
       "requirements_text": "Tempestade Pó + Dobra Pó",
       "attribute_requirements": {
         "PER": 26,
@@ -1344,6 +1489,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Arranca fragmento massivo e lança-o com velocidade de projétil.",
       "damage_summary": "5d12 + Atordoado Sal. Des 19",
+      "chi_cost": 108,
+      "chi_restore": 0,
       "requirements_text": "Míssil Rocha + Colossus",
       "attribute_requirements": {
         "PER": 25,
@@ -1377,6 +1524,8 @@
       "tier_label": "Bruto N3",
       "description": "Encapsula um inimigo numa gaiola de pedra sólida.",
       "damage_summary": "25PV para escapar + Enraizado",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Sismo + Muro Pedra",
       "attribute_requirements": {
         "FOR": 12,
@@ -1415,6 +1564,8 @@
       "tier_label": "Bruto N3",
       "description": "Lança múltiplos blocos em arco sobre uma área.",
       "damage_summary": "3d8 em área 6m",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Catapulta de Terra",
       "attribute_requirements": {
         "FOR": 13,
@@ -1450,6 +1601,8 @@
       "tier_label": "Bruto N3",
       "description": "Abre uma fenda no solo que engole inimigos.",
       "damage_summary": "2d8 + cai para interior",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Sismo + Torrente Rochas",
       "attribute_requirements": {
         "FOR": 11,
@@ -1487,6 +1640,8 @@
       "tier_label": "Bruto N4",
       "description": "Funde a rocha em lava e molda-a como arma.",
       "damage_summary": "3d8 fogo + terreno em chamas",
+      "chi_cost": 20,
+      "chi_restore": 0,
       "requirements_text": "Ligação Terra + Sismo",
       "attribute_requirements": {
         "FOR": 18,
@@ -1525,6 +1680,8 @@
       "tier_label": "Bruto N4",
       "description": "Desencadeia uma avalanche de pedras numa área.",
       "damage_summary": "4d8 + Soterrado",
+      "chi_cost": 34,
+      "chi_restore": 0,
       "requirements_text": "Bombardeamento + Prisão Terra",
       "attribute_requirements": {
         "FOR": 20,
@@ -1563,6 +1720,8 @@
       "tier_label": "Bruto N4",
       "description": "Ergue uma coluna de terra que arremessa inimigos ao ar.",
       "damage_summary": "3d6 + arremessado 6m ao ar",
+      "chi_cost": 11,
+      "chi_restore": 0,
       "requirements_text": "Fissura + Torrente Rochas",
       "attribute_requirements": {
         "FOR": 19,
@@ -1600,6 +1759,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Cria corrente de lava que percorre o campo de batalha.",
       "damage_summary": "4d10 fogo/turno + Enraizado",
+      "chi_cost": 50,
+      "chi_restore": 0,
       "requirements_text": "Dobra Lava + Fissura",
       "attribute_requirements": {
         "FOR": 26,
@@ -1633,6 +1794,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Destrói completamente uma estrutura ou área.",
       "damage_summary": "6d10 em 18m + terreno destruído",
+      "chi_cost": 111,
+      "chi_restore": 0,
       "requirements_text": "Avalanche + Coluna Sísmica",
       "attribute_requirements": {
         "FOR": 28,
@@ -1666,6 +1829,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Invoca uma erupção localizada de magma e cinzas.",
       "damage_summary": "8d10 fogo em 24m + Cegueira",
+      "chi_cost": 196,
+      "chi_restore": 0,
       "requirements_text": "Rio Lava + Colapso Sísmico",
       "attribute_requirements": {
         "FOR": 30,

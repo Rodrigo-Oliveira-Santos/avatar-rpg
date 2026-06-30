@@ -15,6 +15,8 @@
       "tier_label": "Espírito N1",
       "description": "Aumenta perceção espiritual e regeneração de energia.",
       "damage_summary": "1d6 PV/turno fora combate",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 1
@@ -45,6 +47,8 @@
       "tier_label": "Espírito N1",
       "description": "Neutraliza efeitos de veneno, gás e sufocação.",
       "damage_summary": "Con CD 11 — Remove veneno/gás",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 2,
@@ -55,6 +59,34 @@
       "mastery_levels": null,
       "position": {
         "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "air-sp1c",
+      "raw_id": "sp1c",
+      "name": "Resp. Vital",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Técnica de respiração que extrai energia vital do próprio ar.",
+      "damage_summary": "Restaura 1d8 chi",
+      "chi_cost": 1,
+      "chi_restore": 6,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
         "y_offset": 0
       }
     },
@@ -71,6 +103,8 @@
       "tier_label": "Espírito N2",
       "description": "Sente perturbações no ar, detetando movimento inimigo.",
       "damage_summary": "Deteta movimento 18m pelo ar",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Medit. Profunda",
       "attribute_requirements": {
         "ESP": 6,
@@ -106,6 +140,8 @@
       "tier_label": "Espírito N2",
       "description": "Projeta uma calma que desarma inimigos com menor determinação.",
       "damage_summary": "Sal. Sab CD 13 — Remove Medo",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Medit.+Resp. Calma",
       "attribute_requirements": {
         "ESP": 5,
@@ -138,6 +174,8 @@
       "tier_label": "Espírito N2",
       "description": "Ouve sons a grandes distâncias através do ar.",
       "damage_summary": "Ouve sons 300m",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Respiração Calma",
       "attribute_requirements": {
         "ESP": 6,
@@ -168,6 +206,8 @@
       "tier_label": "Espírito N3",
       "description": "Comunica com espíritos do ar e animais.",
       "damage_summary": "Religião CD 14 — Fala c/ esp.",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Visão Vento + Aura Paz",
       "attribute_requirements": {
         "ESP": 13,
@@ -200,6 +240,8 @@
       "tier_label": "Espírito N3",
       "description": "Envia mensagens através do vento a aliados a distância.",
       "damage_summary": "Mensagem a aliado 1,5km",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Escuta + Visão Vento",
       "attribute_requirements": {
         "ESP": 11,
@@ -237,6 +279,8 @@
       "tier_label": "Espírito N3",
       "description": "Reduz a presença física, tornando-se difícil de detetar.",
       "damage_summary": "Furtividade CD 13 c/ vantagem",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Aura Paz + Resp. Calma",
       "attribute_requirements": {
         "ESP": 12,
@@ -269,6 +313,8 @@
       "tier_label": "Espírito N4",
       "description": "Separa o espírito do corpo para exploração.",
       "damage_summary": "Espírito explora 90m / turno",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Contacto Esp. + Presença",
       "attribute_requirements": {
         "ESP": 19,
@@ -301,6 +347,8 @@
       "tier_label": "Espírito N4",
       "description": "Sintoniza-se com o mundo espiritual, prevendo ataques.",
       "damage_summary": "Prevê ataques 1t antecipado",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Contacto Esp. + Voz Vento",
       "attribute_requirements": {
         "ESP": 20,
@@ -339,6 +387,8 @@
       "tier_label": "Espírito N4",
       "description": "Dobra o ar ao redor tornando-se visualmente invisível.",
       "damage_summary": "Furtividade CD 16 — 1d4 turnos",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Presença Etérea + Visão Vento",
       "attribute_requirements": {
         "ESP": 18,
@@ -372,6 +422,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Dissolve o corpo no ar por breves momentos, sendo intangível.",
       "damage_summary": "Intangível 1 turno",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Projeção + Invis. Vento",
       "attribute_requirements": {
         "ESP": 27,
@@ -405,6 +457,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Perceção total de um campo de batalha através do ar.",
       "damage_summary": "Percebe campo inteiro via ar",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Harmonia + Invis. Vento",
       "attribute_requirements": {
         "ESP": 28,
@@ -438,6 +492,8 @@
       "tier_label": "Agilidade N1",
       "description": "Aumenta drasticamente a velocidade de movimento.",
       "damage_summary": "Velocidade +6m",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2,
@@ -464,6 +520,8 @@
       "tier_label": "Agilidade N1",
       "description": "Impulsiona saltos a grande altitude com bolsões de ar.",
       "damage_summary": "Atletismo CD 11 — salta 3x",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 1,
@@ -490,6 +548,8 @@
       "tier_label": "Agilidade N2",
       "description": "Reduz o som dos passos a zero.",
       "damage_summary": "Movimento silencioso",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Corrida de Vento",
       "attribute_requirements": {
         "AGI": 6
@@ -519,6 +579,8 @@
       "tier_label": "Agilidade N2",
       "description": "Plana longas distâncias usando correntes de ar.",
       "damage_summary": "Plana 30m por 3m altitude",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Salto Aéreo",
       "attribute_requirements": {
         "AGI": 5,
@@ -549,6 +611,8 @@
       "tier_label": "Agilidade N2",
       "description": "Executa manobras acrobáticas complexas no ar.",
       "damage_summary": "Acrobacia CD 12 — manobras ar",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Salto + Corrida Vento",
       "attribute_requirements": {
         "AGI": 6,
@@ -581,6 +645,8 @@
       "tier_label": "Agilidade N3",
       "description": "Envolve o corpo num redemoinho que deflecte projéteis.",
       "damage_summary": "Deflecte projéteis CD 14",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Corrida + Passo Vento",
       "attribute_requirements": {
         "AGI": 13,
@@ -613,6 +679,8 @@
       "tier_label": "Agilidade N3",
       "description": "Voo controlado com asa-delta de ar dobrado.",
       "damage_summary": "Voo 15m totalmente manobrável",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Planagem + Rodar no Ar",
       "attribute_requirements": {
         "AGI": 12,
@@ -645,6 +713,8 @@
       "tier_label": "Agilidade N3",
       "description": "Cria e monta correntes de ar ascendentes.",
       "damage_summary": "Ganha altitude sem esforço",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Planagem + Salto Aéreo",
       "attribute_requirements": {
         "AGI": 11,
@@ -677,6 +747,8 @@
       "tier_label": "Agilidade N4",
       "description": "Move-se dentro de uma esfera protetora de ar.",
       "damage_summary": "CA+3, vel. 18m, deflecte auto.",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Tornado + Voo Asa-Delta",
       "attribute_requirements": {
         "AGI": 20,
@@ -710,6 +782,8 @@
       "tier_label": "Agilidade N4",
       "description": "Combate aéreo fluido, impossível de prever ou rastrear.",
       "damage_summary": "Ataques em voo têm vantagem",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Voo + Rodar no Ar",
       "attribute_requirements": {
         "AGI": 19,
@@ -742,6 +816,8 @@
       "tier_label": "Agilidade N4",
       "description": "Move-se a velocidades próximas do som em linha reta.",
       "damage_summary": "Vel. 36m — 2d8 + Atordoado",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Corrida + Tornado Pessoal",
       "attribute_requirements": {
         "AGI": 20,
@@ -775,6 +851,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Move-se tão depressa que parece estar em múltiplos locais.",
       "damage_summary": "Parece estar em 1d3 locais",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Esfera Ar + Corredor Sónico",
       "attribute_requirements": {
         "AGI": 28,
@@ -808,6 +886,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Torna-se o centro de uma tempestade pessoal em movimento.",
       "damage_summary": "3d8 em 9m/turno em movimento",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Dança Aérea + Esfera de Ar",
       "attribute_requirements": {
         "AGI": 27,
@@ -841,6 +921,8 @@
       "tier_label": "Combate N1",
       "description": "Jato de ar comprimido de alta velocidade.",
       "damage_summary": "M0:1d6+empurra · M1:2d6 · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -872,6 +954,8 @@
       "tier_label": "Combate N1",
       "description": "Ráfaga de ar que empurra e desorienta inimigos próximos.",
       "damage_summary": "M0:empurra 3m · M1:4,5m · M2:6m · M3:9m+Atord.",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -891,6 +975,34 @@
       }
     },
     {
+      "id": "air-cb1c",
+      "raw_id": "cb1c",
+      "name": "Vento da Renovação",
+      "element": "air",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1 (Suporte)",
+      "description": "Sopra uma corrente de ar revigorante sobre um aliado próximo.",
+      "damage_summary": "Restaura 8 Chi a 1 aliado",
+      "chi_cost": 2,
+      "chi_restore": 8,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 3,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "air-cb2a",
       "raw_id": "cb2a",
       "name": "Corte de Vento",
@@ -903,6 +1015,8 @@
       "tier_label": "Combate N2",
       "description": "Lâmina de ar capaz de cortar superfícies sólidas.",
       "damage_summary": "M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Rajada Focada",
       "attribute_requirements": {
         "PER": 6,
@@ -938,6 +1052,8 @@
       "tier_label": "Combate N2",
       "description": "Jatos de ar que atingem pontos de pressão no corpo inimigo.",
       "damage_summary": "M0:1d4×alvos · M1:2d4 · M2:3d4 · M3:5d4",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Rajada + Sopro Dispersão",
       "attribute_requirements": {
         "PER": 5,
@@ -976,6 +1092,8 @@
       "tier_label": "Combate N2",
       "description": "Micro-projéteis de ar comprimido que perfuram armaduras leves.",
       "damage_summary": "M0:1d4×3 · M1:2d4×3 · M2:3d4 · M3:5d4",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Sopro de Dispersão",
       "attribute_requirements": {
         "PER": 6,
@@ -1006,6 +1124,8 @@
       "tier_label": "Combate N2",
       "description": "Liberta uma onda de ar em todas as direções.",
       "damage_summary": "Empurra 3m + 1d6 em falha",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2,
@@ -1032,6 +1152,8 @@
       "tier_label": "Combate N2",
       "description": "Vento forte que derruba inimigos em linha reta.",
       "damage_summary": "Sal. FOR CD 12 — Derrubado",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -1058,6 +1180,8 @@
       "tier_label": "Preciso N3",
       "description": "Projétil de ar que cria mini-vácuo ao impactar.",
       "damage_summary": "2d6 + Sal. Con CD 14 Atordoado",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Corte + Rajada Focada",
       "attribute_requirements": {
         "PER": 13,
@@ -1095,6 +1219,8 @@
       "tier_label": "Preciso N3",
       "description": "Dezenas de pontos de pressão em frações de segundo.",
       "damage_summary": "1d6 + Paralisia membro",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Dedos + Agulhas Ar",
       "attribute_requirements": {
         "PER": 12,
@@ -1133,6 +1259,8 @@
       "tier_label": "Preciso N3",
       "description": "Disco de ar giratório que persegue o alvo.",
       "damage_summary": "2d6 persegue 1d3 turnos",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Corte + Agulhas Ar",
       "attribute_requirements": {
         "PER": 11,
@@ -1170,6 +1298,8 @@
       "tier_label": "Preciso N4",
       "description": "Cria vácuo localizado que atrai e esmaga tudo.",
       "damage_summary": "3d8 + Enraizado+Atordoado",
+      "chi_cost": 22,
+      "chi_restore": 0,
       "requirements_text": "Soco Vácuo + Presença Etérea",
       "attribute_requirements": {
         "PER": 19,
@@ -1208,6 +1338,8 @@
       "tier_label": "Preciso N4",
       "description": "Imobiliza completamente um inimigo com pressão de ar.",
       "damage_summary": "Sal. Con CD 16 — Imobilizado",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Acupuntura + Contacto Espiritual",
       "attribute_requirements": {
         "PER": 20,
@@ -1246,6 +1378,8 @@
       "tier_label": "Preciso N4",
       "description": "Múltiplas lâminas de ar giratórias que cobrem uma área.",
       "damage_summary": "3d6 em 6m + Sangramento",
+      "chi_cost": 13,
+      "chi_restore": 0,
       "requirements_text": "Lâmina Giratória + Corte",
       "attribute_requirements": {
         "PER": 18,
@@ -1283,6 +1417,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Aspira tudo numa área para um ponto central.",
       "damage_summary": "5d8 em 12m — todos puxados",
+      "chi_cost": 51,
+      "chi_restore": 0,
       "requirements_text": "Implosão + Furacão",
       "attribute_requirements": {
         "PER": 26,
@@ -1316,6 +1452,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Atinge pontos de pressão sem contacto físico.",
       "damage_summary": "4d8 + Atordoado+Silêncio",
+      "chi_cost": 36,
+      "chi_restore": 0,
       "requirements_text": "Paralisia + União c/ Vento",
       "attribute_requirements": {
         "PER": 27,
@@ -1349,6 +1487,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Cobre área massiva com lâminas de ar enquanto se move.",
       "damage_summary": "6d8 em 18m + Sangramento+Lent.",
+      "chi_cost": 77,
+      "chi_restore": 0,
       "requirements_text": "Serra Vento + Fénix Vento",
       "attribute_requirements": {
         "PER": 28,
@@ -1382,6 +1522,8 @@
       "tier_label": "Bruto N3",
       "description": "Gera um furacão localizado que arremessa inimigos.",
       "damage_summary": "2d6 + arremessado 3m",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Explosão de Ar",
       "attribute_requirements": {
         "FOR": 12,
@@ -1417,6 +1559,8 @@
       "tier_label": "Bruto N3",
       "description": "Barreira de ar comprimido que explode ao ser atravessada.",
       "damage_summary": "2d8 + Atordoado ao atravessar",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Muro Vento + Onda Pressão",
       "attribute_requirements": {
         "FOR": 11,
@@ -1455,6 +1599,8 @@
       "tier_label": "Bruto N3",
       "description": "Concentra o vento num único golpe que ressoa como trovão.",
       "damage_summary": "2d10 + surdo 1 min",
+      "chi_cost": 12,
+      "chi_restore": 0,
       "requirements_text": "Onda de Pressão",
       "attribute_requirements": {
         "FOR": 13,
@@ -1490,6 +1636,8 @@
       "tier_label": "Bruto N4",
       "description": "Comanda uma tempestade em área combinando ataque e mobilidade.",
       "damage_summary": "3d8 em 12m + Lent+Atord+Ceg",
+      "chi_cost": 24,
+      "chi_restore": 0,
       "requirements_text": "Vórtice + Tornado Pessoal",
       "attribute_requirements": {
         "FOR": 19,
@@ -1528,6 +1676,8 @@
       "tier_label": "Bruto N4",
       "description": "Remove o ar ao redor de um inimigo, imobilizando-o.",
       "damage_summary": "Incapacitado + 1d6/turno",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Barreira Sónica + Corte Vento",
       "attribute_requirements": {
         "FOR": 18,
@@ -1566,6 +1716,8 @@
       "tier_label": "Bruto N4",
       "description": "Mão invisível de ar que esmaga e arremessa.",
       "damage_summary": "3d8 + arremessado 6m",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Golpe Trovão + Soco Vácuo",
       "attribute_requirements": {
         "FOR": 20,
@@ -1603,6 +1755,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Invoca tempestade devastadora que cobre todo o campo.",
       "damage_summary": "6d10 em 24m + Lent+Atord+Medo",
+      "chi_cost": 115,
+      "chi_restore": 0,
       "requirements_text": "Tempestade + Punho Gigante",
       "attribute_requirements": {
         "FOR": 27,
@@ -1636,6 +1790,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Remove todo o ar de uma área, criando vácuo total.",
       "damage_summary": "Vácuo total — apaga fogo+som",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Sufocação + Mente do Céu",
       "attribute_requirements": {
         "FOR": 26,
@@ -1669,6 +1825,8 @@
       "tier_label": "Lendário — Bruto ★partilhado",
       "description": "Aspira tudo numa área para um ponto central. (Partilhado com Preciso)",
       "damage_summary": "5d8 em 12m — todos puxados",
+      "chi_cost": 51,
+      "chi_restore": 0,
       "requirements_text": "Implosão + Furacão",
       "attribute_requirements": {
         "FOR": 13,

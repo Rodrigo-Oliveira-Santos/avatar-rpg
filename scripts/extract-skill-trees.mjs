@@ -78,6 +78,12 @@ async function extractFile(srcFile, element, nonBenderPath) {
       tier_label: n.tl,
       description: n.ds || '',
       damage_summary: n.dmg || '',
+      // Chi accounting (added 2026-06-30 with the skill-tree refresh).
+      // `chi_cost` is deducted from the caster's pool when the skill is
+      // used; `chi_restore` is added back (caster or allied target,
+      // depending on the skill description).
+      chi_cost: Number(n.chi) || 0,
+      chi_restore: Number(n.restore) || 0,
       requirements_text: n.req || '',
       attribute_requirements: AREQ[n.id] || {},
       prerequisites: (n.deps || []).map((dep) => `${element}-${nonBenderPath ? nonBenderPath + '-' : ''}${dep}`),

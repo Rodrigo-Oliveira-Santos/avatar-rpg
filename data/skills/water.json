@@ -15,6 +15,8 @@
       "tier_label": "Espírito N1",
       "description": "Cura ferimentos superficiais usando água.",
       "damage_summary": "1d6+Sab PV",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 1
@@ -45,6 +47,8 @@
       "tier_label": "Espírito N1",
       "description": "Percebe correntes de água próximas, mesmo ocultas.",
       "damage_summary": "Percepção CD 10",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 1,
@@ -64,6 +68,34 @@
       }
     },
     {
+      "id": "water-sp1c",
+      "raw_id": "sp1c",
+      "name": "Fluxo Interior",
+      "element": "water",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Sintoniza-se com o fluxo natural da água dentro do próprio corpo.",
+      "damage_summary": "Restaura 1d8 chi",
+      "chi_cost": 1,
+      "chi_restore": 6,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 2,
+        "CHI": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "water-sp2a",
       "raw_id": "sp2a",
       "name": "Cura Profunda",
@@ -76,6 +108,8 @@
       "tier_label": "Espírito N2",
       "description": "Cura ferimentos internos, ossos partidos e doenças.",
       "damage_summary": "2d8+Sab PV",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Cura Básica",
       "attribute_requirements": {
         "ESP": 5,
@@ -111,6 +145,8 @@
       "tier_label": "Espírito N2",
       "description": "Remove venenos e toxinas do corpo de um aliado.",
       "damage_summary": "Medicina CD 13",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Cura Básica",
       "attribute_requirements": {
         "ESP": 6
@@ -140,6 +176,8 @@
       "tier_label": "Espírito N2",
       "description": "Aumenta o poder de todas as habilidades durante a noite.",
       "damage_summary": "+1d4 à noite (passivo)",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Sentido da Maré",
       "attribute_requirements": {
         "ESP": 5,
@@ -170,6 +208,8 @@
       "tier_label": "Espírito N3",
       "description": "Aplica cura simultânea a múltiplos aliados.",
       "damage_summary": "2d6+Sab até 3 alvos",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Cura Profunda",
       "attribute_requirements": {
         "ESP": 11,
@@ -205,6 +245,8 @@
       "tier_label": "Espírito N3",
       "description": "Retarda inimigos manipulando os fluidos do corpo.",
       "damage_summary": "Sal. Con CD 14 — Lentidão",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Cura Profunda",
       "attribute_requirements": {
         "ESP": 10,
@@ -241,6 +283,8 @@
       "tier_label": "Espírito N3",
       "description": "Vê espíritos e auras de energia invisíveis a olho nu.",
       "damage_summary": "Arcana CD 13",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Ligação Lunar",
       "attribute_requirements": {
         "ESP": 12,
@@ -271,6 +315,8 @@
       "tier_label": "Espírito N4",
       "description": "Cura feridas de natureza espiritual e remove maldições.",
       "damage_summary": "3d8+Sab + Remove condição",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Cura em Grupo + Visão Espiritual",
       "attribute_requirements": {
         "ESP": 18,
@@ -308,6 +354,8 @@
       "tier_label": "Espírito N4",
       "description": "Manipula a água nas plantas para criar chicotes e barreiras.",
       "damage_summary": "2d6 + Enraizado",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Sangue Frio",
       "attribute_requirements": {
         "ESP": 16,
@@ -344,6 +392,8 @@
       "tier_label": "Espírito N4",
       "description": "Transfere energia vital para ressuscitar um aliado inconsciente.",
       "damage_summary": "Cede 2d10 PV para 4d10 aliado",
+      "chi_cost": 12,
+      "chi_restore": 0,
       "requirements_text": "Cura em Grupo",
       "attribute_requirements": {
         "ESP": 18,
@@ -375,6 +425,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Purifica espíritos corrompidos e fecha portais espirituais.",
       "damage_summary": "Religião CD 18",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Cura Espiritual + Dobra de Plantas",
       "attribute_requirements": {
         "ESP": 26,
@@ -395,6 +447,41 @@
       }
     },
     {
+      "id": "water-sp5d",
+      "raw_id": "sp5d",
+      "name": "Maré da Vida",
+      "element": "water",
+      "non_bender_path": null,
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 5,
+      "is_legendary": true,
+      "tier_label": "Lendário — Espírito (Grupo)",
+      "description": "Canaliza a maré para devolver energia vital e espiritual a todos os aliados próximos.",
+      "damage_summary": "Restaura 25 Chi a toda a equipa em 9m",
+      "chi_cost": 14,
+      "chi_restore": 25,
+      "requirements_text": "Cura em Grupo + Fluxo Interior",
+      "attribute_requirements": {
+        "ESP": 20,
+        "CHI": 14,
+        "RES": 10
+      },
+      "prerequisites": [
+        "water-sp3a",
+        "water-sp1c"
+      ],
+      "prerequisites_raw": [
+        "sp3a",
+        "sp1c"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "water-sp5b",
       "raw_id": "sp5b",
       "name": "Dobra Sanguínea",
@@ -407,6 +494,8 @@
       "tier_label": "Lendário — Espírito ★PROIBIDA",
       "description": "Controla os movimentos de um inimigo pelo sangue. PROIBIDA.",
       "damage_summary": "3d8/turno — controlo total",
+      "chi_cost": 22,
+      "chi_restore": 0,
       "requirements_text": "Sangue Frio + Corrente Cortante(CB)",
       "attribute_requirements": {
         "ESP": 24,
@@ -440,6 +529,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Canaliza a energia lunar para curar toda uma área de batalha.",
       "damage_summary": "4d8+Sab a todos aliados em 9m",
+      "chi_cost": 32,
+      "chi_restore": 0,
       "requirements_text": "Transf. Vida + Ligação Lunar",
       "attribute_requirements": {
         "ESP": 27,
@@ -473,6 +564,8 @@
       "tier_label": "Agilidade N1",
       "description": "+3 metros de movimento em superfícies de água ou gelo.",
       "damage_summary": "+3m em água/gelo (passivo)",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 1
@@ -498,6 +591,8 @@
       "tier_label": "Agilidade N1",
       "description": "Redireciona ataques inimigos com movimentos circulares.",
       "damage_summary": "Acrobacia CD 12 (reação)",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2,
@@ -524,6 +619,8 @@
       "tier_label": "Agilidade N2",
       "description": "Usa ondas para se mover rapidamente em rios e mares.",
       "damage_summary": "Velocidade duplica em água",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Deslize Aquático",
       "attribute_requirements": {
         "AGI": 5,
@@ -554,6 +651,8 @@
       "tier_label": "Agilidade N2",
       "description": "Congela água sob os pés para caminhar em superfícies verticais.",
       "damage_summary": "Acrobacia CD 11",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Deslize Aquático",
       "attribute_requirements": {
         "AGI": 6
@@ -583,6 +682,8 @@
       "tier_label": "Agilidade N2",
       "description": "Cria névoa densa para se ocultar e reposicionar.",
       "damage_summary": "Furtividade CD 13 c/ vantagem",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Esquiva Fluída",
       "attribute_requirements": {
         "AGI": 5,
@@ -613,6 +714,8 @@
       "tier_label": "Agilidade N3",
       "description": "Cria plataforma de gelo e desliza a alta velocidade.",
       "damage_summary": "Vel. +6m, ignora terreno difícil",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Propulsão de Onda + Caminhada no Gelo",
       "attribute_requirements": {
         "AGI": 12,
@@ -645,6 +748,8 @@
       "tier_label": "Agilidade N3",
       "description": "Cria uma cópia ilusória de água para confundir inimigos.",
       "damage_summary": "Ilusionismo vs. Percepção",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Esquiva Fluída + Véu de Névoa",
       "attribute_requirements": {
         "AGI": 10,
@@ -677,6 +782,8 @@
       "tier_label": "Agilidade N3",
       "description": "Move-se debaixo de água invisível à superfície.",
       "damage_summary": "Natação = velocidade terrestre",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Propulsão de Onda",
       "attribute_requirements": {
         "AGI": 11,
@@ -707,6 +814,8 @@
       "tier_label": "Agilidade N4",
       "description": "Teleporte curto usando a névoa como cobertura.",
       "damage_summary": "Teleporte até 9m",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Reflexo Aquático + Véu de Névoa",
       "attribute_requirements": {
         "AGI": 18,
@@ -739,6 +848,8 @@
       "tier_label": "Agilidade N4",
       "description": "Envolve o corpo em gelo protetor sem perder mobilidade.",
       "damage_summary": "CA +3 (passivo)",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Surf de Gelo",
       "attribute_requirements": {
         "AGI": 16,
@@ -770,6 +881,8 @@
       "tier_label": "Agilidade N4",
       "description": "Flui entre ataques inimigos como água.",
       "damage_summary": "Esquiva automática CD 16",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Corrente Submarina + Esquiva Fluída",
       "attribute_requirements": {
         "AGI": 17,
@@ -802,6 +915,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Funde-se com uma grande massa de água, tornando-se imensurável.",
       "damage_summary": "Transforma-se por 1d4 turnos",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Armadura Gelo + Dança Correntes",
       "attribute_requirements": {
         "AGI": 26,
@@ -835,6 +950,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Cria múltiplas cópias de névoa enquanto se move invisível.",
       "damage_summary": "1d4 cópias — Furtividade CD 18",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Passo de Névoa + Reflexo Aquático",
       "attribute_requirements": {
         "AGI": 28,
@@ -867,6 +984,8 @@
       "tier_label": "Combate N1",
       "description": "Projeta um chicote de água focado e rápido.",
       "damage_summary": "M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 1,
@@ -898,6 +1017,8 @@
       "tier_label": "Combate N1",
       "description": "Projétil de gelo compacto de médio alcance.",
       "damage_summary": "M0:1d4+2 · M1:2d4+2+Cong · M2:3d4+2 · M3:5d4+2",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -917,6 +1038,34 @@
       }
     },
     {
+      "id": "water-cb1c",
+      "raw_id": "cb1c",
+      "name": "Partilha de Águas",
+      "element": "water",
+      "non_bender_path": null,
+      "branch": "cb",
+      "category": "combat",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Combate N1 (Suporte)",
+      "description": "Canaliza parte do próprio chi através da água para revitalizar um aliado.",
+      "damage_summary": "Restaura 8 Chi a 1 aliado",
+      "chi_cost": 2,
+      "chi_restore": 8,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "ESP": 3,
+        "CHI": 2
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "water-cb2a",
       "raw_id": "cb2a",
       "name": "Lança de Gelo",
@@ -929,6 +1078,8 @@
       "tier_label": "Combate N2",
       "description": "Dispara lanças de gelo afiadas com grande precisão.",
       "damage_summary": "M0:1d8+Sab · M1:2d8+Cong · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Chicote + Bola Gelo",
       "attribute_requirements": {
         "PER": 6,
@@ -966,6 +1117,8 @@
       "tier_label": "Combate N2",
       "description": "Jato de alta pressão capaz de cortar pedra.",
       "damage_summary": "M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Chicote de Água",
       "attribute_requirements": {
         "PER": 5,
@@ -1002,6 +1155,8 @@
       "tier_label": "Combate N2",
       "description": "Projétil giratório que ricocheteia em superfícies.",
       "damage_summary": "M0:1d6 · M1:2d6 · M2:3d6 · M3:5d6",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Bola de Gelo",
       "attribute_requirements": {
         "PER": 6,
@@ -1037,6 +1192,8 @@
       "tier_label": "Combate N2",
       "description": "Lança uma grande massa de água contra inimigos.",
       "damage_summary": "M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2,
@@ -1063,6 +1220,8 @@
       "tier_label": "Combate N2",
       "description": "Ergue uma parede de gelo sólida como barreira.",
       "damage_summary": "15 PV, CA 13",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "CHI": 2,
@@ -1089,6 +1248,8 @@
       "tier_label": "Preciso N3",
       "description": "Rajada de micro-projéteis gelados de alta velocidade.",
       "damage_summary": "3d4 em cone + Congelamento",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Lança de Gelo",
       "attribute_requirements": {
         "PER": 6,
@@ -1124,6 +1285,8 @@
       "tier_label": "Preciso N3",
       "description": "Fio de água ultra-fino usado como armadilha.",
       "damage_summary": "2d6 + Sangramento (armadilha)",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Corrente Cortante",
       "attribute_requirements": {
         "PER": 5,
@@ -1160,6 +1323,8 @@
       "tier_label": "Preciso N3",
       "description": "Disco giratório de gelo que persegue o alvo.",
       "damage_summary": "2d6 persegue 1d3 turnos",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Disco + Corrente Cortante",
       "attribute_requirements": {
         "PER": 6,
@@ -1197,6 +1362,8 @@
       "tier_label": "Preciso N4",
       "description": "Invoca dezenas de lanças de gelo simultaneamente.",
       "damage_summary": "4d6 em área + Congelamento",
+      "chi_cost": 22,
+      "chi_restore": 0,
       "requirements_text": "Agulhas + Lança Gelo",
       "attribute_requirements": {
         "PER": 20,
@@ -1234,6 +1401,8 @@
       "tier_label": "Preciso N4",
       "description": "Teia invisível de fios de água que imobiliza e corta.",
       "damage_summary": "2d4/turno + Enraizado+Sangramento",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Fio Cortante",
       "attribute_requirements": {
         "PER": 18,
@@ -1265,6 +1434,8 @@
       "tier_label": "Preciso N4",
       "description": "Aquece o gelo criando explosão de vapor escaldante.",
       "damage_summary": "3d6 calor + Cegueira",
+      "chi_cost": 13,
+      "chi_restore": 0,
       "requirements_text": "Serra Gelo + Corrente Cortante",
       "attribute_requirements": {
         "PER": 19,
@@ -1298,6 +1469,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Cobre uma área inteira com projéteis de gelo.",
       "damage_summary": "6d6 em 6m + Cong+Enraizado",
+      "chi_cost": 48,
+      "chi_restore": 0,
       "requirements_text": "Chuva Lanças + Rede Fios",
       "attribute_requirements": {
         "PER": 28,
@@ -1330,6 +1503,8 @@
       "tier_label": "Lendário — Preciso ★PROIBIDA",
       "description": "Controla os movimentos de um inimigo pelo sangue. PROIBIDA.",
       "damage_summary": "3d8/turno — controlo total",
+      "chi_cost": 22,
+      "chi_restore": 0,
       "requirements_text": "Sangue Frio + Corrente Cortante",
       "attribute_requirements": {
         "ESP": 24,
@@ -1363,6 +1538,8 @@
       "tier_label": "Bruto N3",
       "description": "Encapsula inimigos em blocos de gelo.",
       "damage_summary": "2d6 + Enraizado + Congelamento",
+      "chi_cost": 9,
+      "chi_restore": 0,
       "requirements_text": "Muro de Gelo",
       "attribute_requirements": {
         "CHI": 6,
@@ -1399,6 +1576,8 @@
       "tier_label": "Bruto N3",
       "description": "Onda que derruba tudo numa linha reta.",
       "damage_summary": "2d6 + Derrubado",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Onda de Impacto",
       "attribute_requirements": {
         "FOR": 5,
@@ -1434,6 +1613,8 @@
       "tier_label": "Bruto N3",
       "description": "Dois muros que se fecham sobre o inimigo.",
       "damage_summary": "2d8 (dois muros)",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Muro de Gelo",
       "attribute_requirements": {
         "FOR": 6,
@@ -1470,6 +1651,8 @@
       "tier_label": "Bruto N4",
       "description": "Redemoinho gigante que puxa e esmaga inimigos.",
       "damage_summary": "4d8 + Aprisionado no centro",
+      "chi_cost": 34,
+      "chi_restore": 0,
       "requirements_text": "Tsunami Pessoal",
       "attribute_requirements": {
         "FOR": 20,
@@ -1505,6 +1688,8 @@
       "tier_label": "Bruto N4",
       "description": "Constrói estruturas de gelo complexas para controlo do terreno.",
       "damage_summary": "Estrutura 60PV, CA 17",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Torre Gelo + Surf de Gelo",
       "attribute_requirements": {
         "CHI": 16,
@@ -1537,6 +1722,8 @@
       "tier_label": "Bruto N4",
       "description": "Tempestade de gelo que imobiliza e causa dano contínuo.",
       "damage_summary": "2d6/turno + Congelamento+Lentidão",
+      "chi_cost": 9,
+      "chi_restore": 0,
       "requirements_text": "Bomba Gelo + Véu Névoa",
       "attribute_requirements": {
         "FOR": 17,
@@ -1575,6 +1762,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Estrutura colossal de gelo animado que agarra e esmaga.",
       "damage_summary": "2d10/tentáculo × 1d4 tentáculos",
+      "chi_cost": 18,
+      "chi_restore": 0,
       "requirements_text": "Vórtice Abissal + Torre Gelo",
       "attribute_requirements": {
         "FOR": 26,
@@ -1608,6 +1797,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Furacão de gelo e água que devasta uma área massiva.",
       "damage_summary": "6d8 + Cong+Enraizado+Lentidão",
+      "chi_cost": 79,
+      "chi_restore": 0,
       "requirements_text": "Nevasca + Vórtice Abissal",
       "attribute_requirements": {
         "FOR": 28,

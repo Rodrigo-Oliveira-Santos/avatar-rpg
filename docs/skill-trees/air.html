@@ -75,8 +75,15 @@ header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;disp
   <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
   <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
   <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
   <div style="margin-left:auto;display:flex;gap:8px">
     <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
     <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
   </div>
 </div>
@@ -129,7 +136,7 @@ const UTH=[0,15,50,150];
 
 // ── ATTR REQUIREMENTS ────────────────────────────────────
 const AREQ={
-  sp1a:{ESP:1}, sp1b:{ESP:2,RES:1},
+  sp1a:{ESP:1}, sp1b:{ESP:2,RES:1}, sp1c:{ESP:2,CHI:1},
   sp2a:{ESP:6,PER:3}, sp2b:{ESP:5,CHI:3}, sp2c:{ESP:6,PER:4},
   sp3a:{ESP:13,CHI:7}, sp3b:{ESP:11,PER:8}, sp3c:{ESP:12,AGI:6},
   sp4a:{ESP:19,CHI:11}, sp4b:{ESP:20,CHI:12,PER:10}, sp4c:{ESP:18,AGI:13,CHI:10},
@@ -139,7 +146,7 @@ const AREQ={
   ag3a:{AGI:13,CHI:7}, ag3b:{AGI:12,CHI:7}, ag3c:{AGI:11,CHI:6},
   ag4a:{AGI:20,CHI:12,RES:8}, ag4b:{AGI:19,PER:11}, ag4c:{AGI:20,CHI:11,FOR:8},
   ag5a:{AGI:28,CHI:15,PER:14}, ag5b:{AGI:27,CHI:16,FOR:13},
-  cb1a:{PER:2,CHI:1}, cb1b:{FOR:1,CHI:2},
+  cb1a:{PER:2,CHI:1}, cb1b:{FOR:1,CHI:2}, cb1c:{ESP:3,CHI:2},
   cb2a:{PER:6,CHI:5}, cb2b:{PER:5,CHI:3,AGI:3}, cb2c:{PER:6,CHI:4},
   cb2d:{FOR:2,CHI:1}, cb2e:{FOR:1,CHI:2},
   pr3a:{PER:13,CHI:8}, pr3b:{PER:12,CHI:7,AGI:6}, pr3c:{PER:11,CHI:8},
@@ -177,61 +184,63 @@ const MAE={
 // ── NODES ─────────────────────────────────────────────────
 const RAW=[
   // ESPÍRITO DO AR
-  {id:'sp1a',b:'sp',t:0,c:0,l:'Medit.\nProfunda',     tl:'Espírito N1', dmg:'1d6 PV/turno fora combate', ds:'Aumenta perceção espiritual e regeneração de energia.', req:'—',deps:[]},
-  {id:'sp1b',b:'sp',t:0,c:1,l:'Respiração\nCalma',    tl:'Espírito N1', dmg:'Con CD 11 — Remove veneno/gás', ds:'Neutraliza efeitos de veneno, gás e sufocação.', req:'—',deps:[]},
-  {id:'sp2a',b:'sp',t:1,c:0,l:'Visão\ndo Vento',      tl:'Espírito N2', dmg:'Deteta movimento 18m pelo ar', ds:'Sente perturbações no ar, detetando movimento inimigo.', req:'Medit. Profunda',deps:['sp1a']},
-  {id:'sp2b',b:'sp',t:1,c:1,l:'Aura\nde Paz',         tl:'Espírito N2', dmg:'Sal. Sab CD 13 — Remove Medo', ds:'Projeta uma calma que desarma inimigos com menor determinação.', req:'Medit.+Resp. Calma',deps:['sp1a','sp1b']},
-  {id:'sp2c',b:'sp',t:1,c:2,l:'Escuta\ndo Vento',     tl:'Espírito N2', dmg:'Ouve sons 300m', ds:'Ouve sons a grandes distâncias através do ar.', req:'Respiração Calma',deps:['sp1b']},
-  {id:'sp3a',b:'sp',t:2,c:0,l:'Contacto\nEspiritual', tl:'Espírito N3', dmg:'Religião CD 14 — Fala c/ esp.', ds:'Comunica com espíritos do ar e animais.', req:'Visão Vento + Aura Paz',deps:['sp2a','sp2b']},
-  {id:'sp3b',b:'sp',t:2,c:1,l:'Voz do\nVento',        tl:'Espírito N3', dmg:'Mensagem a aliado 1,5km', ds:'Envia mensagens através do vento a aliados a distância.', req:'Escuta + Visão Vento',deps:['sp2c','sp2a']},
-  {id:'sp3c',b:'sp',t:2,c:2,l:'Presença\nEtérea',     tl:'Espírito N3', dmg:'Furtividade CD 13 c/ vantagem', ds:'Reduz a presença física, tornando-se difícil de detetar.', req:'Aura Paz + Resp. Calma',deps:['sp2b','sp1b']},
-  {id:'sp4a',b:'sp',t:3,c:0,l:'Projeção\nAstral',     tl:'Espírito N4', dmg:'Espírito explora 90m / turno', ds:'Separa o espírito do corpo para exploração.', req:'Contacto Esp. + Presença',deps:['sp3a','sp3c']},
-  {id:'sp4b',b:'sp',t:3,c:1,l:'Harmonia\nEspiritual', tl:'Espírito N4', dmg:'Prevê ataques 1t antecipado', ds:'Sintoniza-se com o mundo espiritual, prevendo ataques.', req:'Contacto Esp. + Voz Vento',deps:['sp3a','sp3b']},
-  {id:'sp4c',b:'sp',t:3,c:2,l:'Invis. de\nVento',     tl:'Espírito N4', dmg:'Furtividade CD 16 — 1d4 turnos', ds:'Dobra o ar ao redor tornando-se visualmente invisível.', req:'Presença Etérea + Visão Vento',deps:['sp3c','sp2a']},
-  {id:'sp5a',b:'sp',t:4,c:0,l:'União\nc/ Vento',      tl:'Lendário — Espírito', dmg:'Intangível 1 turno', ds:'Dissolve o corpo no ar por breves momentos, sendo intangível.', req:'Projeção + Invis. Vento',deps:['sp4a','sp4c']},
-  {id:'sp5b',b:'sp',t:4,c:2,l:'Mente\ndo Céu',        tl:'Lendário — Espírito', dmg:'Percebe campo inteiro via ar', ds:'Perceção total de um campo de batalha através do ar.', req:'Harmonia + Invis. Vento',deps:['sp4b','sp4c']},
+  {id:'sp1a',chi:2,b:'sp',t:0,c:0,l:'Medit.\nProfunda',     tl:'Espírito N1', dmg:'1d6 PV/turno fora combate', ds:'Aumenta perceção espiritual e regeneração de energia.', req:'—',deps:[]},
+  {id:'sp1b',chi:2,b:'sp',t:0,c:1,l:'Respiração\nCalma',    tl:'Espírito N1', dmg:'Con CD 11 — Remove veneno/gás', ds:'Neutraliza efeitos de veneno, gás e sufocação.', req:'—',deps:[]},
+  {id:'sp1c',chi:1,restore:6,b:'sp',t:0,c:2,l:'Resp.\nVital',         tl:'Espírito N1', dmg:'Restaura 1d8 chi', ds:'Técnica de respiração que extrai energia vital do próprio ar.', req:'—',deps:[]},
+  {id:'sp2a',chi:2,b:'sp',t:1,c:0,l:'Visão\ndo Vento',      tl:'Espírito N2', dmg:'Deteta movimento 18m pelo ar', ds:'Sente perturbações no ar, detetando movimento inimigo.', req:'Medit. Profunda',deps:['sp1a']},
+  {id:'sp2b',chi:2,b:'sp',t:1,c:1,l:'Aura\nde Paz',         tl:'Espírito N2', dmg:'Sal. Sab CD 13 — Remove Medo', ds:'Projeta uma calma que desarma inimigos com menor determinação.', req:'Medit.+Resp. Calma',deps:['sp1a','sp1b']},
+  {id:'sp2c',chi:1,b:'sp',t:1,c:2,l:'Escuta\ndo Vento',     tl:'Espírito N2', dmg:'Ouve sons 300m', ds:'Ouve sons a grandes distâncias através do ar.', req:'Respiração Calma',deps:['sp1b']},
+  {id:'sp3a',chi:3,b:'sp',t:2,c:0,l:'Contacto\nEspiritual', tl:'Espírito N3', dmg:'Religião CD 14 — Fala c/ esp.', ds:'Comunica com espíritos do ar e animais.', req:'Visão Vento + Aura Paz',deps:['sp2a','sp2b']},
+  {id:'sp3b',chi:3,b:'sp',t:2,c:1,l:'Voz do\nVento',        tl:'Espírito N3', dmg:'Mensagem a aliado 1,5km', ds:'Envia mensagens através do vento a aliados a distância.', req:'Escuta + Visão Vento',deps:['sp2c','sp2a']},
+  {id:'sp3c',chi:3,b:'sp',t:2,c:2,l:'Presença\nEtérea',     tl:'Espírito N3', dmg:'Furtividade CD 13 c/ vantagem', ds:'Reduz a presença física, tornando-se difícil de detetar.', req:'Aura Paz + Resp. Calma',deps:['sp2b','sp1b']},
+  {id:'sp4a',chi:4,b:'sp',t:3,c:0,l:'Projeção\nAstral',     tl:'Espírito N4', dmg:'Espírito explora 90m / turno', ds:'Separa o espírito do corpo para exploração.', req:'Contacto Esp. + Presença',deps:['sp3a','sp3c']},
+  {id:'sp4b',chi:4,b:'sp',t:3,c:1,l:'Harmonia\nEspiritual', tl:'Espírito N4', dmg:'Prevê ataques 1t antecipado', ds:'Sintoniza-se com o mundo espiritual, prevendo ataques.', req:'Contacto Esp. + Voz Vento',deps:['sp3a','sp3b']},
+  {id:'sp4c',chi:4,b:'sp',t:3,c:2,l:'Invis. de\nVento',     tl:'Espírito N4', dmg:'Furtividade CD 16 — 1d4 turnos', ds:'Dobra o ar ao redor tornando-se visualmente invisível.', req:'Presença Etérea + Visão Vento',deps:['sp3c','sp2a']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'União\nc/ Vento',      tl:'Lendário — Espírito', dmg:'Intangível 1 turno', ds:'Dissolve o corpo no ar por breves momentos, sendo intangível.', req:'Projeção + Invis. Vento',deps:['sp4a','sp4c']},
+  {id:'sp5b',chi:6,b:'sp',t:4,c:2,l:'Mente\ndo Céu',        tl:'Lendário — Espírito', dmg:'Percebe campo inteiro via ar', ds:'Perceção total de um campo de batalha através do ar.', req:'Harmonia + Invis. Vento',deps:['sp4b','sp4c']},
   // AGILIDADE DO AR
-  {id:'ag1a',b:'ag',t:0,c:0,l:'Corrida\nde Vento',    tl:'Agilidade N1', dmg:'Velocidade +6m', ds:'Aumenta drasticamente a velocidade de movimento.', req:'—',deps:[]},
-  {id:'ag1b',b:'ag',t:0,c:2,l:'Salto\nAéreo',         tl:'Agilidade N1', dmg:'Atletismo CD 11 — salta 3x', ds:'Impulsiona saltos a grande altitude com bolsões de ar.', req:'—',deps:[]},
-  {id:'ag2a',b:'ag',t:1,c:0,l:'Passo\nde Vento',      tl:'Agilidade N2', dmg:'Movimento silencioso', ds:'Reduz o som dos passos a zero.', req:'Corrida de Vento',deps:['ag1a']},
-  {id:'ag2b',b:'ag',t:1,c:1,l:'Planagem',               tl:'Agilidade N2', dmg:'Plana 30m por 3m altitude', ds:'Plana longas distâncias usando correntes de ar.', req:'Salto Aéreo',deps:['ag1b']},
-  {id:'ag2c',b:'ag',t:1,c:2,l:'Rodar\nno Ar',         tl:'Agilidade N2', dmg:'Acrobacia CD 12 — manobras ar', ds:'Executa manobras acrobáticas complexas no ar.', req:'Salto + Corrida Vento',deps:['ag1b','ag1a']},
-  {id:'ag3a',b:'ag',t:2,c:0,l:'Tornado\nPessoal',     tl:'Agilidade N3', dmg:'Deflecte projéteis CD 14', ds:'Envolve o corpo num redemoinho que deflecte projéteis.', req:'Corrida + Passo Vento',deps:['ag1a','ag2a']},
-  {id:'ag3b',b:'ag',t:2,c:1,l:'Voo com\nAsa-Delta',   tl:'Agilidade N3', dmg:'Voo 15m totalmente manobrável', ds:'Voo controlado com asa-delta de ar dobrado.', req:'Planagem + Rodar no Ar',deps:['ag2b','ag2c']},
-  {id:'ag3c',b:'ag',t:2,c:2,l:'Corrente\nAscendente', tl:'Agilidade N3', dmg:'Ganha altitude sem esforço', ds:'Cria e monta correntes de ar ascendentes.', req:'Planagem + Salto Aéreo',deps:['ag2b','ag1b']},
-  {id:'ag4a',b:'ag',t:3,c:0,l:'Esfera\nde Ar',        tl:'Agilidade N4', dmg:'CA+3, vel. 18m, deflecte auto.', ds:'Move-se dentro de uma esfera protetora de ar.', req:'Tornado + Voo Asa-Delta',deps:['ag3a','ag3b']},
-  {id:'ag4b',b:'ag',t:3,c:1,l:'Dança\nAérea',         tl:'Agilidade N4', dmg:'Ataques em voo têm vantagem', ds:'Combate aéreo fluido, impossível de prever ou rastrear.', req:'Voo + Rodar no Ar',deps:['ag3b','ag2c']},
-  {id:'ag4c',b:'ag',t:3,c:2,l:'Corredor\nSónico',     tl:'Agilidade N4', dmg:'Vel. 36m — 2d8 + Atordoado', ds:'Move-se a velocidades próximas do som em linha reta.', req:'Corrida + Tornado Pessoal',deps:['ag1a','ag3a']},
-  {id:'ag5a',b:'ag',t:4,c:0,l:'Fénix\ndo Vento',      tl:'Lendário — Agilidade', dmg:'Parece estar em 1d3 locais', ds:'Move-se tão depressa que parece estar em múltiplos locais.', req:'Esfera Ar + Corredor Sónico',deps:['ag4a','ag4c']},
-  {id:'ag5b',b:'ag',t:4,c:2,l:'Tempestade\nViva',     tl:'Lendário — Agilidade', dmg:'3d8 em 9m/turno em movimento', ds:'Torna-se o centro de uma tempestade pessoal em movimento.', req:'Dança Aérea + Esfera de Ar',deps:['ag4b','ag4a']},
+  {id:'ag1a',chi:0,b:'ag',t:0,c:0,l:'Corrida\nde Vento',    tl:'Agilidade N1', dmg:'Velocidade +6m', ds:'Aumenta drasticamente a velocidade de movimento.', req:'—',deps:[]},
+  {id:'ag1b',chi:1,b:'ag',t:0,c:2,l:'Salto\nAéreo',         tl:'Agilidade N1', dmg:'Atletismo CD 11 — salta 3x', ds:'Impulsiona saltos a grande altitude com bolsões de ar.', req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Passo\nde Vento',      tl:'Agilidade N2', dmg:'Movimento silencioso', ds:'Reduz o som dos passos a zero.', req:'Corrida de Vento',deps:['ag1a']},
+  {id:'ag2b',chi:1,b:'ag',t:1,c:1,l:'Planagem',               tl:'Agilidade N2', dmg:'Plana 30m por 3m altitude', ds:'Plana longas distâncias usando correntes de ar.', req:'Salto Aéreo',deps:['ag1b']},
+  {id:'ag2c',chi:1,b:'ag',t:1,c:2,l:'Rodar\nno Ar',         tl:'Agilidade N2', dmg:'Acrobacia CD 12 — manobras ar', ds:'Executa manobras acrobáticas complexas no ar.', req:'Salto + Corrida Vento',deps:['ag1b','ag1a']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Tornado\nPessoal',     tl:'Agilidade N3', dmg:'Deflecte projéteis CD 14', ds:'Envolve o corpo num redemoinho que deflecte projéteis.', req:'Corrida + Passo Vento',deps:['ag1a','ag2a']},
+  {id:'ag3b',chi:3,b:'ag',t:2,c:1,l:'Voo com\nAsa-Delta',   tl:'Agilidade N3', dmg:'Voo 15m totalmente manobrável', ds:'Voo controlado com asa-delta de ar dobrado.', req:'Planagem + Rodar no Ar',deps:['ag2b','ag2c']},
+  {id:'ag3c',chi:2,b:'ag',t:2,c:2,l:'Corrente\nAscendente', tl:'Agilidade N3', dmg:'Ganha altitude sem esforço', ds:'Cria e monta correntes de ar ascendentes.', req:'Planagem + Salto Aéreo',deps:['ag2b','ag1b']},
+  {id:'ag4a',chi:0,b:'ag',t:3,c:0,l:'Esfera\nde Ar',        tl:'Agilidade N4', dmg:'CA+3, vel. 18m, deflecte auto.', ds:'Move-se dentro de uma esfera protetora de ar.', req:'Tornado + Voo Asa-Delta',deps:['ag3a','ag3b']},
+  {id:'ag4b',chi:0,b:'ag',t:3,c:1,l:'Dança\nAérea',         tl:'Agilidade N4', dmg:'Ataques em voo têm vantagem', ds:'Combate aéreo fluido, impossível de prever ou rastrear.', req:'Voo + Rodar no Ar',deps:['ag3b','ag2c']},
+  {id:'ag4c',chi:10,b:'ag',t:3,c:2,l:'Corredor\nSónico',     tl:'Agilidade N4', dmg:'Vel. 36m — 2d8 + Atordoado', ds:'Move-se a velocidades próximas do som em linha reta.', req:'Corrida + Tornado Pessoal',deps:['ag1a','ag3a']},
+  {id:'ag5a',chi:6,b:'ag',t:4,c:0,l:'Fénix\ndo Vento',      tl:'Lendário — Agilidade', dmg:'Parece estar em 1d3 locais', ds:'Move-se tão depressa que parece estar em múltiplos locais.', req:'Esfera Ar + Corredor Sónico',deps:['ag4a','ag4c']},
+  {id:'ag5b',chi:18,b:'ag',t:4,c:2,l:'Tempestade\nViva',     tl:'Lendário — Agilidade', dmg:'3d8 em 9m/turno em movimento', ds:'Torna-se o centro de uma tempestade pessoal em movimento.', req:'Dança Aérea + Esfera de Ar',deps:['ag4b','ag4a']},
   // COMBATE PARTILHADO N1-N2
-  {id:'cb1a',b:'cb',t:0,c:0,l:'Rajada\nFocada',       tl:'Combate N1', dmg:'M0:1d6+empurra · M1:2d6 · M2:3d6 · M3:5d6', ds:'Jato de ar comprimido de alta velocidade.', req:'—',deps:[]},
-  {id:'cb1b',b:'cb',t:0,c:1,l:'Sopro de\nDispersão',  tl:'Combate N1', dmg:'M0:empurra 3m · M1:4,5m · M2:6m · M3:9m+Atord.', ds:'Ráfaga de ar que empurra e desorienta inimigos próximos.', req:'—',deps:[]},
-  {id:'cb2a',b:'cb',t:1,c:0,l:'Corte\nde Vento',      tl:'Combate N2', dmg:'M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8', ds:'Lâmina de ar capaz de cortar superfícies sólidas.', req:'Rajada Focada',deps:['cb1a']},
-  {id:'cb2b',b:'cb',t:1,c:1,l:'Dedos\ndo Vento',      tl:'Combate N2', dmg:'M0:1d4×alvos · M1:2d4 · M2:3d4 · M3:5d4', ds:'Jatos de ar que atingem pontos de pressão no corpo inimigo.', req:'Rajada + Sopro Dispersão',deps:['cb1a','cb1b']},
-  {id:'cb2c',b:'cb',t:1,c:2,l:'Agulhas\nde Ar',       tl:'Combate N2', dmg:'M0:1d4×3 · M1:2d4×3 · M2:3d4 · M3:5d4', ds:'Micro-projéteis de ar comprimido que perfuram armaduras leves.', req:'Sopro de Dispersão',deps:['cb1b']},
-  {id:'cb2d',b:'cb',t:1,c:3,l:'Explosão\nde Ar',      tl:'Combate N2', dmg:'Empurra 3m + 1d6 em falha', ds:'Liberta uma onda de ar em todas as direções.', req:'—',deps:[]},
-  {id:'cb2e',b:'cb',t:1,c:4,l:'Rajada\nPesada',       tl:'Combate N2', dmg:'Sal. FOR CD 12 — Derrubado', ds:'Vento forte que derruba inimigos em linha reta.', req:'—',deps:[]},
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Rajada\nFocada',       tl:'Combate N1', dmg:'M0:1d6+empurra · M1:2d6 · M2:3d6 · M3:5d6', ds:'Jato de ar comprimido de alta velocidade.', req:'—',deps:[]},
+  {id:'cb1b',chi:1,b:'cb',t:0,c:1,l:'Sopro de\nDispersão',  tl:'Combate N1', dmg:'M0:empurra 3m · M1:4,5m · M2:6m · M3:9m+Atord.', ds:'Ráfaga de ar que empurra e desorienta inimigos próximos.', req:'—',deps:[]},
+  {id:'cb1c',chi:2,restore:8,b:'cb',t:0,c:2,l:'Vento da\nRenovação', tl:'Combate N1 (Suporte)', dmg:'Restaura 8 Chi a 1 aliado', ds:'Sopra uma corrente de ar revigorante sobre um aliado próximo.', req:'—',deps:[]},
+  {id:'cb2a',chi:2,b:'cb',t:1,c:0,l:'Corte\nde Vento',      tl:'Combate N2', dmg:'M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8', ds:'Lâmina de ar capaz de cortar superfícies sólidas.', req:'Rajada Focada',deps:['cb1a']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Dedos\ndo Vento',      tl:'Combate N2', dmg:'M0:1d4×alvos · M1:2d4 · M2:3d4 · M3:5d4', ds:'Jatos de ar que atingem pontos de pressão no corpo inimigo.', req:'Rajada + Sopro Dispersão',deps:['cb1a','cb1b']},
+  {id:'cb2c',chi:1,b:'cb',t:1,c:2,l:'Agulhas\nde Ar',       tl:'Combate N2', dmg:'M0:1d4×3 · M1:2d4×3 · M2:3d4 · M3:5d4', ds:'Micro-projéteis de ar comprimido que perfuram armaduras leves.', req:'Sopro de Dispersão',deps:['cb1b']},
+  {id:'cb2d',chi:1,b:'cb',t:1,c:3,l:'Explosão\nde Ar',      tl:'Combate N2', dmg:'Empurra 3m + 1d6 em falha', ds:'Liberta uma onda de ar em todas as direções.', req:'—',deps:[]},
+  {id:'cb2e',chi:2,b:'cb',t:1,c:4,l:'Rajada\nPesada',       tl:'Combate N2', dmg:'Sal. FOR CD 12 — Derrubado', ds:'Vento forte que derruba inimigos em linha reta.', req:'—',deps:[]},
   // PRECISO
-  {id:'pr3a',b:'pr',t:2,c:0,l:'Soco de\nVácuo',       tl:'Preciso N3', dmg:'2d6 + Sal. Con CD 14 Atordoado', ds:'Projétil de ar que cria mini-vácuo ao impactar.', req:'Corte + Rajada Focada',deps:['cb2a','cb1a']},
-  {id:'pr3b',b:'pr',t:2,c:1,l:'Acupuntura\nVento',    tl:'Preciso N3', dmg:'1d6 + Paralisia membro', ds:'Dezenas de pontos de pressão em frações de segundo.', req:'Dedos + Agulhas Ar',deps:['cb2b','cb2c']},
-  {id:'pr3c',b:'pr',t:2,c:2,l:'Lâmina\nGiratória',    tl:'Preciso N3', dmg:'2d6 persegue 1d3 turnos', ds:'Disco de ar giratório que persegue o alvo.', req:'Corte + Agulhas Ar',deps:['cb2a','cb2c']},
-  {id:'pr4a',b:'pr',t:3,c:0,l:'Implosão\nde Ar',      tl:'Preciso N4', dmg:'3d8 + Enraizado+Atordoado', ds:'Cria vácuo localizado que atrai e esmaga tudo.', req:'Soco Vácuo + Presença Etérea',deps:['pr3a','sp3c']},
-  {id:'pr4b',b:'pr',t:3,c:1,l:'Paralisia\nde Pressão',tl:'Preciso N4', dmg:'Sal. Con CD 16 — Imobilizado', ds:'Imobiliza completamente um inimigo com pressão de ar.', req:'Acupuntura + Contacto Espiritual',deps:['pr3b','sp3a']},
-  {id:'pr4c',b:'pr',t:3,c:2,l:'Serra\nde Vento',      tl:'Preciso N4', dmg:'3d6 em 6m + Sangramento', ds:'Múltiplas lâminas de ar giratórias que cobrem uma área.', req:'Lâmina Giratória + Corte',deps:['pr3c','cb2a']},
-  {id:'pr5a',b:'pr',t:5,c:0,l:'Grande\nVácuo',        tl:'Lendário — Preciso', dmg:'5d8 em 12m — todos puxados', ds:'Aspira tudo numa área para um ponto central.', req:'Implosão + Furacão',deps:['pr4a','br3a']},
-  {id:'pr5b',b:'pr',t:5,c:1,l:'Toque\nFantasma',      tl:'Lendário — Preciso', dmg:'4d8 + Atordoado+Silêncio', ds:'Atinge pontos de pressão sem contacto físico.', req:'Paralisia + União c/ Vento',deps:['pr4b','sp5a']},
-  {id:'pr5c',b:'pr',t:5,c:2,l:'Tempestade\nde Lâminas',tl:'Lendário — Preciso', dmg:'6d8 em 18m + Sangramento+Lent.', ds:'Cobre área massiva com lâminas de ar enquanto se move.', req:'Serra Vento + Fénix Vento',deps:['pr4c','ag5a']},
+  {id:'pr3a',chi:7,b:'pr',t:2,c:0,l:'Soco de\nVácuo',       tl:'Preciso N3', dmg:'2d6 + Sal. Con CD 14 Atordoado', ds:'Projétil de ar que cria mini-vácuo ao impactar.', req:'Corte + Rajada Focada',deps:['cb2a','cb1a']},
+  {id:'pr3b',chi:3,b:'pr',t:2,c:1,l:'Acupuntura\nVento',    tl:'Preciso N3', dmg:'1d6 + Paralisia membro', ds:'Dezenas de pontos de pressão em frações de segundo.', req:'Dedos + Agulhas Ar',deps:['cb2b','cb2c']},
+  {id:'pr3c',chi:5,b:'pr',t:2,c:2,l:'Lâmina\nGiratória',    tl:'Preciso N3', dmg:'2d6 persegue 1d3 turnos', ds:'Disco de ar giratório que persegue o alvo.', req:'Corte + Agulhas Ar',deps:['cb2a','cb2c']},
+  {id:'pr4a',chi:22,b:'pr',t:3,c:0,l:'Implosão\nde Ar',      tl:'Preciso N4', dmg:'3d8 + Enraizado+Atordoado', ds:'Cria vácuo localizado que atrai e esmaga tudo.', req:'Soco Vácuo + Presença Etérea',deps:['pr3a','sp3c']},
+  {id:'pr4b',chi:5,b:'pr',t:3,c:1,l:'Paralisia\nde Pressão',tl:'Preciso N4', dmg:'Sal. Con CD 16 — Imobilizado', ds:'Imobiliza completamente um inimigo com pressão de ar.', req:'Acupuntura + Contacto Espiritual',deps:['pr3b','sp3a']},
+  {id:'pr4c',chi:13,b:'pr',t:3,c:2,l:'Serra\nde Vento',      tl:'Preciso N4', dmg:'3d6 em 6m + Sangramento', ds:'Múltiplas lâminas de ar giratórias que cobrem uma área.', req:'Lâmina Giratória + Corte',deps:['pr3c','cb2a']},
+  {id:'pr5a',chi:51,b:'pr',t:5,c:0,l:'Grande\nVácuo',        tl:'Lendário — Preciso', dmg:'5d8 em 12m — todos puxados', ds:'Aspira tudo numa área para um ponto central.', req:'Implosão + Furacão',deps:['pr4a','br3a']},
+  {id:'pr5b',chi:36,b:'pr',t:5,c:1,l:'Toque\nFantasma',      tl:'Lendário — Preciso', dmg:'4d8 + Atordoado+Silêncio', ds:'Atinge pontos de pressão sem contacto físico.', req:'Paralisia + União c/ Vento',deps:['pr4b','sp5a']},
+  {id:'pr5c',chi:77,b:'pr',t:5,c:2,l:'Tempestade\nde Lâminas',tl:'Lendário — Preciso', dmg:'6d8 em 18m + Sangramento+Lent.', ds:'Cobre área massiva com lâminas de ar enquanto se move.', req:'Serra Vento + Fénix Vento',deps:['pr4c','ag5a']},
   // BRUTO
-  {id:'br3a',b:'br',t:2,c:0,l:'Furacão',                tl:'Bruto N3', dmg:'2d6 + arremessado 3m', ds:'Gera um furacão localizado que arremessa inimigos.', req:'Explosão de Ar',deps:['cb2d']},
-  {id:'br3b',b:'br',t:2,c:1,l:'Barreira\nSónica',      tl:'Bruto N3', dmg:'2d8 + Atordoado ao atravessar', ds:'Barreira de ar comprimido que explode ao ser atravessada.', req:'Muro Vento + Onda Pressão',deps:['cb2e','cb2d']},
-  {id:'br3c',b:'br',t:2,c:2,l:'Golpe\nde Trovão',      tl:'Bruto N3', dmg:'2d10 + surdo 1 min', ds:'Concentra o vento num único golpe que ressoa como trovão.', req:'Onda de Pressão',deps:['cb2d']},
-  {id:'br4a',b:'br',t:3,c:0,l:'Tempestade\nControlada',tl:'Bruto N4', dmg:'3d8 em 12m + Lent+Atord+Ceg', ds:'Comanda uma tempestade em área combinando ataque e mobilidade.', req:'Vórtice + Tornado Pessoal',deps:['br3a','ag3a']},
-  {id:'br4b',b:'br',t:3,c:1,l:'Sufocação',               tl:'Bruto N4', dmg:'Incapacitado + 1d6/turno', ds:'Remove o ar ao redor de um inimigo, imobilizando-o.', req:'Barreira Sónica + Corte Vento',deps:['br3b','cb2a']},
-  {id:'br4c',b:'br',t:3,c:2,l:'Punho do\nGigante',      tl:'Bruto N4', dmg:'3d8 + arremessado 6m', ds:'Mão invisível de ar que esmaga e arremessa.', req:'Golpe Trovão + Soco Vácuo',deps:['br3c','pr3a']},
-  {id:'br5a',b:'br',t:5,c:0,l:'Cataclismo\ndo Céu',     tl:'Lendário — Bruto', dmg:'6d10 em 24m + Lent+Atord+Medo', ds:'Invoca tempestade devastadora que cobre todo o campo.', req:'Tempestade + Punho Gigante',deps:['br4a','br4c']},
-  {id:'br5b',b:'br',t:5,c:1,l:'Silêncio\nAbsoluto',     tl:'Lendário — Bruto', dmg:'Vácuo total — apaga fogo+som', ds:'Remove todo o ar de uma área, criando vácuo total.', req:'Sufocação + Mente do Céu',deps:['br4b','sp5b']},
-  {id:'br5c',b:'br',t:5,c:2,l:'Grande\nVácuo',           tl:'Lendário — Bruto ★partilhado', dmg:'5d8 em 12m — todos puxados', ds:'Aspira tudo numa área para um ponto central. (Partilhado com Preciso)', req:'Implosão + Furacão',deps:['pr4a','br3a']},
+  {id:'br3a',chi:5,b:'br',t:2,c:0,l:'Furacão',                tl:'Bruto N3', dmg:'2d6 + arremessado 3m', ds:'Gera um furacão localizado que arremessa inimigos.', req:'Explosão de Ar',deps:['cb2d']},
+  {id:'br3b',chi:10,b:'br',t:2,c:1,l:'Barreira\nSónica',      tl:'Bruto N3', dmg:'2d8 + Atordoado ao atravessar', ds:'Barreira de ar comprimido que explode ao ser atravessada.', req:'Muro Vento + Onda Pressão',deps:['cb2e','cb2d']},
+  {id:'br3c',chi:12,b:'br',t:2,c:2,l:'Golpe\nde Trovão',      tl:'Bruto N3', dmg:'2d10 + surdo 1 min', ds:'Concentra o vento num único golpe que ressoa como trovão.', req:'Onda de Pressão',deps:['cb2d']},
+  {id:'br4a',chi:24,b:'br',t:3,c:0,l:'Tempestade\nControlada',tl:'Bruto N4', dmg:'3d8 em 12m + Lent+Atord+Ceg', ds:'Comanda uma tempestade em área combinando ataque e mobilidade.', req:'Vórtice + Tornado Pessoal',deps:['br3a','ag3a']},
+  {id:'br4b',chi:4,b:'br',t:3,c:1,l:'Sufocação',               tl:'Bruto N4', dmg:'Incapacitado + 1d6/turno', ds:'Remove o ar ao redor de um inimigo, imobilizando-o.', req:'Barreira Sónica + Corte Vento',deps:['br3b','cb2a']},
+  {id:'br4c',chi:18,b:'br',t:3,c:2,l:'Punho do\nGigante',      tl:'Bruto N4', dmg:'3d8 + arremessado 6m', ds:'Mão invisível de ar que esmaga e arremessa.', req:'Golpe Trovão + Soco Vácuo',deps:['br3c','pr3a']},
+  {id:'br5a',chi:115,b:'br',t:5,c:0,l:'Cataclismo\ndo Céu',     tl:'Lendário — Bruto', dmg:'6d10 em 24m + Lent+Atord+Medo', ds:'Invoca tempestade devastadora que cobre todo o campo.', req:'Tempestade + Punho Gigante',deps:['br4a','br4c']},
+  {id:'br5b',chi:6,b:'br',t:5,c:1,l:'Silêncio\nAbsoluto',     tl:'Lendário — Bruto', dmg:'Vácuo total — apaga fogo+som', ds:'Remove todo o ar de uma área, criando vácuo total.', req:'Sufocação + Mente do Céu',deps:['br4b','sp5b']},
+  {id:'br5c',chi:51,b:'br',t:5,c:2,l:'Grande\nVácuo',           tl:'Lendário — Bruto ★partilhado', dmg:'5d8 em 12m — todos puxados', ds:'Aspira tudo numa área para um ponto central. (Partilhado com Preciso)', req:'Implosão + Furacão',deps:['pr4a','br3a']},
 ];
 
 // ── LAYOUT ────────────────────────────────────────────────
@@ -248,25 +257,50 @@ const EDGES=[];
 RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
 
 // ── GAME STATE ────────────────────────────────────────────
-let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
 function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
 function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
 function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
 function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
 function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
 function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
 
 function gainLevel(){
   if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
   S.lvl++;S.pts+=3;
-  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo.`,'g');
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+(mc-maxChiAtPrevLevel()),mc);
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
   document.getElementById('hv-lvl').textContent=S.lvl;
   document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
 function resetAll(){
-  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
   logs=[];document.getElementById('log-e').innerHTML='';
   document.getElementById('attr-row').innerHTML='';
   updHUD();render(null);closePanel();
@@ -280,12 +314,14 @@ function chAttr(a,d){
     const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
     if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
   }
+  const oldMax=maxChi();
   S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
-  // Only update the specific attribute value span — don't rebuild the whole HUD
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
   const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
   if(valEl)valEl.textContent=S.attr[a];
   document.getElementById('hv-pts').textContent=S.pts;
-  // Update panel status if open
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
@@ -294,7 +330,7 @@ function updHUD(){
   document.getElementById('hv-pts').textContent=S.pts;
   document.getElementById('hv-unl').textContent=S.unl.size;
   document.getElementById('hv-uses').textContent=totUses();
-  // Only rebuild attr row if it's empty (first render)
+  updChiBar();
   const row=document.getElementById('attr-row');
   if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
     row.innerHTML=ATTRS.map(a=>`
@@ -307,7 +343,6 @@ function updHUD(){
         </div>
       </div>`).join('');
   } else {
-    // Just update values in place
     ATTRS.forEach(a=>{
       const el=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
       if(el)el.textContent=S.attr[a];
@@ -319,7 +354,7 @@ function refreshPanelStatus(n){
   if(!n)return;
   const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
   const r=AREQ[n.id];
-  // Update attr badges
+  const cost=chiCost(n);
   let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
   if(r){
     ah+='<div style="font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Atributos necessários</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">';
@@ -329,8 +364,9 @@ function refreshPanelStatus(n){
     });
     ah+='</div>';
   }
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
   document.getElementById('p-attrs').innerHTML=ah;
-  // Update actions/status
   let act='',st='';
   if(!unl){
     let rs=[];
@@ -340,10 +376,15 @@ function refreshPanelStatus(n){
     act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
     st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
   } else {
-    act=`<button class="pb2 puse" onclick="doUse('${n.id}')">⚡ Usar (${u} usos)</button>`;
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
     const nx=m<3?UTH[m+1]:null;
     if(nx!==null){
       act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
       st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
     } else {
       st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
@@ -532,11 +573,24 @@ function doUnl(id){
 }
 function doUse(id){
   if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
   S.uses[id]=(S.uses[id]||0)+1;
   document.getElementById('hv-uses').textContent=totUses();
-  addLog(`⚡ Usaste: ${NM[id].l.replace('\n',' ')} (${S.uses[id]} usos, M${gm(id)})`);
-  // Refresh maestria dots
-  const n=NM[id],mae=MAE[id],m=gm(id),u=S.uses[id];
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
   if(mae){
     let mh=mae.l.map((lv,i)=>{
       const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
@@ -568,6 +622,7 @@ canvas.addEventListener('click',function(e){
 });
 canvas.addEventListener('mouseleave',()=>render(selId));
 
+S.chi=maxChi();
 render(null);updHUD();
 </script>
 </body>

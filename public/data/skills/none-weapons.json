@@ -15,6 +15,8 @@
       "tier_label": "Espírito N1",
       "description": "Analisa o ambiente e inimigos antes de agir.",
       "damage_summary": "Percepção CD 11 — +2 próx. ataque/esquiva",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2
@@ -40,6 +42,8 @@
       "tier_label": "Espírito N1",
       "description": "Reação involuntária a perigo imediato.",
       "damage_summary": "Intuição CD 11 — evita 1º golpe surpresa",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 1,
@@ -50,6 +54,34 @@
       "mastery_levels": null,
       "position": {
         "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
+      "id": "none-weapons-sp1c",
+      "raw_id": "sp1c",
+      "name": "Foco Disciplinado",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 1,
+      "is_legendary": false,
+      "tier_label": "Espírito N1",
+      "description": "Anos de treino permitem recuperar energia interior através de foco mental.",
+      "damage_summary": "Restaura 1d6 chi",
+      "chi_cost": 1,
+      "chi_restore": 5,
+      "requirements_text": "—",
+      "attribute_requirements": {
+        "RES": 2,
+        "ESP": 1
+      },
+      "prerequisites": [],
+      "prerequisites_raw": [],
+      "mastery_levels": null,
+      "position": {
+        "column": 2,
         "y_offset": 0
       }
     },
@@ -66,6 +98,8 @@
       "tier_label": "Espírito N2",
       "description": "Mantém a calma sob pressão.",
       "damage_summary": "Imune a intimidação e medo",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Leitura do Campo",
       "attribute_requirements": {
         "PER": 6,
@@ -96,6 +130,8 @@
       "tier_label": "Espírito N2",
       "description": "Resistência a manipulação e efeitos psicológicos.",
       "damage_summary": "Vantagem saves manipulação/ilusão",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Instinto + Leitura",
       "attribute_requirements": {
         "PER": 5,
@@ -128,6 +164,8 @@
       "tier_label": "Espírito N2",
       "description": "Percebe intenção de ataque pela postura e olhar.",
       "damage_summary": "Intuição CD 12 — percebe ataque antecipado",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Leitura do Campo",
       "attribute_requirements": {
         "PER": 6
@@ -157,6 +195,8 @@
       "tier_label": "Espírito N3",
       "description": "Prevê movimentos inimigos com base em micro-expressões.",
       "damage_summary": "Intuição CD 14 — prevê próx. ataque",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Foco + Resist. Mental",
       "attribute_requirements": {
         "PER": 13,
@@ -189,6 +229,8 @@
       "tier_label": "Espírito N3",
       "description": "Identifica pontos fracos de armaduras e estilos de luta.",
       "damage_summary": "Investigação CD 13 — ignora 2 CA",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Leit. Intenção + Foco",
       "attribute_requirements": {
         "PER": 12
@@ -220,6 +262,8 @@
       "tier_label": "Espírito N3",
       "description": "Canaliza o próprio chi para fortalecer golpes físicos.",
       "damage_summary": "+1d4 a todos os ataques físicos (passivo)",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Resist. Mental + Instinto",
       "attribute_requirements": {
         "PER": 11,
@@ -258,6 +302,8 @@
       "tier_label": "Espírito N4",
       "description": "Controla o ritmo do combate, fazendo o inimigo reagir sempre.",
       "damage_summary": "Inimigos têm desvant. em ataques contra si",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Mente Guerreiro + Análise",
       "attribute_requirements": {
         "PER": 20,
@@ -278,6 +324,41 @@
       }
     },
     {
+      "id": "none-weapons-sp4d",
+      "raw_id": "sp4d",
+      "name": "Segundo Fôlego",
+      "element": "none",
+      "non_bender_path": "weapons",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Puxa pela última reserva de vontade e disciplina para continuar a lutar.",
+      "damage_summary": "Restaura 3d8 chi",
+      "chi_cost": 6,
+      "chi_restore": 16,
+      "requirements_text": "Foco Disciplinado + Mente Guerreiro",
+      "attribute_requirements": {
+        "RES": 14,
+        "ESP": 12,
+        "PER": 12
+      },
+      "prerequisites": [
+        "none-weapons-sp1c",
+        "none-weapons-sp3a"
+      ],
+      "prerequisites_raw": [
+        "sp1c",
+        "sp3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "none-weapons-sp4b",
       "raw_id": "sp4b",
       "name": "Golpe de Chi",
@@ -290,6 +371,8 @@
       "tier_label": "Espírito N4",
       "description": "Canaliza chi num único golpe que ignora parte da armadura.",
       "damage_summary": "+2d6 ignora armadura — Atordoado CD 14",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Chi Natural + Análise",
       "attribute_requirements": {
         "PER": 18,
@@ -328,6 +411,8 @@
       "tier_label": "Espírito N4",
       "description": "Processa múltiplos inimigos em simultâneo sem perder foco.",
       "damage_summary": "Processa múltiplos inimigos sem desvant.",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Mente Guerreiro + Leit. Intenção",
       "attribute_requirements": {
         "PER": 19,
@@ -360,6 +445,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Estado de fluxo onde cada ação é perfeitamente calculada.",
       "damage_summary": "Ação bónus extra + 1d8 a todos os ataques",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Maestro + Visão Batalha",
       "attribute_requirements": {
         "PER": 27,
@@ -392,6 +479,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Golpe de chi puro que afeta inimigos resistentes a dano físico.",
       "damage_summary": "4d10 chi puro — afeta dobradores",
+      "chi_cost": 50,
+      "chi_restore": 0,
       "requirements_text": "Golpe Chi + Chi Natural",
       "attribute_requirements": {
         "PER": 26,
@@ -425,6 +514,8 @@
       "tier_label": "Agilidade N1",
       "description": "Saltos, esquivas e rolamentos melhorados em combate.",
       "damage_summary": "Acrobacia CD 11 — saltos e rolamentos",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2
@@ -455,6 +546,8 @@
       "tier_label": "Agilidade N1",
       "description": "Reduz o perfil de alvo em combate.",
       "damage_summary": "Ataques área têm desvant. contra si",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 1,
@@ -481,6 +574,8 @@
       "tier_label": "Agilidade N2",
       "description": "Usa o ambiente para manobrar em combate.",
       "damage_summary": "Atletismo CD 12 — usa paredes/telhados",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Acrobacia Combate",
       "attribute_requirements": {
         "AGI": 6
@@ -510,6 +605,8 @@
       "tier_label": "Agilidade N2",
       "description": "Acelera a velocidade de movimento em explosão.",
       "damage_summary": "Velocidade +9m por 1 turno (1×/combate)",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Postura + Acrobacia",
       "attribute_requirements": {
         "AGI": 5,
@@ -542,6 +639,8 @@
       "tier_label": "Agilidade N2",
       "description": "Sai de qualquer agarrão ou posição desfavorável.",
       "damage_summary": "Reação — sai de agarrão automaticamente",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Postura Baixa",
       "attribute_requirements": {
         "AGI": 6,
@@ -572,6 +671,8 @@
       "tier_label": "Agilidade N3",
       "description": "Move-se tão rápido que parece teletransportar-se.",
       "damage_summary": "Acrobacia CD 14 — sem ataques oportunidade",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Parkour + Corrida Sprint",
       "attribute_requirements": {
         "AGI": 13,
@@ -604,6 +705,8 @@
       "tier_label": "Agilidade N3",
       "description": "Combina ataques com movimentos de dança imprevisíveis.",
       "damage_summary": "Acrobacia CD 13 — ataques com vantagem",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Acrobacia + Desengaj.",
       "attribute_requirements": {
         "AGI": 11,
@@ -636,6 +739,8 @@
       "tier_label": "Agilidade N3",
       "description": "Sobe e move-se em superfícies verticais sem equipamento.",
       "damage_summary": "Atletismo CD 12 — superfícies verticais",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Parkour Tático",
       "attribute_requirements": {
         "AGI": 12,
@@ -666,6 +771,8 @@
       "tier_label": "Agilidade N4",
       "description": "Combina velocidade e imprevisibilidade em combate.",
       "damage_summary": "Acrobacia CD 16 — impossível de rastrear",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Sombra Fugaz + Dança Espadas",
       "attribute_requirements": {
         "AGI": 20,
@@ -698,6 +805,8 @@
       "tier_label": "Agilidade N4",
       "description": "Usa alturas como campo de batalha com vantagem.",
       "damage_summary": "Vantagem em ataques de posição elevada",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Escalada + Sombra Fugaz",
       "attribute_requirements": {
         "AGI": 18,
@@ -730,6 +839,8 @@
       "tier_label": "Agilidade N4",
       "description": "Converte a força do inimigo contra ele mesmo.",
       "damage_summary": "Reação — converte força em +2d6 contra-atq.",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Desengaj. + Dança Espadas",
       "attribute_requirements": {
         "AGI": 19,
@@ -768,6 +879,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Velocidade e fluidez que rivaliza com dobradores de ar.",
       "damage_summary": "Vel. 18m — nunca provoca atq. oportunidade",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Fantasma Batalha + Maestro do Campo",
       "attribute_requirements": {
         "AGI": 27,
@@ -800,6 +913,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Ataca de posições elevadas com precisão absoluta, nunca visto.",
       "damage_summary": "+3d6 furtivo + Sangramento+Atordoado",
+      "chi_cost": 15,
+      "chi_restore": 0,
       "requirements_text": "Corredor Telhados + Análise Fraqueza",
       "attribute_requirements": {
         "AGI": 26,
@@ -832,6 +947,8 @@
       "tier_label": "Combate N1",
       "description": "Lança facas ou projéteis com grande precisão.",
       "damage_summary": "1d6+Des — ataque à distância",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -863,6 +980,8 @@
       "tier_label": "Combate N1",
       "description": "Ataque de espada ou faca rápido e difícil de bloquear.",
       "damage_summary": "1d6 como ação bónus — ataque rápido",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 1,
@@ -894,6 +1013,8 @@
       "tier_label": "Combate N2",
       "description": "Atinge pontos críticos do corpo inimigo.",
       "damage_summary": "+1d8 em ponto crítico — Atordoado CD 13",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Arremesso + Golpe Rápido",
       "attribute_requirements": {
         "PER": 6,
@@ -931,6 +1052,8 @@
       "tier_label": "Combate N2",
       "description": "Lança múltiplos projéteis em sequência rápida.",
       "damage_summary": "1d4 a até 3 alvos",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "Arremesso Certeiro",
       "attribute_requirements": {
         "PER": 7,
@@ -961,6 +1084,8 @@
       "tier_label": "Combate N2",
       "description": "Ataque perfurante que passa entre peças de armadura.",
       "damage_summary": "1d8 ignora 2 CA + Sangramento CD 13",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Golpe Rápido",
       "attribute_requirements": {
         "PER": 6,
@@ -996,6 +1121,8 @@
       "tier_label": "Combate N2",
       "description": "Ataque físico de enorme força com arma pesada.",
       "damage_summary": "1d10+FOR — arma pesada",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2
@@ -1021,6 +1148,8 @@
       "tier_label": "Combate N2",
       "description": "Usa o escudo como arma ofensiva.",
       "damage_summary": "1d6 + Derrubado (Sal. FOR CD 12)",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -1047,6 +1176,8 @@
       "tier_label": "Preciso N3",
       "description": "Usa correntes para imobilizar membros com precisão.",
       "damage_summary": "Sal. For CD 14 — membro imobilizado",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Ponto Vital + Golpe Rápido",
       "attribute_requirements": {
         "PER": 13,
@@ -1079,6 +1210,8 @@
       "tier_label": "Preciso N3",
       "description": "Disparo único que não falha com o alvo em linha de visão.",
       "damage_summary": "2d8 c/ vantagem — nunca falha com LDV",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Ponto Vital + Chuva Lâminas",
       "attribute_requirements": {
         "PER": 14,
@@ -1111,6 +1244,8 @@
       "tier_label": "Preciso N3",
       "description": "Sequência de golpes rápidos em pontos vitais consecutivos.",
       "damage_summary": "1d6×3 no mesmo turno + Sangramento acum.",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Estocada + Ponto Vital",
       "attribute_requirements": {
         "PER": 12,
@@ -1148,6 +1283,8 @@
       "tier_label": "Preciso N4",
       "description": "Fio monofilamento invisível colocado estrategicamente.",
       "damage_summary": "Armadilha — 3d8 ao cortar + Sangramento",
+      "chi_cost": 20,
+      "chi_restore": 0,
       "requirements_text": "Corrente + Análise Fraqueza",
       "attribute_requirements": {
         "PER": 20,
@@ -1180,6 +1317,8 @@
       "tier_label": "Preciso N4",
       "description": "Múltiplos disparos de arco que cobrem uma área.",
       "damage_summary": "3d6 em área 6m + Sangramento+Lentidão",
+      "chi_cost": 15,
+      "chi_restore": 0,
       "requirements_text": "Disparo Guiado + Chuva Lâminas",
       "attribute_requirements": {
         "PER": 19,
@@ -1212,6 +1351,8 @@
       "tier_label": "Preciso N4",
       "description": "Golpe único que rompe armaduras e desequilibra dobradores.",
       "damage_summary": "2d10 + destrói armadura — Lentidão",
+      "chi_cost": 14,
+      "chi_restore": 0,
       "requirements_text": "Série Punhaladas + Análise Fraqueza",
       "attribute_requirements": {
         "PER": 18,
@@ -1245,6 +1386,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Combina armadilhas, invisibilidade e precisão num ataque fatal.",
       "damage_summary": "5d8+Des surpresa — não pode ser evitado",
+      "chi_cost": 53,
+      "chi_restore": 0,
       "requirements_text": "Fio Morte + Fantasma Batalha",
       "attribute_requirements": {
         "PER": 27,
@@ -1277,6 +1420,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Cobre uma área com projéteis de aço impenetráveis.",
       "damage_summary": "6d6 em 9m + Sangramento+Lentidão",
+      "chi_cost": 48,
+      "chi_restore": 0,
       "requirements_text": "Chuva Flechas + Chuva Lâminas",
       "attribute_requirements": {
         "PER": 26,
@@ -1309,6 +1454,8 @@
       "tier_label": "Bruto N3",
       "description": "Golpe que parte armaduras e escudos.",
       "damage_summary": "2d8 + reduz CA inimigo em 2 (permanente)",
+      "chi_cost": 8,
+      "chi_restore": 0,
       "requirements_text": "Espiral Lâminas + Ponto Vital",
       "attribute_requirements": {
         "FOR": 13,
@@ -1341,6 +1488,8 @@
       "tier_label": "Bruto N3",
       "description": "Usa o escudo como barreira sólida ao avançar.",
       "damage_summary": "CA +4 ao avançar em linha reta",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Carga Escudo + Investida",
       "attribute_requirements": {
         "FOR": 11,
@@ -1373,6 +1522,8 @@
       "tier_label": "Bruto N3",
       "description": "Sequência de golpes no solo que criam ondas de choque em série.",
       "damage_summary": "3d6 em 6m + Atordoado+Lentidão",
+      "chi_cost": 13,
+      "chi_restore": 0,
       "requirements_text": "Esmaga-Solo + Espiral",
       "attribute_requirements": {
         "FOR": 12,
@@ -1410,6 +1561,8 @@
       "tier_label": "Bruto N4",
       "description": "Rajada frenética de ataques alimentados por chi.",
       "damage_summary": "+2d6 todos ataques / CA -2 — Medo CD 14",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Chi Natural + Ruptura",
       "attribute_requirements": {
         "FOR": 19,
@@ -1448,6 +1601,8 @@
       "tier_label": "Bruto N4",
       "description": "Torna-se praticamente imparável em linha reta.",
       "damage_summary": "Imune empurrão/derrube/área ao avançar",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Muralha + Ruptura Armadura",
       "attribute_requirements": {
         "FOR": 18,
@@ -1480,6 +1635,8 @@
       "tier_label": "Bruto N4",
       "description": "Combinação de ondas de choque e lâminas giratórias.",
       "damage_summary": "4d8 em 9m + Atordoado+Lentidão",
+      "chi_cost": 34,
+      "chi_restore": 0,
       "requirements_text": "Terremoto + Espiral",
       "attribute_requirements": {
         "FOR": 20,
@@ -1512,6 +1669,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Estado de guerra total com chi e cálculo tático combinados.",
       "damage_summary": "3 ataques/turno cada +2d8 chi",
+      "chi_cost": 24,
+      "chi_restore": 0,
       "requirements_text": "Modo Berserk + Maestro do Campo",
       "attribute_requirements": {
         "FOR": 27,
@@ -1545,6 +1704,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Combina defesa impenetrável com ofensiva devastadora.",
       "damage_summary": "5d10 + empurra 6m + CA 20 neste turno",
+      "chi_cost": 80,
+      "chi_restore": 0,
       "requirements_text": "Fortaleza + Devastação Área",
       "attribute_requirements": {
         "FOR": 28,

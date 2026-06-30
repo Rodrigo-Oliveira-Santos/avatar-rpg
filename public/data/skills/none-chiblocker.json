@@ -15,6 +15,8 @@
       "tier_label": "Espírito N1",
       "description": "Percebe o fluxo de energia dos inimigos antes de agirem.",
       "damage_summary": "Intuição CD 11 — vê intenção de dobra",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -39,12 +41,14 @@
       "tier": 1,
       "is_legendary": false,
       "tier_label": "Espírito N1",
-      "description": "Estabiliza o próprio chi, resistindo a bloqueio externo.",
-      "damage_summary": "Vantagem saves bloqueio chi externo",
+      "description": "Estabiliza o próprio chi através de respiração e foco interno.",
+      "damage_summary": "Restaura 1d6 chi",
+      "chi_cost": 1,
+      "chi_restore": 5,
       "requirements_text": "—",
       "attribute_requirements": {
         "ESP": 2,
-        "RES": 1
+        "CHI": 1
       },
       "prerequisites": [],
       "prerequisites_raw": [],
@@ -67,6 +71,8 @@
       "tier_label": "Espírito N2",
       "description": "Elimina a presença, tornando-se invisível para chi.",
       "damage_summary": "Furtividade CD 13 vant. vs detetores chi",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Leitura de Chi",
       "attribute_requirements": {
         "ESP": 6,
@@ -97,6 +103,8 @@
       "tier_label": "Espírito N2",
       "description": "Identifica todos os pontos de chi de qualquer criatura.",
       "damage_summary": "Medicina CD 13 — identifica pontos chi",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Leitura + Equilíbrio",
       "attribute_requirements": {
         "ESP": 5,
@@ -129,6 +137,8 @@
       "tier_label": "Espírito N2",
       "description": "Recupera pontos de chi bloqueados mais rapidamente.",
       "damage_summary": "Recupera chi bloqueado 1d4t mais rápido",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Equilíbrio Interno",
       "attribute_requirements": {
         "ESP": 6,
@@ -159,6 +169,8 @@
       "tier_label": "Espírito N3",
       "description": "Entende os padrões de chi de qualquer dobrador.",
       "damage_summary": "Intuição CD 14 — entende padrão chi",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Silêncio + Mapeamento",
       "attribute_requirements": {
         "ESP": 13,
@@ -191,6 +203,8 @@
       "tier_label": "Espírito N3",
       "description": "Redireciona o chi de um ataque inimigo.",
       "damage_summary": "Reação — reduz dano dobra em 2d6",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Mapeamento + Resist.",
       "attribute_requirements": {
         "ESP": 11,
@@ -229,6 +243,8 @@
       "tier_label": "Espírito N3",
       "description": "Torna-se imperceptível por sentidos sobrenaturais incluindo chi.",
       "damage_summary": "Furtividade CD 15 — imperceptível sobrenaturais",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Silêncio + Resist.",
       "attribute_requirements": {
         "ESP": 12,
@@ -262,6 +278,8 @@
       "tier_label": "Espírito N4",
       "description": "Projeta perturbação de chi que desestabiliza dobras inimigas.",
       "damage_summary": "Dobradores 3m têm desvant. em dobras",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Compreensão + Contra-Fluxo",
       "attribute_requirements": {
         "ESP": 20,
@@ -282,6 +300,41 @@
       }
     },
     {
+      "id": "none-chiblocker-sp4d",
+      "raw_id": "sp4d",
+      "name": "Restaur. de Fluxo",
+      "element": "none",
+      "non_bender_path": "chiblocker",
+      "branch": "sp",
+      "category": "spirit",
+      "tier": 4,
+      "is_legendary": false,
+      "tier_label": "Espírito N4",
+      "description": "Domina por completo o próprio fluxo de chi, revertendo grandes perdas de energia.",
+      "damage_summary": "Restaura 3d8 chi",
+      "chi_cost": 6,
+      "chi_restore": 18,
+      "requirements_text": "Equilíbrio Interno + Compreensão",
+      "attribute_requirements": {
+        "ESP": 19,
+        "CHI": 13,
+        "RES": 11
+      },
+      "prerequisites": [
+        "none-chiblocker-sp1b",
+        "none-chiblocker-sp3a"
+      ],
+      "prerequisites_raw": [
+        "sp1b",
+        "sp3a"
+      ],
+      "mastery_levels": null,
+      "position": {
+        "column": 1,
+        "y_offset": 0
+      }
+    },
+    {
       "id": "none-chiblocker-sp4b",
       "raw_id": "sp4b",
       "name": "Leitura Preditiva",
@@ -294,6 +347,8 @@
       "tier_label": "Espírito N4",
       "description": "Prevê os próximos movimentos de um dobrador pelo chi.",
       "damage_summary": "Prevê próximas 3 ações de dobrador",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Compreensão + Vazio",
       "attribute_requirements": {
         "ESP": 19,
@@ -326,6 +381,8 @@
       "tier_label": "Espírito N4",
       "description": "Bloqueia completamente qualquer manipulação de chi externa.",
       "damage_summary": "Imune a manipulação externa de chi",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Contra-Fluxo + Resist.",
       "attribute_requirements": {
         "ESP": 18,
@@ -358,6 +415,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Cria uma zona onde nenhuma dobra pode ser executada.",
       "damage_summary": "Zona 6m — nenhuma dobra funciona",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Anti-Aura + Âncora de Chi",
       "attribute_requirements": {
         "ESP": 27,
@@ -391,6 +450,8 @@
       "tier_label": "Lendário — Espírito",
       "description": "Perceção total de todos os fluxos de chi num campo inteiro.",
       "damage_summary": "Perceção total fluxos chi — 30m",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Leit. Preditiva + Vazio",
       "attribute_requirements": {
         "ESP": 28,
@@ -423,6 +484,8 @@
       "tier_label": "Agilidade N1",
       "description": "Movimento silencioso e imperceptível.",
       "damage_summary": "Furtividade CD 11 c/ vantagem",
+      "chi_cost": 1,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 2,
@@ -454,6 +517,8 @@
       "tier_label": "Agilidade N1",
       "description": "Posição de combate de perfil mínimo.",
       "damage_summary": "Ataques área têm desvant. contra si",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "AGI": 1,
@@ -480,6 +545,8 @@
       "tier_label": "Agilidade N2",
       "description": "Reage e atinge antes que o inimigo perceba.",
       "damage_summary": "Iniciativa +5 — ataca antes reação",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Passos + Postura",
       "attribute_requirements": {
         "AGI": 6,
@@ -512,6 +579,8 @@
       "tier_label": "Agilidade N2",
       "description": "Deixa zero rastros físicos, impossível de rastrear.",
       "damage_summary": "Furtividade CD 13 — zero rastros físicos",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Passos de Sombra",
       "attribute_requirements": {
         "AGI": 7,
@@ -542,6 +611,8 @@
       "tier_label": "Agilidade N2",
       "description": "Esquiva sinuosa que mantém o utilizador no ângulo morto.",
       "damage_summary": "Reação — fica no ângulo morto inimigo",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Postura de Cobra",
       "attribute_requirements": {
         "AGI": 5,
@@ -572,6 +643,8 @@
       "tier_label": "Agilidade N3",
       "description": "Esquiva automaticamente de ataques de dobra baseado em chi.",
       "damage_summary": "Reação auto — esquiva dobras 1×/turno",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Velocidade + Leit. Preditiva",
       "attribute_requirements": {
         "AGI": 13,
@@ -605,6 +678,8 @@
       "tier_label": "Agilidade N3",
       "description": "Sobe superfícies verticais usando tensão muscular extrema.",
       "damage_summary": "Atletismo CD 12 — superfícies verticais",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "Passo Fantasma + Velocidade",
       "attribute_requirements": {
         "AGI": 12,
@@ -637,6 +712,8 @@
       "tier_label": "Agilidade N3",
       "description": "Nunca para durante o combate, mantendo sempre o fluxo.",
       "damage_summary": "Sem ataques oportunidade — sempre em mov.",
+      "chi_cost": 0,
+      "chi_restore": 0,
       "requirements_text": "Esquiva Serpente + Postura",
       "attribute_requirements": {
         "AGI": 11,
@@ -669,6 +746,8 @@
       "tier_label": "Agilidade N4",
       "description": "Torna-se invisível ao mover-se em condições de baixa luz.",
       "damage_summary": "Furtividade CD 16 — invisível baixa luz",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Passo Fantasma + Vazio Presença",
       "attribute_requirements": {
         "AGI": 19,
@@ -702,6 +781,8 @@
       "tier_label": "Agilidade N4",
       "description": "Move-se sem causar qualquer perturbação no ambiente.",
       "damage_summary": "Sem vibr. solo — imperceptível visão sísmica",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Escalada + Fluxo Contínuo",
       "attribute_requirements": {
         "AGI": 20,
@@ -734,6 +815,8 @@
       "tier_label": "Agilidade N4",
       "description": "Combina esquivas com bloqueios de chi num fluxo mortal.",
       "damage_summary": "2 ações/turno — esquivas + bloqueios chi",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Fluxo + Esquiva Intuitiva",
       "attribute_requirements": {
         "AGI": 18,
@@ -772,6 +855,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Imperceptível por todos os sentidos, incluindo visão sísmica e chi.",
       "damage_summary": "Furtividade CD 19 — imperceptível TODOS sentidos",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Sombra Viva + Toque de Fada",
       "attribute_requirements": {
         "AGI": 27,
@@ -805,6 +890,8 @@
       "tier_label": "Lendário — Agilidade",
       "description": "Move-se entre todos os inimigos bloqueando chi em massa.",
       "damage_summary": "Bloqueia chi 1d4 alvos/turno em movimento",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Dança da Morte + Olho Chi",
       "attribute_requirements": {
         "AGI": 28,
@@ -838,6 +925,8 @@
       "tier_label": "Combate N1",
       "description": "Bloqueia um ponto de chi, impedindo dobra temporariamente.",
       "damage_summary": "1d4 + bloqueia 1 ponto de chi",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "PER": 2,
@@ -869,10 +958,12 @@
       "tier_label": "Combate N1",
       "description": "Paralisa um membro específico sem bloquear chi.",
       "damage_summary": "1d4 + paralisa membro (Sal. Con CD 12)",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
-        "PER": 1,
-        "AGI": 2
+        "ESP": 2,
+        "CHI": 1
       },
       "prerequisites": [],
       "prerequisites_raw": [],
@@ -900,6 +991,8 @@
       "tier_label": "Combate N2",
       "description": "Atinge múltiplos pontos de chi em rápida sucessão.",
       "damage_summary": "×2 turnos — bloqueia 1d2 chi adicionais",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Bloqueio Chi Básico",
       "attribute_requirements": {
         "PER": 6,
@@ -935,6 +1028,8 @@
       "tier_label": "Combate N2",
       "description": "Paralisa completamente um membro por período prolongado.",
       "damage_summary": "Paralisa membro 1d4t + Atordoado+Lentidão",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Golpe Nervos + Bloqueio",
       "attribute_requirements": {
         "PER": 5,
@@ -967,6 +1062,8 @@
       "tier_label": "Combate N2 ★",
       "description": "Interrompe uma dobra em curso causando dano de recuo.",
       "damage_summary": "Reação — interrompe dobra, 1d6 recuo",
+      "chi_cost": 2,
+      "chi_restore": 0,
       "requirements_text": "Bloqueio Chi Básico",
       "attribute_requirements": {
         "PER": 6,
@@ -1003,6 +1100,8 @@
       "tier_label": "Combate N2",
       "description": "Ataque físico focado em desequilíbrio.",
       "damage_summary": "1d6+FOR + Desequilibrado (Sal. Des CD 12)",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 2,
@@ -1034,6 +1133,8 @@
       "tier_label": "Combate N2",
       "description": "Derruba inimigos independentemente do seu tamanho.",
       "damage_summary": "Sal. Des CD 12 — Derrubado (sem dano)",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 1,
@@ -1060,6 +1161,8 @@
       "tier_label": "Combate N2",
       "description": "Golpe que rompe defesas e desequilibra a postura inimiga.",
       "damage_summary": "Sal. For CD 13 — perde reação 1 turno",
+      "chi_cost": 3,
+      "chi_restore": 0,
       "requirements_text": "—",
       "attribute_requirements": {
         "FOR": 6,
@@ -1086,6 +1189,8 @@
       "tier_label": "Preciso N3",
       "description": "Bloqueia dois canais de chi simultâneos.",
       "damage_summary": "2 canais chi simultâneos — dobra impossível",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Bloqueio Seq. + Mapeamento",
       "attribute_requirements": {
         "PER": 13,
@@ -1119,6 +1224,8 @@
       "tier_label": "Preciso N3",
       "description": "Atinge múltiplos nervos causando colapso muscular parcial.",
       "damage_summary": "Colapso muscular — velocidade reduzida metade",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Golpe Paralis. + Golpe Nervos",
       "attribute_requirements": {
         "PER": 12,
@@ -1151,6 +1258,8 @@
       "tier_label": "Preciso N3",
       "description": "Redireciona o chi de um dobrador contra si próprio.",
       "damage_summary": "2d6 dano interno + Atordoado+Sangramento",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Toque Disruptivo + Mapeamento",
       "attribute_requirements": {
         "PER": 11,
@@ -1189,6 +1298,8 @@
       "tier_label": "Preciso N4",
       "description": "Bloqueia a dobra de forma duradoura sem cura externa.",
       "damage_summary": "Bloqueia dobra permanentemente (sem cura ext.)",
+      "chi_cost": 6,
+      "chi_restore": 0,
       "requirements_text": "Bloqueio 2 Pts + Compreensão",
       "attribute_requirements": {
         "PER": 20,
@@ -1222,6 +1333,8 @@
       "tier_label": "Preciso N4",
       "description": "Sequência que desativa membros progressivamente.",
       "damage_summary": "×4 — cada golpe desativa membro progressivo",
+      "chi_cost": 5,
+      "chi_restore": 0,
       "requirements_text": "Colapso Nervos + Bloqueio Seq.",
       "attribute_requirements": {
         "PER": 19,
@@ -1254,6 +1367,8 @@
       "tier_label": "Preciso N4",
       "description": "Canaliza o chi de um dobrador de volta como arma espiritual.",
       "damage_summary": "3d8 espiritual + Silêncio+Atordoado+Sangramento",
+      "chi_cost": 22,
+      "chi_restore": 0,
       "requirements_text": "Retorno Chi + Compreensão",
       "attribute_requirements": {
         "PER": 18,
@@ -1292,6 +1407,8 @@
       "tier_label": "Lendário — Preciso",
       "description": "Bloqueia todos os canais de chi com uma sequência de 20 toques.",
       "damage_summary": "×20 toques — bloqueia TODOS canais chi",
+      "chi_cost": 9,
+      "chi_restore": 0,
       "requirements_text": "Bloqueio Perm. + Seq. Colapso",
       "attribute_requirements": {
         "PER": 27,
@@ -1325,6 +1442,8 @@
       "tier_label": "Lendário — Preciso ★CONTROVERSA",
       "description": "Elimina completamente o fluxo de chi de um alvo. Controversa.",
       "damage_summary": "Sal. Con CD 19 — chi extinto permanentemente",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Toque Vazio + Negação Espiritual",
       "attribute_requirements": {
         "PER": 28,
@@ -1358,6 +1477,8 @@
       "tier_label": "Bruto N3",
       "description": "Interrompe fisicamente uma dobra em curso com um golpe preciso.",
       "damage_summary": "Interrompe dobra + 2d6 recuo — Atordoado",
+      "chi_cost": 7,
+      "chi_restore": 0,
       "requirements_text": "Tempestade + Anti-Aura",
       "attribute_requirements": {
         "FOR": 12,
@@ -1391,6 +1512,8 @@
       "tier_label": "Bruto N3",
       "description": "Usa o momentum inimigo para arremessar com força multiplicada.",
       "damage_summary": "2d8 usa momentum inimigo + Atordoado+Enraizado",
+      "chi_cost": 12,
+      "chi_restore": 0,
       "requirements_text": "Projeção Quadril + Varredura",
       "attribute_requirements": {
         "FOR": 11,
@@ -1428,6 +1551,8 @@
       "tier_label": "Bruto N3",
       "description": "Quebra a guarda e segue com série de golpes imparáveis.",
       "damage_summary": "×4 após quebrar guarda — 1d6 por golpe",
+      "chi_cost": 4,
+      "chi_restore": 0,
       "requirements_text": "Quebra Guarda + Tempestade",
       "attribute_requirements": {
         "FOR": 13,
@@ -1460,6 +1585,8 @@
       "tier_label": "Bruto N4",
       "description": "Usa todo o peso e momentum do corpo em ataques devastadores.",
       "damage_summary": "3d8 + empurrado 3m — Atordoado+Lentidão",
+      "chi_cost": 20,
+      "chi_restore": 0,
       "requirements_text": "Escalada Mestre + Seq. Ruptura",
       "attribute_requirements": {
         "FOR": 19,
@@ -1492,6 +1619,8 @@
       "tier_label": "Bruto N4",
       "description": "Golpe carregado de chi que causa dano espiritual além do físico.",
       "damage_summary": "2d10 físico + 2d6 espiritual — Atordoado+Silêncio",
+      "chi_cost": 14,
+      "chi_restore": 0,
       "requirements_text": "Equilíbrio + Dissolução Dobra",
       "attribute_requirements": {
         "FOR": 18,
@@ -1530,6 +1659,8 @@
       "tier_label": "Bruto N4",
       "description": "Cada ataque esquivado transforma-se num contra-ataque devastador.",
       "damage_summary": "Reação — contra-ataque automático +2d8",
+      "chi_cost": 10,
+      "chi_restore": 0,
       "requirements_text": "Arremesso Judo + Esquiva Intuitiva",
       "attribute_requirements": {
         "FOR": 18,
@@ -1563,6 +1694,8 @@
       "tier_label": "Lendário — Bruto",
       "description": "Combate que usa o mínimo de movimento para o máximo de dano.",
       "damage_summary": "Movimento mínimo +2d10 — Medo Sal. Sab CD 17",
+      "chi_cost": 16,
+      "chi_restore": 0,
       "requirements_text": "Corpo Arma + Dança do Vazio",
       "attribute_requirements": {
         "FOR": 26,
@@ -1596,6 +1729,8 @@
       "tier_label": "Lendário — Bruto ★",
       "description": "Um único golpe que combina dano físico máximo com bloqueio total de chi.",
       "damage_summary": "6d10 + bloqueio total chi — Sal. Con CD 19",
+      "chi_cost": 111,
+      "chi_restore": 0,
       "requirements_text": "Impacto Chi + Bloqueio Total",
       "attribute_requirements": {
         "FOR": 25,

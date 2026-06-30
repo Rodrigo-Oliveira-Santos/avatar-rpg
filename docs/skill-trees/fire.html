@@ -75,8 +75,15 @@ header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;disp
   <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
   <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
   <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
   <div style="margin-left:auto;display:flex;gap:8px">
     <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
     <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
   </div>
 </div>
@@ -183,63 +190,63 @@ const MAE={
 // ── NODES ─────────────────────────────────────────────────
 const RAW=[
   // ESPÍRITO
-  {id:'sp1a',b:'sp',t:0,c:0,l:'Resp.\nDragão',    tl:'Espírito N1',   dmg:'1d6 chi/turno',              ds:'Técnica de respiração que regenera chi e estabiliza o espírito.',              req:'—',deps:[]},
-  {id:'sp1b',b:'sp',t:0,c:1,l:'Chama\nMedit.',    tl:'Espírito N1',   dmg:'Passivo',                    ds:'Mantém uma chama estável. Símbolo de equilíbrio interno.',                    req:'—',deps:[]},
-  {id:'sp2a',b:'sp',t:1,c:0,l:'Chama\nInterior',  tl:'Espírito N2',   dmg:'+1d4 a todo dano fogo',      ds:'Aumenta passivamente o dano de todas as habilidades de fogo.',                req:'Resp. Dragão',deps:['sp1a']},
-  {id:'sp2b',b:'sp',t:1,c:1,l:'Medit.\nFogo',     tl:'Espírito N2',   dmg:'Percepção calor 18m',        ds:'Percebe fontes de calor e vida ao redor em meditação.',                       req:'Chama Medit.',deps:['sp1b']},
-  {id:'sp2c',b:'sp',t:1,c:2,l:'Resist.\nCalor',   tl:'Espírito N2',   dmg:'Imunidade calor/vapor',      ds:'Resistência passiva a dano de fogo, calor extremo e vapor.',                  req:'Resp. Dragão',deps:['sp1a']},
-  {id:'sp3a',b:'sp',t:2,c:0,l:'Luz da\nAlma',     tl:'Espírito N3',   dmg:'Afasta espíritos, raio 9m',  ds:'Chama dourada que afasta espíritos malignos.',                                req:'Chama Interior+Chama Medit.',deps:['sp2a','sp1b']},
-  {id:'sp3b',b:'sp',t:2,c:1,l:'Sentido\nTérm.',   tl:'Espírito N3',   dmg:'Vê calor 18m incl. paredes', ds:'Deteta qualquer fonte de calor, inclusive paredes.',                          req:'Medit. Fogo+Resist. Calor',deps:['sp2b','sp2c']},
-  {id:'sp3c',b:'sp',t:2,c:2,l:'Harm.\nDragão',    tl:'Espírito N3',   dmg:'+1d6 após 3 turnos',         ds:'Alinha o chi com a origem do fogo. Bónus após 3 turnos de combate.',           req:'Chama Interior+Resp. Dragão',deps:['sp2a']},
-  {id:'sp4a',b:'sp',t:3,c:0,l:'Visão\nInfrav.',   tl:'Espírito N4',   dmg:'Vê inimigos invisíveis',     ds:'Vê o calor corporal de qualquer ser, incluindo invisíveis.',                   req:'Sentido Térm.+Medit. Fogo',deps:['sp3b']},
-  {id:'sp4b',b:'sp',t:3,c:2,l:'Aura de\nChamas',  tl:'Espírito N4',   dmg:'1d6 Queimadura em 1,5m',     ds:'Envolve o corpo numa aura de calor. Queima inimigos corpo a corpo.',           req:'Harm. Dragão+Resist. Calor',deps:['sp3c','sp2c']},
-  {id:'sp5a',b:'sp',t:4,c:0,l:'Chama\nEterna',    tl:'Lendário — Espírito', dmg:'Fogo não pode ser extinto', ds:'O fogo não pode ser extinto por meios naturais.',                       req:'Aura Chamas+Luz da Alma',deps:['sp4b','sp3a']},
-  {id:'sp5b',b:'sp',t:4,c:2,l:'Olho do\nDragão',  tl:'Lendário — Espírito', dmg:'Perceção total calor, 30m', ds:'Perceção total pelo calor, raio 30m, sem ponto cego.',                  req:'Visão Infrav.+Sentido Térm.',deps:['sp4a']},
+  {id:'sp1a',chi:1,restore:5,b:'sp',t:0,c:0,l:'Resp.\nDragão',    tl:'Espírito N1',   dmg:'Restaura 1d6 chi/turno',     ds:'Técnica de respiração que regenera chi e estabiliza o espírito.',              req:'—',deps:[]},
+  {id:'sp1b',chi:0,b:'sp',t:0,c:1,l:'Chama\nMedit.',    tl:'Espírito N1',   dmg:'Passivo',                    ds:'Mantém uma chama estável. Símbolo de equilíbrio interno.',                    req:'—',deps:[]},
+  {id:'sp2a',chi:0,b:'sp',t:1,c:0,l:'Chama\nInterior',  tl:'Espírito N2',   dmg:'+1d4 a todo dano fogo',      ds:'Aumenta passivamente o dano de todas as habilidades de fogo.',                req:'Resp. Dragão',deps:['sp1a']},
+  {id:'sp2b',chi:2,b:'sp',t:1,c:1,l:'Medit.\nFogo',     tl:'Espírito N2',   dmg:'Percepção calor 18m',        ds:'Percebe fontes de calor e vida ao redor em meditação.',                       req:'Chama Medit.',deps:['sp1b']},
+  {id:'sp2c',chi:0,b:'sp',t:1,c:2,l:'Resist.\nCalor',   tl:'Espírito N2',   dmg:'Imunidade calor/vapor',      ds:'Resistência passiva a dano de fogo, calor extremo e vapor.',                  req:'Resp. Dragão',deps:['sp1a']},
+  {id:'sp3a',chi:3,b:'sp',t:2,c:0,l:'Luz da\nAlma',     tl:'Espírito N3',   dmg:'Afasta espíritos, raio 9m',  ds:'Chama dourada que afasta espíritos malignos.',                                req:'Chama Interior+Chama Medit.',deps:['sp2a','sp1b']},
+  {id:'sp3b',chi:3,b:'sp',t:2,c:1,l:'Sentido\nTérm.',   tl:'Espírito N3',   dmg:'Vê calor 18m incl. paredes', ds:'Deteta qualquer fonte de calor, inclusive paredes.',                          req:'Medit. Fogo+Resist. Calor',deps:['sp2b','sp2c']},
+  {id:'sp3c',chi:0,b:'sp',t:2,c:2,l:'Harm.\nDragão',    tl:'Espírito N3',   dmg:'+1d6 após 3 turnos',         ds:'Alinha o chi com a origem do fogo. Bónus após 3 turnos de combate.',           req:'Chama Interior+Resp. Dragão',deps:['sp2a']},
+  {id:'sp4a',chi:4,b:'sp',t:3,c:0,l:'Visão\nInfrav.',   tl:'Espírito N4',   dmg:'Vê inimigos invisíveis',     ds:'Vê o calor corporal de qualquer ser, incluindo invisíveis.',                   req:'Sentido Térm.+Medit. Fogo',deps:['sp3b']},
+  {id:'sp4b',chi:1,b:'sp',t:3,c:2,l:'Aura de\nChamas',  tl:'Espírito N4',   dmg:'1d6 Queimadura em 1,5m',     ds:'Envolve o corpo numa aura de calor. Queima inimigos corpo a corpo.',           req:'Harm. Dragão+Resist. Calor',deps:['sp3c','sp2c']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'Chama\nEterna',    tl:'Lendário — Espírito', dmg:'Fogo não pode ser extinto', ds:'O fogo não pode ser extinto por meios naturais.',                       req:'Aura Chamas+Luz da Alma',deps:['sp4b','sp3a']},
+  {id:'sp5b',chi:6,b:'sp',t:4,c:2,l:'Olho do\nDragão',  tl:'Lendário — Espírito', dmg:'Perceção total calor, 30m', ds:'Perceção total pelo calor, raio 30m, sem ponto cego.',                  req:'Visão Infrav.+Sentido Térm.',deps:['sp4a']},
   // AGILIDADE
-  {id:'ag1a',b:'ag',t:0,c:0,l:'Prop.\nChama',     tl:'Agilidade N1',  dmg:'Velocidade +6m',             ds:'Jatos de fogo aumentam a velocidade de movimento em +6m.',                    req:'—',deps:[]},
-  {id:'ag1b',b:'ag',t:0,c:2,l:'Reflexo\nArdente', tl:'Agilidade N1',  dmg:'Reação: 1d4 contraataque',   ds:'Ao ser atacado: esquiva e contraataca com 1d4 de fogo.',                       req:'—',deps:[]},
-  {id:'ag2a',b:'ag',t:1,c:0,l:'Rastro\nChamas',   tl:'Agilidade N2',  dmg:'1d4 Queimadura a quem pisar',ds:'Deixa rastro de fogo ao mover-se.',                                           req:'Prop. Chama',deps:['ag1a']},
-  {id:'ag2b',b:'ag',t:1,c:1,l:'Dança\nFogo',      tl:'Agilidade N2',  dmg:'Ataques têm desvantagem',    ds:'Movimentos imprevisíveis — ataques contra ti têm desvantagem.',                req:'Reflexo Ardente',deps:['ag1b']},
-  {id:'ag2c',b:'ag',t:1,c:2,l:'Salto\nChama',     tl:'Agilidade N2',  dmg:'Salta até 9m verticais',     ds:'Impulsiona saltos com explosões de fogo nos pés.',                            req:'Prop. Chama',deps:['ag1a']},
-  {id:'ag3a',b:'ag',t:2,c:0,l:'Voo\nSustentado',  tl:'Agilidade N3',  dmg:'Velocidade voo 12m',         ds:'Mantém-se no ar com jatos contínuos nos pés e mãos.',                         req:'Salto Chama+Prop. Chama',deps:['ag2c']},
-  {id:'ag3b',b:'ag',t:2,c:1,l:'Esq.\nArdente',    tl:'Agilidade N3',  dmg:'1d6 ao inimigo que avança',  ds:'Cada esquiva deixa uma chama enganosa no local.',                             req:'Dança Fogo+Reflexo Ardente',deps:['ag2b']},
-  {id:'ag3c',b:'ag',t:2,c:2,l:'Corredor\nChamas', tl:'Agilidade N3',  dmg:'2d4 a inimigos no caminho',  ds:'Velocidade triplicada em linha reta. 2d4 Queimadura.',                        req:'Rastro Chamas+Salto Chama',deps:['ag2a','ag2c']},
-  {id:'ag4a',b:'ag',t:3,c:0,l:'Asa de\nFogo',     tl:'Agilidade N4',  dmg:'Velocidade voo 18m',         ds:'Asas de chama. Velocidade de voo 18m.',                                       req:'Voo Sustentado+Rastro Chamas',deps:['ag3a']},
-  {id:'ag4b',b:'ag',t:3,c:1,l:'Miragem\nChamas',  tl:'Agilidade N4',  dmg:'1d3 cópias de chama',        ds:'Cria cópias de chama que imitam os teus movimentos.',                         req:'Esq. Ardente+Dança Fogo',deps:['ag3b']},
-  {id:'ag4c',b:'ag',t:3,c:2,l:'Turbina\nFogo',    tl:'Agilidade N4',  dmg:'3d6 a todos em 6m',          ds:'Gira a velocidade extrema criando um furacão de fogo.',                       req:'Corredor Chamas+Voo Sustentado',deps:['ag3c','ag3a']},
-  {id:'ag5a',b:'ag',t:4,c:0,l:'Cometa\nPessoal',  tl:'Lendário — Agilidade', dmg:'4d10 + área',         ds:'Move-se a velocidade de projétil com cauda de fogo devastadora.',              req:'Asa Fogo+Turbina Fogo',deps:['ag4a','ag4c']},
-  {id:'ag5b',b:'ag',t:4,c:2,l:'Fantasma\nChamas', tl:'Lendário — Agilidade', dmg:'1d6 cópias — impossível rastrear', ds:'Cria 1d6 cópias enquanto se move invisível.',                  req:'Miragem Chamas+Esq. Ardente',deps:['ag4b','ag3b']},
+  {id:'ag1a',chi:0,b:'ag',t:0,c:0,l:'Prop.\nChama',     tl:'Agilidade N1',  dmg:'Velocidade +6m',             ds:'Jatos de fogo aumentam a velocidade de movimento em +6m.',                    req:'—',deps:[]},
+  {id:'ag1b',chi:1,b:'ag',t:0,c:2,l:'Reflexo\nArdente', tl:'Agilidade N1',  dmg:'Reação: 1d4 contraataque',   ds:'Ao ser atacado: esquiva e contraataca com 1d4 de fogo.',                       req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Rastro\nChamas',   tl:'Agilidade N2',  dmg:'1d4 Queimadura a quem pisar',ds:'Deixa rastro de fogo ao mover-se.',                                           req:'Prop. Chama',deps:['ag1a']},
+  {id:'ag2b',chi:2,b:'ag',t:1,c:1,l:'Dança\nFogo',      tl:'Agilidade N2',  dmg:'Ataques têm desvantagem',    ds:'Movimentos imprevisíveis — ataques contra ti têm desvantagem.',                req:'Reflexo Ardente',deps:['ag1b']},
+  {id:'ag2c',chi:1,b:'ag',t:1,c:2,l:'Salto\nChama',     tl:'Agilidade N2',  dmg:'Salta até 9m verticais',     ds:'Impulsiona saltos com explosões de fogo nos pés.',                            req:'Prop. Chama',deps:['ag1a']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Voo\nSustentado',  tl:'Agilidade N3',  dmg:'Velocidade voo 12m',         ds:'Mantém-se no ar com jatos contínuos nos pés e mãos.',                         req:'Salto Chama+Prop. Chama',deps:['ag2c']},
+  {id:'ag3b',chi:1,b:'ag',t:2,c:1,l:'Esq.\nArdente',    tl:'Agilidade N3',  dmg:'1d6 ao inimigo que avança',  ds:'Cada esquiva deixa uma chama enganosa no local.',                             req:'Dança Fogo+Reflexo Ardente',deps:['ag2b']},
+  {id:'ag3c',chi:4,b:'ag',t:2,c:2,l:'Corredor\nChamas', tl:'Agilidade N3',  dmg:'2d4 a inimigos no caminho',  ds:'Velocidade triplicada em linha reta. 2d4 Queimadura.',                        req:'Rastro Chamas+Salto Chama',deps:['ag2a','ag2c']},
+  {id:'ag4a',chi:4,b:'ag',t:3,c:0,l:'Asa de\nFogo',     tl:'Agilidade N4',  dmg:'Velocidade voo 18m',         ds:'Asas de chama. Velocidade de voo 18m.',                                       req:'Voo Sustentado+Rastro Chamas',deps:['ag3a']},
+  {id:'ag4b',chi:4,b:'ag',t:3,c:1,l:'Miragem\nChamas',  tl:'Agilidade N4',  dmg:'1d3 cópias de chama',        ds:'Cria cópias de chama que imitam os teus movimentos.',                         req:'Esq. Ardente+Dança Fogo',deps:['ag3b']},
+  {id:'ag4c',chi:11,b:'ag',t:3,c:2,l:'Turbina\nFogo',    tl:'Agilidade N4',  dmg:'3d6 a todos em 6m',          ds:'Gira a velocidade extrema criando um furacão de fogo.',                       req:'Corredor Chamas+Voo Sustentado',deps:['ag3c','ag3a']},
+  {id:'ag5a',chi:50,b:'ag',t:4,c:0,l:'Cometa\nPessoal',  tl:'Lendário — Agilidade', dmg:'4d10 + área',         ds:'Move-se a velocidade de projétil com cauda de fogo devastadora.',              req:'Asa Fogo+Turbina Fogo',deps:['ag4a','ag4c']},
+  {id:'ag5b',chi:6,b:'ag',t:4,c:2,l:'Fantasma\nChamas', tl:'Lendário — Agilidade', dmg:'1d6 cópias — impossível rastrear', ds:'Cria 1d6 cópias enquanto se move invisível.',                  req:'Miragem Chamas+Esq. Ardente',deps:['ag4b','ag3b']},
   // COMBATE PARTILHADO
-  {id:'cb1a',b:'cb',t:0,c:0,l:'Jato de\nChama',   tl:'Combate N1',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Feixe de fogo concentrado e preciso a distância.',       req:'—',deps:[]},
-  {id:'cb1b',b:'cb',t:0,c:1,l:'Faísca',           tl:'Combate N1',    dmg:'M0:1d4 · M1:2d4+Ch · M2:3d4 · M3:5d4',  ds:'Descarga elétrica curta. Atordoa 1 ação em falha.',      req:'—',deps:[]},
-  {id:'cb1c',b:'cb',t:0,c:2,l:'Bola de\nFogo',    tl:'Combate N1',    dmg:'M0:1d10 · M1:2d10+Q · M2:3d10 · M3:5d10',ds:'Massa de fogo explosiva. Área de 1,5m.',               req:'—',deps:[]},
-  {id:'cb1d',b:'cb',t:0,c:3,l:'Sopro de\nFogo',   tl:'Combate N1',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Expele fogo em cone de 6m.',                             req:'—',deps:[]},
-  {id:'cb2a',b:'cb',t:1,c:0,l:'Dedo de\nFogo',    tl:'Combate N2',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Projéteis precisíssimos. Alcance 18m, ignora cobertura.',req:'Jato de Chama',deps:['cb1a']},
-  {id:'cb2b',b:'cb',t:1,c:1,l:'Chicote\nChama',   tl:'Combate N2',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Chicote de fogo que derruba o alvo. Alcance 3m.',        req:'Jato de Chama',deps:['cb1a']},
-  {id:'cb2c',b:'cb',t:1,c:2,l:'Desc.\nEstática',  tl:'Combate N2',    dmg:'M0:1d10 · M1:2d10+Ch · M2:3d10 · M3:5d10',ds:'Descarga elétrica que paralisa um membro.',            req:'Faísca',deps:['cb1b']},
-  {id:'cb2d',b:'cb',t:1,c:3,l:'Muro de\nChamas',  tl:'Combate N2',    dmg:'2d6 Queimadura a quem atravessar',       ds:'Barreira de fogo em área que dura 1 min.',              req:'Bola de Fogo',deps:['cb1c']},
-  {id:'cb2e',b:'cb',t:1,c:4,l:'Cone de\nFogo',    tl:'Combate N2',    dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8',   ds:'Cone de fogo alargado de 9m.',                          req:'Sopro de Fogo',deps:['cb1d']},
-  {id:'cb2f',b:'cb',t:1,c:5,l:'Bomba\nFogo ★',    tl:'Combate N2 ★',  dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8+At',ds:'Projétil explosivo em área 3m. Queimadura+Atordoado M3.',req:'Bola de Fogo',deps:['cb1c']},
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Jato de\nChama',   tl:'Combate N1',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Feixe de fogo concentrado e preciso a distância.',       req:'—',deps:[]},
+  {id:'cb1b',chi:1,b:'cb',t:0,c:1,l:'Faísca',           tl:'Combate N1',    dmg:'M0:1d4 · M1:2d4+Ch · M2:3d4 · M3:5d4',  ds:'Descarga elétrica curta. Atordoa 1 ação em falha.',      req:'—',deps:[]},
+  {id:'cb1c',chi:3,b:'cb',t:0,c:2,l:'Bola de\nFogo',    tl:'Combate N1',    dmg:'M0:1d10 · M1:2d10+Q · M2:3d10 · M3:5d10',ds:'Massa de fogo explosiva. Área de 1,5m.',               req:'—',deps:[]},
+  {id:'cb1d',chi:2,b:'cb',t:0,c:3,l:'Sopro de\nFogo',   tl:'Combate N1',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Expele fogo em cone de 6m.',                             req:'—',deps:[]},
+  {id:'cb2a',chi:2,b:'cb',t:1,c:0,l:'Dedo de\nFogo',    tl:'Combate N2',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Projéteis precisíssimos. Alcance 18m, ignora cobertura.',req:'Jato de Chama',deps:['cb1a']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Chicote\nChama',   tl:'Combate N2',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Chicote de fogo que derruba o alvo. Alcance 3m.',        req:'Jato de Chama',deps:['cb1a']},
+  {id:'cb2c',chi:3,b:'cb',t:1,c:2,l:'Desc.\nEstática',  tl:'Combate N2',    dmg:'M0:1d10 · M1:2d10+Ch · M2:3d10 · M3:5d10',ds:'Descarga elétrica que paralisa um membro.',            req:'Faísca',deps:['cb1b']},
+  {id:'cb2d',chi:5,b:'cb',t:1,c:3,l:'Muro de\nChamas',  tl:'Combate N2',    dmg:'2d6 Queimadura a quem atravessar',       ds:'Barreira de fogo em área que dura 1 min.',              req:'Bola de Fogo',deps:['cb1c']},
+  {id:'cb2e',chi:8,b:'cb',t:1,c:4,l:'Cone de\nFogo',    tl:'Combate N2',    dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8',   ds:'Cone de fogo alargado de 9m.',                          req:'Sopro de Fogo',deps:['cb1d']},
+  {id:'cb2f',chi:10,b:'cb',t:1,c:5,l:'Bomba\nFogo ★',    tl:'Combate N2 ★',  dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8+At',ds:'Projétil explosivo em área 3m. Queimadura+Atordoado M3.',req:'Bola de Fogo',deps:['cb1c']},
   // PRECISO
-  {id:'pr3a',b:'pr',t:2,c:0,l:'Lança de\nFogo',   tl:'Preciso N3',    dmg:'2d8, penetra resistência',   ds:'Projétil de fogo estreito. Ignora resistência a fogo.',                       req:'Dedo Fogo+Jato Chama',deps:['cb2a']},
-  {id:'pr3b',b:'pr',t:2,c:1,l:'Corrente\nElét.',  tl:'Preciso N3',    dmg:'2d6 elétrico, salta 2º alvo',ds:'Raio elétrico contínuo que salta para um segundo alvo.',                      req:'Desc. Estática+Faísca',deps:['cb2c']},
-  {id:'pr3c',b:'pr',t:2,c:2,l:'Agulhas\nFogo',    tl:'Preciso N3',    dmg:'4d4 a até 4 alvos',          ds:'Dezenas de micro-projéteis em leque atingem até 4 alvos.',                    req:'Dedo de Fogo',deps:['cb2a']},
-  {id:'pr4a',b:'pr',t:3,c:0,l:'Dobra\nRelâmp.',   tl:'Preciso N4',    dmg:'4d10 elétrico — Choque+Atord.',ds:'Raio elétrico devastador. Requer Harm. Dragão (ESP).',                     req:'Harm. Dragão(ESP)+Corrente Elét.',deps:['pr3b','sp3c']},
-  {id:'pr4b',b:'pr',t:3,c:1,l:'Feixe\nContínuo',  tl:'Preciso N4',    dmg:'2d6 Queimadura/turno',       ds:'Feixe de fogo focado num alvo por múltiplos turnos.',                         req:'Lança Fogo',deps:['pr3a']},
-  {id:'pr4c',b:'pr',t:3,c:2,l:'Tempest.\nElét.',  tl:'Preciso N4',    dmg:'3d8 em área 6m, salta alvos',ds:'Descarga elétrica em área que salta entre múltiplos inimigos.',               req:'Corrente Elét.+Agulhas Fogo',deps:['pr3b','pr3c']},
-  {id:'pr5a',b:'pr',t:5,c:0,l:'Redir.\nRelâmp.',  tl:'Lendário — Preciso', dmg:'Absorve + redireciona +2d10', ds:'Absorve e redireciona energia elétrica de qualquer fonte.',            req:'Dobra Relâmp.',deps:['pr4a']},
-  {id:'pr5b',b:'pr',t:5,c:1,l:'Chama\nAzul',      tl:'Lendário — Preciso', dmg:'6d8 — ignora imunidade fogo', ds:'Fogo de temperatura extrema. Ignora imunidade a fogo normal.',         req:'Dobra Relâmp.+Voo Sustentado(AGI)',deps:['pr4a','ag3a']},
-  {id:'pr5c',b:'pr',t:5,c:2,l:'Relâmp.\nDuplo',   tl:'Lendário — Preciso', dmg:'4d10×2 alvos no mesmo turno', ds:'Dois raios simultâneos com precisão absoluta.',                       req:'Dobra Relâmp.+Tempest. Elét.',deps:['pr4a','pr4c']},
+  {id:'pr3a',chi:8,b:'pr',t:2,c:0,l:'Lança de\nFogo',   tl:'Preciso N3',    dmg:'2d8, penetra resistência',   ds:'Projétil de fogo estreito. Ignora resistência a fogo.',                       req:'Dedo Fogo+Jato Chama',deps:['cb2a']},
+  {id:'pr3b',chi:5,b:'pr',t:2,c:1,l:'Corrente\nElét.',  tl:'Preciso N3',    dmg:'2d6 elétrico, salta 2º alvo',ds:'Raio elétrico contínuo que salta para um segundo alvo.',                      req:'Desc. Estática+Faísca',deps:['cb2c']},
+  {id:'pr3c',chi:10,b:'pr',t:2,c:2,l:'Agulhas\nFogo',    tl:'Preciso N3',    dmg:'4d4 a até 4 alvos',          ds:'Dezenas de micro-projéteis em leque atingem até 4 alvos.',                    req:'Dedo de Fogo',deps:['cb2a']},
+  {id:'pr4a',chi:50,b:'pr',t:3,c:0,l:'Dobra\nRelâmp.',   tl:'Preciso N4',    dmg:'4d10 elétrico — Choque+Atord.',ds:'Raio elétrico devastador. Requer Harm. Dragão (ESP).',                     req:'Harm. Dragão(ESP)+Corrente Elét.',deps:['pr3b','sp3c']},
+  {id:'pr4b',chi:5,b:'pr',t:3,c:1,l:'Feixe\nContínuo',  tl:'Preciso N4',    dmg:'2d6 Queimadura/turno',       ds:'Feixe de fogo focado num alvo por múltiplos turnos.',                         req:'Lança Fogo',deps:['pr3a']},
+  {id:'pr4c',chi:18,b:'pr',t:3,c:2,l:'Tempest.\nElét.',  tl:'Preciso N4',    dmg:'3d8 em área 6m, salta alvos',ds:'Descarga elétrica em área que salta entre múltiplos inimigos.',               req:'Corrente Elét.+Agulhas Fogo',deps:['pr3b','pr3c']},
+  {id:'pr5a',chi:12,b:'pr',t:5,c:0,l:'Redir.\nRelâmp.',  tl:'Lendário — Preciso', dmg:'Absorve + redireciona +2d10', ds:'Absorve e redireciona energia elétrica de qualquer fonte.',            req:'Dobra Relâmp.',deps:['pr4a']},
+  {id:'pr5b',chi:73,b:'pr',t:5,c:1,l:'Chama\nAzul',      tl:'Lendário — Preciso', dmg:'6d8 — ignora imunidade fogo', ds:'Fogo de temperatura extrema. Ignora imunidade a fogo normal.',         req:'Dobra Relâmp.+Voo Sustentado(AGI)',deps:['pr4a','ag3a']},
+  {id:'pr5c',chi:48,b:'pr',t:5,c:2,l:'Relâmp.\nDuplo',   tl:'Lendário — Preciso', dmg:'4d10×2 alvos no mesmo turno', ds:'Dois raios simultâneos com precisão absoluta.',                       req:'Dobra Relâmp.+Tempest. Elét.',deps:['pr4a','pr4c']},
   // BRUTO
-  {id:'br3a',b:'br',t:2,c:0,l:'Anel de\nFogo ★',  tl:'Bruto N3 ★',    dmg:'2d8 6m — Queim+Medo',        ds:'Círculo de chamas em expansão. Queimadura+Medo no M3.',                       req:'Muro Chamas+Bola Fogo',deps:['cb2d']},
-  {id:'br3b',b:'br',t:2,c:1,l:'Dragão\nChamas ★', tl:'Bruto N3 ★',    dmg:'3d8, persegue — Queim+Medo', ds:'Serpente de fogo viva que persegue inimigos. Queim+Medo no M3.',              req:'Cone Fogo+Sopro Fogo',deps:['cb2e']},
-  {id:'br3c',b:'br',t:2,c:2,l:'Dobra\nCombust.★', tl:'Bruto N3 ★',    dmg:'2d10 área 3m — Queim+Atord.', ds:'Explosões pela testa à distância. Queim+Atord. no M3.',                    req:'Chama Interior(ESP)+Bomba Fogo',deps:['cb2f','sp2a']},
-  {id:'br4a',b:'br',t:3,c:0,l:'Explosão\nSolar ★',tl:'Bruto N4 ★',    dmg:'4d8 360° 9m — Queim+Cegueira',ds:'Explosão total em todas as direções. Queim+Cegueira no M3.',                req:'Anel Fogo+Harm. Dragão(ESP)',deps:['br3a','sp3c'],yo:55},
-  {id:'br4b',b:'br',t:3,c:1,l:'Inferno\nSustentado',tl:'Bruto N4',    dmg:'Zona cresce 1d6 raio/turno',  ds:'Zona de fogo contínuo que cresce a cada turno.',                             req:'Dragão Chamas+Muro Chamas',deps:['br3b']},
-  {id:'br4c',b:'br',t:3,c:2,l:'Expl.\nCombust.★', tl:'Bruto N4 ★',    dmg:'2d10×3 — Queim+Atord.',      ds:'Até 3 explosões por turno. Queim+Atord. no M3.',                             req:'Dobra Combustão+Anel Fogo',deps:['br3c','br3a']},
-  {id:'br5a',b:'br',t:5,c:0,l:'Nova\nSolar',       tl:'Lendário — Bruto', dmg:'8d8 raio 18m — Queim+Ceg+Atord.', ds:'Explosão de fogo cataclísmica. Três efeitos simultâneos.',          req:'Explosão Solar+Chama Eterna(ESP)',deps:['br4a','sp5a']},
-  {id:'br5b',b:'br',t:5,c:1,l:'Dragão\nEterno',    tl:'Lendário — Bruto', dmg:'3d10/turno — dragão 60PV', ds:'Dragão de fogo colossal permanente no campo de batalha.',                  req:'Inferno Sustentado+Cometa Pessoal(AGI)',deps:['br4b','ag5a']},
-  {id:'br5c',b:'br',t:5,c:2,l:'Olho da\nCombust.', tl:'Lendário — Bruto', dmg:'5d10 área — Queim+Cegueira', ds:'Explosões guiadas por visão térmica. Sem ponto cego.',                   req:'Expl. Combustão+Visão Infrav.(ESP)',deps:['br4c','sp4a']},
+  {id:'br3a',chi:10,b:'br',t:2,c:0,l:'Anel de\nFogo ★',  tl:'Bruto N3 ★',    dmg:'2d8 6m — Queim+Medo',        ds:'Círculo de chamas em expansão. Queimadura+Medo no M3.',                       req:'Muro Chamas+Bola Fogo',deps:['cb2d']},
+  {id:'br3b',chi:20,b:'br',t:2,c:1,l:'Dragão\nChamas ★', tl:'Bruto N3 ★',    dmg:'3d8, persegue — Queim+Medo', ds:'Serpente de fogo viva que persegue inimigos. Queim+Medo no M3.',              req:'Cone Fogo+Sopro Fogo',deps:['cb2e']},
+  {id:'br3c',chi:14,b:'br',t:2,c:2,l:'Dobra\nCombust.★', tl:'Bruto N3 ★',    dmg:'2d10 área 3m — Queim+Atord.', ds:'Explosões pela testa à distância. Queim+Atord. no M3.',                    req:'Chama Interior(ESP)+Bomba Fogo',deps:['cb2f','sp2a']},
+  {id:'br4a',chi:34,b:'br',t:3,c:0,l:'Explosão\nSolar ★',tl:'Bruto N4 ★',    dmg:'4d8 360° 9m — Queim+Cegueira',ds:'Explosão total em todas as direções. Queim+Cegueira no M3.',                req:'Anel Fogo+Harm. Dragão(ESP)',deps:['br3a','sp3c'],yo:55},
+  {id:'br4b',chi:4,b:'br',t:3,c:1,l:'Inferno\nSustentado',tl:'Bruto N4',    dmg:'Zona cresce 1d6 raio/turno',  ds:'Zona de fogo contínuo que cresce a cada turno.',                             req:'Dragão Chamas+Muro Chamas',deps:['br3b']},
+  {id:'br4c',chi:14,b:'br',t:3,c:2,l:'Expl.\nCombust.★', tl:'Bruto N4 ★',    dmg:'2d10×3 — Queim+Atord.',      ds:'Até 3 explosões por turno. Queim+Atord. no M3.',                             req:'Dobra Combustão+Anel Fogo',deps:['br3c','br3a']},
+  {id:'br5a',chi:134,b:'br',t:5,c:0,l:'Nova\nSolar',       tl:'Lendário — Bruto', dmg:'8d8 raio 18m — Queim+Ceg+Atord.', ds:'Explosão de fogo cataclísmica. Três efeitos simultâneos.',          req:'Explosão Solar+Chama Eterna(ESP)',deps:['br4a','sp5a']},
+  {id:'br5b',chi:6,b:'br',t:5,c:1,l:'Dragão\nEterno',    tl:'Lendário — Bruto', dmg:'3d10/turno — dragão 60PV', ds:'Dragão de fogo colossal permanente no campo de batalha.',                  req:'Inferno Sustentado+Cometa Pessoal(AGI)',deps:['br4b','ag5a']},
+  {id:'br5c',chi:78,b:'br',t:5,c:2,l:'Olho da\nCombust.', tl:'Lendário — Bruto', dmg:'5d10 área — Queim+Cegueira', ds:'Explosões guiadas por visão térmica. Sem ponto cego.',                   req:'Expl. Combustão+Visão Infrav.(ESP)',deps:['br4c','sp4a']},
 ];
 
 // ── LAYOUT ────────────────────────────────────────────────
@@ -256,25 +263,51 @@ const EDGES=[];
 RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
 
 // ── GAME STATE ────────────────────────────────────────────
-let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
 function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
 function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
 function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
 function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
 function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
 function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
 
 function gainLevel(){
   if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
   S.lvl++;S.pts+=3;
-  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo.`,'g');
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+ (mc-maxChiAtPrevLevel()) ,mc); // grant the level-up chi delta, capped
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
   document.getElementById('hv-lvl').textContent=S.lvl;
   document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  // color shift when low
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
 function resetAll(){
-  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
   logs=[];document.getElementById('log-e').innerHTML='';
   document.getElementById('attr-row').innerHTML='';
   updHUD();render(null);closePanel();
@@ -288,11 +321,15 @@ function chAttr(a,d){
     const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
     if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
   }
+  const oldMax=maxChi();
   S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
   // Only update the specific attribute value span — don't rebuild the whole HUD
   const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
   if(valEl)valEl.textContent=S.attr[a];
   document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
   // Update panel status if open
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
@@ -302,6 +339,7 @@ function updHUD(){
   document.getElementById('hv-pts').textContent=S.pts;
   document.getElementById('hv-unl').textContent=S.unl.size;
   document.getElementById('hv-uses').textContent=totUses();
+  updChiBar();
   // Only rebuild attr row if it's empty (first render)
   const row=document.getElementById('attr-row');
   if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
@@ -327,6 +365,7 @@ function refreshPanelStatus(n){
   if(!n)return;
   const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
   const r=AREQ[n.id];
+  const cost=chiCost(n);
   // Update attr badges
   let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
   if(r){
@@ -337,6 +376,9 @@ function refreshPanelStatus(n){
     });
     ah+='</div>';
   }
+  // Chi cost badge always shown
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
   document.getElementById('p-attrs').innerHTML=ah;
   // Update actions/status
   let act='',st='';
@@ -348,10 +390,15 @@ function refreshPanelStatus(n){
     act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
     st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
   } else {
-    act=`<button class="pb2 puse" onclick="doUse('${n.id}')">⚡ Usar (${u} usos)</button>`;
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
     const nx=m<3?UTH[m+1]:null;
     if(nx!==null){
       act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
       st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
     } else {
       st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
@@ -540,11 +587,25 @@ function doUnl(id){
 }
 function doUse(id){
   if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
   S.uses[id]=(S.uses[id]||0)+1;
   document.getElementById('hv-uses').textContent=totUses();
-  addLog(`⚡ Usaste: ${NM[id].l.replace('\n',' ')} (${S.uses[id]} usos, M${gm(id)})`);
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
   // Refresh maestria dots
-  const n=NM[id],mae=MAE[id],m=gm(id),u=S.uses[id];
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
   if(mae){
     let mh=mae.l.map((lv,i)=>{
       const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
@@ -576,6 +637,7 @@ canvas.addEventListener('click',function(e){
 });
 canvas.addEventListener('mouseleave',()=>render(selId));
 
+S.chi=maxChi();
 render(null);updHUD();
 </script>
 </body>

@@ -75,8 +75,15 @@ header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;disp
   <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
   <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
   <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
   <div style="margin-left:auto;display:flex;gap:8px">
     <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
     <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
   </div>
 </div>
@@ -129,10 +136,10 @@ const UTH=[0,15,50,150];
 
 // ── ATTR REQUIREMENTS ────────────────────────────────────
 const AREQ={
-  sp1a:{PER:2}, sp1b:{PER:1,RES:2},
+  sp1a:{PER:2}, sp1b:{PER:1,RES:2}, sp1c:{RES:2,ESP:1},
   sp2a:{PER:6,RES:3}, sp2b:{PER:5,RES:5}, sp2c:{PER:6},
   sp3a:{PER:13,RES:8}, sp3b:{PER:12}, sp3c:{PER:11,RES:7,ESP:6},
-  sp4a:{PER:20,RES:11}, sp4b:{PER:18,RES:10,ESP:10}, sp4c:{PER:19,RES:11},
+  sp4a:{PER:20,RES:11}, sp4b:{PER:18,RES:10,ESP:10}, sp4c:{PER:19,RES:11}, sp4d:{RES:14,ESP:12,PER:12},
   sp5a:{PER:27,RES:16}, sp5b:{PER:26,RES:15,ESP:17},
   ag1a:{AGI:2}, ag1b:{AGI:1,PER:2},
   ag2a:{AGI:6}, ag2b:{AGI:5,FOR:3}, ag2c:{AGI:6,PER:3},
@@ -170,59 +177,61 @@ const MAE={
 // ── NODES ─────────────────────────────────────────────────
 const RAW=[
   // ESPIRITUALIDADE (Perceção Tática)
-  {id:'sp1a',b:'sp',t:0,c:0,l:'Leitura\ndo Campo',    tl:'Espírito N1', dmg:'Percepção CD 11 — +2 próx. ataque/esquiva', ds:'Analisa o ambiente e inimigos antes de agir.',req:'—',deps:[]},
-  {id:'sp1b',b:'sp',t:0,c:1,l:'Instinto\nSobrev.',    tl:'Espírito N1', dmg:'Intuição CD 11 — evita 1º golpe surpresa', ds:'Reação involuntária a perigo imediato.',req:'—',deps:[]},
-  {id:'sp2a',b:'sp',t:1,c:0,l:'Foco\nTático',         tl:'Espírito N2', dmg:'Imune a intimidação e medo', ds:'Mantém a calma sob pressão.',req:'Leitura do Campo',deps:['sp1a']},
-  {id:'sp2b',b:'sp',t:1,c:1,l:'Resist.\nMental',      tl:'Espírito N2', dmg:'Vantagem saves manipulação/ilusão', ds:'Resistência a manipulação e efeitos psicológicos.',req:'Instinto + Leitura',deps:['sp1b','sp1a']},
-  {id:'sp2c',b:'sp',t:1,c:2,l:'Leitura\nIntenção',    tl:'Espírito N2', dmg:'Intuição CD 12 — percebe ataque antecipado', ds:'Percebe intenção de ataque pela postura e olhar.',req:'Leitura do Campo',deps:['sp1a']},
-  {id:'sp3a',b:'sp',t:2,c:0,l:'Mente de\nGuerreiro',  tl:'Espírito N3', dmg:'Intuição CD 14 — prevê próx. ataque', ds:'Prevê movimentos inimigos com base em micro-expressões.',req:'Foco + Resist. Mental',deps:['sp2a','sp2b']},
-  {id:'sp3b',b:'sp',t:2,c:1,l:'Análise\nFraqueza',    tl:'Espírito N3', dmg:'Investigação CD 13 — ignora 2 CA', ds:'Identifica pontos fracos de armaduras e estilos de luta.',req:'Leit. Intenção + Foco',deps:['sp2c','sp2a']},
-  {id:'sp3c',b:'sp',t:2,c:2,l:'Chi\nNatural',         tl:'Espírito N3', dmg:'+1d4 a todos os ataques físicos (passivo)', ds:'Canaliza o próprio chi para fortalecer golpes físicos.',req:'Resist. Mental + Instinto',deps:['sp2b','sp1b']},
-  {id:'sp4a',b:'sp',t:3,c:0,l:'Maestro\ndo Campo',    tl:'Espírito N4', dmg:'Inimigos têm desvant. em ataques contra si', ds:'Controla o ritmo do combate, fazendo o inimigo reagir sempre.',req:'Mente Guerreiro + Análise',deps:['sp3a','sp3b']},
-  {id:'sp4b',b:'sp',t:3,c:1,l:'Golpe\nde Chi',        tl:'Espírito N4', dmg:'+2d6 ignora armadura — Atordoado CD 14', ds:'Canaliza chi num único golpe que ignora parte da armadura.',req:'Chi Natural + Análise',deps:['sp3c','sp3b']},
-  {id:'sp4c',b:'sp',t:3,c:2,l:'Visão de\nBatalha',    tl:'Espírito N4', dmg:'Processa múltiplos inimigos sem desvant.', ds:'Processa múltiplos inimigos em simultâneo sem perder foco.',req:'Mente Guerreiro + Leit. Intenção',deps:['sp3a','sp2c']},
-  {id:'sp5a',b:'sp',t:4,c:0,l:'Transcend.\nMarcial',  tl:'Lendário — Espírito', dmg:'Ação bónus extra + 1d8 a todos os ataques', ds:'Estado de fluxo onde cada ação é perfeitamente calculada.',req:'Maestro + Visão Batalha',deps:['sp4a','sp4c']},
-  {id:'sp5b',b:'sp',t:5,c:2,l:'Golpe\ndo Vazio',      tl:'Lendário — Espírito', dmg:'4d10 chi puro — afeta dobradores', ds:'Golpe de chi puro que afeta inimigos resistentes a dano físico.',req:'Golpe Chi + Chi Natural',deps:['sp4b','sp3c']},
+  {id:'sp1a',chi:1,b:'sp',t:0,c:0,l:'Leitura\ndo Campo',    tl:'Espírito N1', dmg:'Percepção CD 11 — +2 próx. ataque/esquiva', ds:'Analisa o ambiente e inimigos antes de agir.',req:'—',deps:[]},
+  {id:'sp1b',chi:1,b:'sp',t:0,c:1,l:'Instinto\nSobrev.',    tl:'Espírito N1', dmg:'Intuição CD 11 — evita 1º golpe surpresa', ds:'Reação involuntária a perigo imediato.',req:'—',deps:[]},
+  {id:'sp1c',chi:1,restore:5,b:'sp',t:0,c:2,l:'Foco\nDisciplinado', tl:'Espírito N1', dmg:'Restaura 1d6 chi', ds:'Anos de treino permitem recuperar energia interior através de foco mental.', req:'—',deps:[]},
+  {id:'sp2a',chi:0,b:'sp',t:1,c:0,l:'Foco\nTático',         tl:'Espírito N2', dmg:'Imune a intimidação e medo', ds:'Mantém a calma sob pressão.',req:'Leitura do Campo',deps:['sp1a']},
+  {id:'sp2b',chi:0,b:'sp',t:1,c:1,l:'Resist.\nMental',      tl:'Espírito N2', dmg:'Vantagem saves manipulação/ilusão', ds:'Resistência a manipulação e efeitos psicológicos.',req:'Instinto + Leitura',deps:['sp1b','sp1a']},
+  {id:'sp2c',chi:2,b:'sp',t:1,c:2,l:'Leitura\nIntenção',    tl:'Espírito N2', dmg:'Intuição CD 12 — percebe ataque antecipado', ds:'Percebe intenção de ataque pela postura e olhar.',req:'Leitura do Campo',deps:['sp1a']},
+  {id:'sp3a',chi:3,b:'sp',t:2,c:0,l:'Mente de\nGuerreiro',  tl:'Espírito N3', dmg:'Intuição CD 14 — prevê próx. ataque', ds:'Prevê movimentos inimigos com base em micro-expressões.',req:'Foco + Resist. Mental',deps:['sp2a','sp2b']},
+  {id:'sp3b',chi:3,b:'sp',t:2,c:1,l:'Análise\nFraqueza',    tl:'Espírito N3', dmg:'Investigação CD 13 — ignora 2 CA', ds:'Identifica pontos fracos de armaduras e estilos de luta.',req:'Leit. Intenção + Foco',deps:['sp2c','sp2a']},
+  {id:'sp3c',chi:0,b:'sp',t:2,c:2,l:'Chi\nNatural',         tl:'Espírito N3', dmg:'+1d4 a todos os ataques físicos (passivo)', ds:'Canaliza o próprio chi para fortalecer golpes físicos.',req:'Resist. Mental + Instinto',deps:['sp2b','sp1b']},
+  {id:'sp4a',chi:0,b:'sp',t:3,c:0,l:'Maestro\ndo Campo',    tl:'Espírito N4', dmg:'Inimigos têm desvant. em ataques contra si', ds:'Controla o ritmo do combate, fazendo o inimigo reagir sempre.',req:'Mente Guerreiro + Análise',deps:['sp3a','sp3b']},
+  {id:'sp4d',chi:6,restore:16,b:'sp',t:3,c:1,l:'Segundo\nFôlego',  tl:'Espírito N4', dmg:'Restaura 3d8 chi', ds:'Puxa pela última reserva de vontade e disciplina para continuar a lutar.', req:'Foco Disciplinado + Mente Guerreiro',deps:['sp1c','sp3a']},
+  {id:'sp4b',chi:7,b:'sp',t:3,c:1,l:'Golpe\nde Chi',        tl:'Espírito N4', dmg:'+2d6 ignora armadura — Atordoado CD 14', ds:'Canaliza chi num único golpe que ignora parte da armadura.',req:'Chi Natural + Análise',deps:['sp3c','sp3b']},
+  {id:'sp4c',chi:0,b:'sp',t:3,c:2,l:'Visão de\nBatalha',    tl:'Espírito N4', dmg:'Processa múltiplos inimigos sem desvant.', ds:'Processa múltiplos inimigos em simultâneo sem perder foco.',req:'Mente Guerreiro + Leit. Intenção',deps:['sp3a','sp2c']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'Transcend.\nMarcial',  tl:'Lendário — Espírito', dmg:'Ação bónus extra + 1d8 a todos os ataques', ds:'Estado de fluxo onde cada ação é perfeitamente calculada.',req:'Maestro + Visão Batalha',deps:['sp4a','sp4c']},
+  {id:'sp5b',chi:50,b:'sp',t:5,c:2,l:'Golpe\ndo Vazio',      tl:'Lendário — Espírito', dmg:'4d10 chi puro — afeta dobradores', ds:'Golpe de chi puro que afeta inimigos resistentes a dano físico.',req:'Golpe Chi + Chi Natural',deps:['sp4b','sp3c']},
   // AGILIDADE (Acrobacia de Combate)
-  {id:'ag1a',b:'ag',t:0,c:0,l:'Acrobacia\nCombate',   tl:'Agilidade N1', dmg:'Acrobacia CD 11 — saltos e rolamentos', ds:'Saltos, esquivas e rolamentos melhorados em combate.',req:'—',deps:[]},
-  {id:'ag1b',b:'ag',t:0,c:1,l:'Postura\nBaixa',       tl:'Agilidade N1', dmg:'Ataques área têm desvant. contra si', ds:'Reduz o perfil de alvo em combate.',req:'—',deps:[]},
-  {id:'ag2a',b:'ag',t:1,c:0,l:'Parkour\nTático',      tl:'Agilidade N2', dmg:'Atletismo CD 12 — usa paredes/telhados', ds:'Usa o ambiente para manobrar em combate.',req:'Acrobacia Combate',deps:['ag1a']},
-  {id:'ag2b',b:'ag',t:1,c:1,l:'Corrida\nSprint',      tl:'Agilidade N2', dmg:'Velocidade +9m por 1 turno (1×/combate)', ds:'Acelera a velocidade de movimento em explosão.',req:'Postura + Acrobacia',deps:['ag1b','ag1a']},
-  {id:'ag2c',b:'ag',t:1,c:2,l:'Desengaj.\nPerfeito',  tl:'Agilidade N2', dmg:'Reação — sai de agarrão automaticamente', ds:'Sai de qualquer agarrão ou posição desfavorável.',req:'Postura Baixa',deps:['ag1b']},
-  {id:'ag3a',b:'ag',t:2,c:0,l:'Sombra\nFugaz',        tl:'Agilidade N3', dmg:'Acrobacia CD 14 — sem ataques oportunidade', ds:'Move-se tão rápido que parece teletransportar-se.',req:'Parkour + Corrida Sprint',deps:['ag2a','ag2b']},
-  {id:'ag3b',b:'ag',t:2,c:1,l:'Dança de\nEspadas',    tl:'Agilidade N3', dmg:'Acrobacia CD 13 — ataques com vantagem', ds:'Combina ataques com movimentos de dança imprevisíveis.',req:'Acrobacia + Desengaj.',deps:['ag1a','ag2c']},
-  {id:'ag3c',b:'ag',t:2,c:2,l:'Escalada\nMestre',     tl:'Agilidade N3', dmg:'Atletismo CD 12 — superfícies verticais', ds:'Sobe e move-se em superfícies verticais sem equipamento.',req:'Parkour Tático',deps:['ag2a']},
-  {id:'ag4a',b:'ag',t:3,c:0,l:'Fantasma\nBatalha',    tl:'Agilidade N4', dmg:'Acrobacia CD 16 — impossível de rastrear', ds:'Combina velocidade e imprevisibilidade em combate.',req:'Sombra Fugaz + Dança Espadas',deps:['ag3a','ag3b']},
-  {id:'ag4b',b:'ag',t:3,c:1,l:'Corredor\nTelhados',   tl:'Agilidade N4', dmg:'Vantagem em ataques de posição elevada', ds:'Usa alturas como campo de batalha com vantagem.',req:'Escalada + Sombra Fugaz',deps:['ag3c','ag3a']},
-  {id:'ag4c',b:'ag',t:3,c:2,l:'Inversão\nPerfeita',   tl:'Agilidade N4', dmg:'Reação — converte força em +2d6 contra-atq.', ds:'Converte a força do inimigo contra ele mesmo.',req:'Desengaj. + Dança Espadas',deps:['ag2c','ag3b']},
-  {id:'ag5a',b:'ag',t:4,c:0,l:'Forma\ndo Vento',      tl:'Lendário — Agilidade', dmg:'Vel. 18m — nunca provoca atq. oportunidade', ds:'Velocidade e fluidez que rivaliza com dobradores de ar.',req:'Fantasma Batalha + Maestro do Campo',deps:['ag4a','sp4a']},
-  {id:'ag5b',b:'ag',t:5,c:2,l:'Predador\nAlturas',    tl:'Lendário — Agilidade', dmg:'+3d6 furtivo + Sangramento+Atordoado', ds:'Ataca de posições elevadas com precisão absoluta, nunca visto.',req:'Corredor Telhados + Análise Fraqueza',deps:['ag4b','sp3b']},
+  {id:'ag1a',chi:1,b:'ag',t:0,c:0,l:'Acrobacia\nCombate',   tl:'Agilidade N1', dmg:'Acrobacia CD 11 — saltos e rolamentos', ds:'Saltos, esquivas e rolamentos melhorados em combate.',req:'—',deps:[]},
+  {id:'ag1b',chi:0,b:'ag',t:0,c:1,l:'Postura\nBaixa',       tl:'Agilidade N1', dmg:'Ataques área têm desvant. contra si', ds:'Reduz o perfil de alvo em combate.',req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Parkour\nTático',      tl:'Agilidade N2', dmg:'Atletismo CD 12 — usa paredes/telhados', ds:'Usa o ambiente para manobrar em combate.',req:'Acrobacia Combate',deps:['ag1a']},
+  {id:'ag2b',chi:1,b:'ag',t:1,c:1,l:'Corrida\nSprint',      tl:'Agilidade N2', dmg:'Velocidade +9m por 1 turno (1×/combate)', ds:'Acelera a velocidade de movimento em explosão.',req:'Postura + Acrobacia',deps:['ag1b','ag1a']},
+  {id:'ag2c',chi:1,b:'ag',t:1,c:2,l:'Desengaj.\nPerfeito',  tl:'Agilidade N2', dmg:'Reação — sai de agarrão automaticamente', ds:'Sai de qualquer agarrão ou posição desfavorável.',req:'Postura Baixa',deps:['ag1b']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Sombra\nFugaz',        tl:'Agilidade N3', dmg:'Acrobacia CD 14 — sem ataques oportunidade', ds:'Move-se tão rápido que parece teletransportar-se.',req:'Parkour + Corrida Sprint',deps:['ag2a','ag2b']},
+  {id:'ag3b',chi:3,b:'ag',t:2,c:1,l:'Dança de\nEspadas',    tl:'Agilidade N3', dmg:'Acrobacia CD 13 — ataques com vantagem', ds:'Combina ataques com movimentos de dança imprevisíveis.',req:'Acrobacia + Desengaj.',deps:['ag1a','ag2c']},
+  {id:'ag3c',chi:1,b:'ag',t:2,c:2,l:'Escalada\nMestre',     tl:'Agilidade N3', dmg:'Atletismo CD 12 — superfícies verticais', ds:'Sobe e move-se em superfícies verticais sem equipamento.',req:'Parkour Tático',deps:['ag2a']},
+  {id:'ag4a',chi:4,b:'ag',t:3,c:0,l:'Fantasma\nBatalha',    tl:'Agilidade N4', dmg:'Acrobacia CD 16 — impossível de rastrear', ds:'Combina velocidade e imprevisibilidade em combate.',req:'Sombra Fugaz + Dança Espadas',deps:['ag3a','ag3b']},
+  {id:'ag4b',chi:0,b:'ag',t:3,c:1,l:'Corredor\nTelhados',   tl:'Agilidade N4', dmg:'Vantagem em ataques de posição elevada', ds:'Usa alturas como campo de batalha com vantagem.',req:'Escalada + Sombra Fugaz',deps:['ag3c','ag3a']},
+  {id:'ag4c',chi:6,b:'ag',t:3,c:2,l:'Inversão\nPerfeita',   tl:'Agilidade N4', dmg:'Reação — converte força em +2d6 contra-atq.', ds:'Converte a força do inimigo contra ele mesmo.',req:'Desengaj. + Dança Espadas',deps:['ag2c','ag3b']},
+  {id:'ag5a',chi:0,b:'ag',t:4,c:0,l:'Forma\ndo Vento',      tl:'Lendário — Agilidade', dmg:'Vel. 18m — nunca provoca atq. oportunidade', ds:'Velocidade e fluidez que rivaliza com dobradores de ar.',req:'Fantasma Batalha + Maestro do Campo',deps:['ag4a','sp4a']},
+  {id:'ag5b',chi:15,b:'ag',t:5,c:2,l:'Predador\nAlturas',    tl:'Lendário — Agilidade', dmg:'+3d6 furtivo + Sangramento+Atordoado', ds:'Ataca de posições elevadas com precisão absoluta, nunca visto.',req:'Corredor Telhados + Análise Fraqueza',deps:['ag4b','sp3b']},
   // COMBATE PARTILHADO N1-N2
-  {id:'cb1a',b:'cb',t:0,c:0,l:'Arremesso\nCerteiro',  tl:'Combate N1', dmg:'1d6+Des — ataque à distância', ds:'Lança facas ou projéteis com grande precisão.',req:'—',deps:[]},
-  {id:'cb1b',b:'cb',t:0,c:1,l:'Golpe\nRápido',        tl:'Combate N1', dmg:'1d6 como ação bónus — ataque rápido', ds:'Ataque de espada ou faca rápido e difícil de bloquear.',req:'—',deps:[]},
-  {id:'cb2a',b:'cb',t:1,c:0,l:'Ponto\nVital',         tl:'Combate N2', dmg:'+1d8 em ponto crítico — Atordoado CD 13', ds:'Atinge pontos críticos do corpo inimigo.',req:'Arremesso + Golpe Rápido',deps:['cb1a','cb1b']},
-  {id:'cb2b',b:'cb',t:1,c:1,l:'Chuva de\nLâminas',    tl:'Combate N2', dmg:'1d4 a até 3 alvos', ds:'Lança múltiplos projéteis em sequência rápida.',req:'Arremesso Certeiro',deps:['cb1a']},
-  {id:'cb2c',b:'cb',t:1,c:2,l:'Estocada\nPrecisa',    tl:'Combate N2', dmg:'1d8 ignora 2 CA + Sangramento CD 13', ds:'Ataque perfurante que passa entre peças de armadura.',req:'Golpe Rápido',deps:['cb1b']},
-  {id:'cb2d',b:'cb',t:1,c:3,l:'Golpe\nDevastador',    tl:'Combate N2', dmg:'1d10+FOR — arma pesada', ds:'Ataque físico de enorme força com arma pesada.',req:'—',deps:[]},
-  {id:'cb2e',b:'cb',t:1,c:4,l:'Investida\nEscudo',    tl:'Combate N2', dmg:'1d6 + Derrubado (Sal. FOR CD 12)', ds:'Usa o escudo como arma ofensiva.',req:'—',deps:[]},
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Arremesso\nCerteiro',  tl:'Combate N1', dmg:'1d6+Des — ataque à distância', ds:'Lança facas ou projéteis com grande precisão.',req:'—',deps:[]},
+  {id:'cb1b',chi:1,b:'cb',t:0,c:1,l:'Golpe\nRápido',        tl:'Combate N1', dmg:'1d6 como ação bónus — ataque rápido', ds:'Ataque de espada ou faca rápido e difícil de bloquear.',req:'—',deps:[]},
+  {id:'cb2a',chi:4,b:'cb',t:1,c:0,l:'Ponto\nVital',         tl:'Combate N2', dmg:'+1d8 em ponto crítico — Atordoado CD 13', ds:'Atinge pontos críticos do corpo inimigo.',req:'Arremesso + Golpe Rápido',deps:['cb1a','cb1b']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Chuva de\nLâminas',    tl:'Combate N2', dmg:'1d4 a até 3 alvos', ds:'Lança múltiplos projéteis em sequência rápida.',req:'Arremesso Certeiro',deps:['cb1a']},
+  {id:'cb2c',chi:4,b:'cb',t:1,c:2,l:'Estocada\nPrecisa',    tl:'Combate N2', dmg:'1d8 ignora 2 CA + Sangramento CD 13', ds:'Ataque perfurante que passa entre peças de armadura.',req:'Golpe Rápido',deps:['cb1b']},
+  {id:'cb2d',chi:3,b:'cb',t:1,c:3,l:'Golpe\nDevastador',    tl:'Combate N2', dmg:'1d10+FOR — arma pesada', ds:'Ataque físico de enorme força com arma pesada.',req:'—',deps:[]},
+  {id:'cb2e',chi:3,b:'cb',t:1,c:4,l:'Investida\nEscudo',    tl:'Combate N2', dmg:'1d6 + Derrubado (Sal. FOR CD 12)', ds:'Usa o escudo como arma ofensiva.',req:'—',deps:[]},
   // PRECISO N3+ (Armas à Distância)
-  {id:'pr3a',b:'pr',t:2,c:0,l:'Corrente\nCombate',    tl:'Preciso N3', dmg:'Sal. For CD 14 — membro imobilizado', ds:'Usa correntes para imobilizar membros com precisão.',req:'Ponto Vital + Golpe Rápido',deps:['cb2a','cb1b']},
-  {id:'pr3b',b:'pr',t:2,c:1,l:'Disparo\nGuiado',      tl:'Preciso N3', dmg:'2d8 c/ vantagem — nunca falha com LDV', ds:'Disparo único que não falha com o alvo em linha de visão.',req:'Ponto Vital + Chuva Lâminas',deps:['cb2a','cb2b']},
-  {id:'pr3c',b:'pr',t:2,c:2,l:'Série\nPunhaladas',    tl:'Preciso N3', dmg:'1d6×3 no mesmo turno + Sangramento acum.', ds:'Sequência de golpes rápidos em pontos vitais consecutivos.',req:'Estocada + Ponto Vital',deps:['cb2c','cb2a']},
-  {id:'pr4a',b:'pr',t:3,c:0,l:'Fio da\nMorte',        tl:'Preciso N4', dmg:'Armadilha — 3d8 ao cortar + Sangramento', ds:'Fio monofilamento invisível colocado estrategicamente.',req:'Corrente + Análise Fraqueza',deps:['pr3a','sp3b']},
-  {id:'pr4b',b:'pr',t:3,c:1,l:'Chuva de\nFlechas',    tl:'Preciso N4', dmg:'3d6 em área 6m + Sangramento+Lentidão', ds:'Múltiplos disparos de arco que cobrem uma área.',req:'Disparo Guiado + Chuva Lâminas',deps:['pr3b','cb2b']},
-  {id:'pr4c',b:'pr',t:3,c:2,l:'Golpe de\nRuptura',    tl:'Preciso N4', dmg:'2d10 + destrói armadura — Lentidão', ds:'Golpe único que rompe armaduras e desequilibra dobradores.',req:'Série Punhaladas + Análise Fraqueza',deps:['pr3c','sp3b']},
-  {id:'pr5a',b:'pr',t:4,c:0,l:'Assassino\nPerfeito',  tl:'Lendário — Preciso', dmg:'5d8+Des surpresa — não pode ser evitado', ds:'Combina armadilhas, invisibilidade e precisão num ataque fatal.',req:'Fio Morte + Fantasma Batalha',deps:['pr4a','ag4a']},
-  {id:'pr5b',b:'pr',t:5,c:2,l:'Tempestade\nde Aço',   tl:'Lendário — Preciso', dmg:'6d6 em 9m + Sangramento+Lentidão', ds:'Cobre uma área com projéteis de aço impenetráveis.',req:'Chuva Flechas + Chuva Lâminas',deps:['pr4b','cb2b']},
+  {id:'pr3a',chi:5,b:'pr',t:2,c:0,l:'Corrente\nCombate',    tl:'Preciso N3', dmg:'Sal. For CD 14 — membro imobilizado', ds:'Usa correntes para imobilizar membros com precisão.',req:'Ponto Vital + Golpe Rápido',deps:['cb2a','cb1b']},
+  {id:'pr3b',chi:8,b:'pr',t:2,c:1,l:'Disparo\nGuiado',      tl:'Preciso N3', dmg:'2d8 c/ vantagem — nunca falha com LDV', ds:'Disparo único que não falha com o alvo em linha de visão.',req:'Ponto Vital + Chuva Lâminas',deps:['cb2a','cb2b']},
+  {id:'pr3c',chi:4,b:'pr',t:2,c:2,l:'Série\nPunhaladas',    tl:'Preciso N3', dmg:'1d6×3 no mesmo turno + Sangramento acum.', ds:'Sequência de golpes rápidos em pontos vitais consecutivos.',req:'Estocada + Ponto Vital',deps:['cb2c','cb2a']},
+  {id:'pr4a',chi:20,b:'pr',t:3,c:0,l:'Fio da\nMorte',        tl:'Preciso N4', dmg:'Armadilha — 3d8 ao cortar + Sangramento', ds:'Fio monofilamento invisível colocado estrategicamente.',req:'Corrente + Análise Fraqueza',deps:['pr3a','sp3b']},
+  {id:'pr4b',chi:15,b:'pr',t:3,c:1,l:'Chuva de\nFlechas',    tl:'Preciso N4', dmg:'3d6 em área 6m + Sangramento+Lentidão', ds:'Múltiplos disparos de arco que cobrem uma área.',req:'Disparo Guiado + Chuva Lâminas',deps:['pr3b','cb2b']},
+  {id:'pr4c',chi:14,b:'pr',t:3,c:2,l:'Golpe de\nRuptura',    tl:'Preciso N4', dmg:'2d10 + destrói armadura — Lentidão', ds:'Golpe único que rompe armaduras e desequilibra dobradores.',req:'Série Punhaladas + Análise Fraqueza',deps:['pr3c','sp3b']},
+  {id:'pr5a',chi:53,b:'pr',t:4,c:0,l:'Assassino\nPerfeito',  tl:'Lendário — Preciso', dmg:'5d8+Des surpresa — não pode ser evitado', ds:'Combina armadilhas, invisibilidade e precisão num ataque fatal.',req:'Fio Morte + Fantasma Batalha',deps:['pr4a','ag4a']},
+  {id:'pr5b',chi:48,b:'pr',t:5,c:2,l:'Tempestade\nde Aço',   tl:'Lendário — Preciso', dmg:'6d6 em 9m + Sangramento+Lentidão', ds:'Cobre uma área com projéteis de aço impenetráveis.',req:'Chuva Flechas + Chuva Lâminas',deps:['pr4b','cb2b']},
   // BRUTO N3+ (Guerreiro Pesado)
-  {id:'br3a',b:'br',t:2,c:0,l:'Ruptura\nArmadura',    tl:'Bruto N3', dmg:'2d8 + reduz CA inimigo em 2 (permanente)', ds:'Golpe que parte armaduras e escudos.',req:'Espiral Lâminas + Ponto Vital',deps:['cb2d','cb2a']},
-  {id:'br3b',b:'br',t:2,c:1,l:'Muralha\nde Aço',      tl:'Bruto N3', dmg:'CA +4 ao avançar em linha reta', ds:'Usa o escudo como barreira sólida ao avançar.',req:'Carga Escudo + Investida',deps:['cb2e','cb2d']},
-  {id:'br3c',b:'br',t:2,c:2,l:'Terremoto\nde Aço',    tl:'Bruto N3', dmg:'3d6 em 6m + Atordoado+Lentidão', ds:'Sequência de golpes no solo que criam ondas de choque em série.',req:'Esmaga-Solo + Espiral',deps:['cb2d','cb2e']},
-  {id:'br4a',b:'br',t:3,c:0,l:'Modo\nBerserk',        tl:'Bruto N4', dmg:'+2d6 todos ataques / CA -2 — Medo CD 14', ds:'Rajada frenética de ataques alimentados por chi.',req:'Chi Natural + Ruptura',deps:['sp3c','br3a']},
-  {id:'br4b',b:'br',t:3,c:1,l:'Fortaleza\nAmbulante', tl:'Bruto N4', dmg:'Imune empurrão/derrube/área ao avançar', ds:'Torna-se praticamente imparável em linha reta.',req:'Muralha + Ruptura Armadura',deps:['br3b','br3a']},
-  {id:'br4c',b:'br',t:3,c:2,l:'Devastação\nem Área',  tl:'Bruto N4', dmg:'4d8 em 9m + Atordoado+Lentidão', ds:'Combinação de ondas de choque e lâminas giratórias.',req:'Terremoto + Espiral',deps:['br3c','cb2d']},
-  {id:'br5a',b:'br',t:4,c:0,l:'Fúria do\nBerserker',  tl:'Lendário — Bruto', dmg:'3 ataques/turno cada +2d8 chi', ds:'Estado de guerra total com chi e cálculo tático combinados.',req:'Modo Berserk + Maestro do Campo',deps:['br4a','sp4a']},
-  {id:'br5b',b:'br',t:5,c:2,l:'Titan\nde Aço',        tl:'Lendário — Bruto', dmg:'5d10 + empurra 6m + CA 20 neste turno', ds:'Combina defesa impenetrável com ofensiva devastadora.',req:'Fortaleza + Devastação Área',deps:['br4b','br4c']},
+  {id:'br3a',chi:8,b:'br',t:2,c:0,l:'Ruptura\nArmadura',    tl:'Bruto N3', dmg:'2d8 + reduz CA inimigo em 2 (permanente)', ds:'Golpe que parte armaduras e escudos.',req:'Espiral Lâminas + Ponto Vital',deps:['cb2d','cb2a']},
+  {id:'br3b',chi:0,b:'br',t:2,c:1,l:'Muralha\nde Aço',      tl:'Bruto N3', dmg:'CA +4 ao avançar em linha reta', ds:'Usa o escudo como barreira sólida ao avançar.',req:'Carga Escudo + Investida',deps:['cb2e','cb2d']},
+  {id:'br3c',chi:13,b:'br',t:2,c:2,l:'Terremoto\nde Aço',    tl:'Bruto N3', dmg:'3d6 em 6m + Atordoado+Lentidão', ds:'Sequência de golpes no solo que criam ondas de choque em série.',req:'Esmaga-Solo + Espiral',deps:['cb2d','cb2e']},
+  {id:'br4a',chi:7,b:'br',t:3,c:0,l:'Modo\nBerserk',        tl:'Bruto N4', dmg:'+2d6 todos ataques / CA -2 — Medo CD 14', ds:'Rajada frenética de ataques alimentados por chi.',req:'Chi Natural + Ruptura',deps:['sp3c','br3a']},
+  {id:'br4b',chi:0,b:'br',t:3,c:1,l:'Fortaleza\nAmbulante', tl:'Bruto N4', dmg:'Imune empurrão/derrube/área ao avançar', ds:'Torna-se praticamente imparável em linha reta.',req:'Muralha + Ruptura Armadura',deps:['br3b','br3a']},
+  {id:'br4c',chi:34,b:'br',t:3,c:2,l:'Devastação\nem Área',  tl:'Bruto N4', dmg:'4d8 em 9m + Atordoado+Lentidão', ds:'Combinação de ondas de choque e lâminas giratórias.',req:'Terremoto + Espiral',deps:['br3c','cb2d']},
+  {id:'br5a',chi:24,b:'br',t:4,c:0,l:'Fúria do\nBerserker',  tl:'Lendário — Bruto', dmg:'3 ataques/turno cada +2d8 chi', ds:'Estado de guerra total com chi e cálculo tático combinados.',req:'Modo Berserk + Maestro do Campo',deps:['br4a','sp4a']},
+  {id:'br5b',chi:80,b:'br',t:5,c:2,l:'Titan\nde Aço',        tl:'Lendário — Bruto', dmg:'5d10 + empurra 6m + CA 20 neste turno', ds:'Combina defesa impenetrável com ofensiva devastadora.',req:'Fortaleza + Devastação Área',deps:['br4b','br4c']},
 ];
 
 // ── LAYOUT ────────────────────────────────────────────────
@@ -239,25 +248,50 @@ const EDGES=[];
 RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
 
 // ── GAME STATE ────────────────────────────────────────────
-let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
 function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
 function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
 function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
 function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
 function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
 function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
 
 function gainLevel(){
   if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
   S.lvl++;S.pts+=3;
-  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo.`,'g');
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+(mc-maxChiAtPrevLevel()),mc);
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
   document.getElementById('hv-lvl').textContent=S.lvl;
   document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
 function resetAll(){
-  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null};
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
   logs=[];document.getElementById('log-e').innerHTML='';
   document.getElementById('attr-row').innerHTML='';
   updHUD();render(null);closePanel();
@@ -271,12 +305,14 @@ function chAttr(a,d){
     const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
     if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
   }
+  const oldMax=maxChi();
   S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
-  // Only update the specific attribute value span — don't rebuild the whole HUD
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
   const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
   if(valEl)valEl.textContent=S.attr[a];
   document.getElementById('hv-pts').textContent=S.pts;
-  // Update panel status if open
+  updChiBar();
   if(selId)refreshPanelStatus(NM[selId]);
   render(selId);
 }
@@ -285,7 +321,7 @@ function updHUD(){
   document.getElementById('hv-pts').textContent=S.pts;
   document.getElementById('hv-unl').textContent=S.unl.size;
   document.getElementById('hv-uses').textContent=totUses();
-  // Only rebuild attr row if it's empty (first render)
+  updChiBar();
   const row=document.getElementById('attr-row');
   if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
     row.innerHTML=ATTRS.map(a=>`
@@ -298,7 +334,6 @@ function updHUD(){
         </div>
       </div>`).join('');
   } else {
-    // Just update values in place
     ATTRS.forEach(a=>{
       const el=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
       if(el)el.textContent=S.attr[a];
@@ -310,7 +345,7 @@ function refreshPanelStatus(n){
   if(!n)return;
   const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
   const r=AREQ[n.id];
-  // Update attr badges
+  const cost=chiCost(n);
   let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
   if(r){
     ah+='<div style="font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Atributos necessários</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">';
@@ -320,8 +355,9 @@ function refreshPanelStatus(n){
     });
     ah+='</div>';
   }
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
   document.getElementById('p-attrs').innerHTML=ah;
-  // Update actions/status
   let act='',st='';
   if(!unl){
     let rs=[];
@@ -331,10 +367,15 @@ function refreshPanelStatus(n){
     act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
     st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
   } else {
-    act=`<button class="pb2 puse" onclick="doUse('${n.id}')">⚡ Usar (${u} usos)</button>`;
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
     const nx=m<3?UTH[m+1]:null;
     if(nx!==null){
       act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
       st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
     } else {
       st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
@@ -523,11 +564,24 @@ function doUnl(id){
 }
 function doUse(id){
   if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
   S.uses[id]=(S.uses[id]||0)+1;
   document.getElementById('hv-uses').textContent=totUses();
-  addLog(`⚡ Usaste: ${NM[id].l.replace('\n',' ')} (${S.uses[id]} usos, M${gm(id)})`);
-  // Refresh maestria dots
-  const n=NM[id],mae=MAE[id],m=gm(id),u=S.uses[id];
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
   if(mae){
     let mh=mae.l.map((lv,i)=>{
       const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
@@ -559,6 +613,7 @@ canvas.addEventListener('click',function(e){
 });
 canvas.addEventListener('mouseleave',()=>render(selId));
 
+S.chi=maxChi();
 render(null);updHUD();
 </script>
 </body>
