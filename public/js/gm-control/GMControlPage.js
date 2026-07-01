@@ -110,6 +110,7 @@ export class GMControlPage {
     this._playerInventoryModal?.close?.();
     this._playerSkillsModal?.close?.();
     this._characterModal?.close?.();
+    this._skillsDetailOverlay?.remove?.();
   }
 
   // ── Lifecycle ──────────────────────────────────────────────
@@ -121,20 +122,28 @@ export class GMControlPage {
     ]);
     // Enrich each player with the full character payload so we can read
     // active skills / current Gold / etc. Falls back to the hub snapshot
+    // (which already carries habilidades + skill_uses via toHubPlayer)
     // when Supabase is unavailable.
     const enriched = await Promise.all(hubPlayers.map(async (hp) => {
-      if (!isSupabaseEnabled()) return { ...hp, habilidades: {} };
+      const base = {
+        ...hp,
+        habilidades: hp.habilidades || {},
+        skill_uses: hp.skill_uses || {},
+      };
+      if (!isSupabaseEnabled()) return base;
       try {
         const ch = await loadCharFromSupabase(hp.username);
-        return ch ? {
-          ...hp,
-          habilidades: ch.habilidades || {},
+        if (!ch) return base;
+        return {
+          ...base,
+          habilidades: ch.habilidades || base.habilidades,
+          skill_uses: ch.skill_uses || base.skill_uses,
           ouro: ch.ouro,
           xp_atual: ch.identidade?.xp_atual,
           element: ch.identidade?.elemento || hp.element,
           non_bender_path: ch.non_bender_path || null,
-        } : { ...hp, habilidades: {} };
-      } catch { return { ...hp, habilidades: {} }; }
+        };
+      } catch { return base; }
     }));
     this.players = enriched;
     this.monsters = monsters.filter((m) => !m.is_dead && (m.is_staged || this._isFighting(m.id)));
@@ -286,7 +295,8 @@ export class GMControlPage {
       this._actionButton('⚡ Efeitos', () => this.statusEffectManager.openFor(player)),
       this._actionButton('💰 Ouro', () => this._promptDelta('Ouro', (n) => this._adjustPlayerField(player, 'ouro', n))),
       this._actionButton('⭐ XP', () => this._promptDelta('XP', (n) => this._adjustPlayerField(player, 'identidade.xp_atual', n))),
-      this._actionButton('🌳 Skills', () => this._openPlayerSkills(player)),
+      this._actionButton('🎓 Habilidades', () => this._openSkillsDetail(player)),
+      this._actionButton('🌳 Skill Tree', () => this._openPlayerSkills(player)),
       this._actionButton('🎒 Inventário', () => this._openPlayerInventory(player)),
       this._actionButton('🛒 Comprar', () => this._openPlayerShop(player)),
       this._actionButton('📝 Notas', () => this._openGmNotes(player)),
@@ -309,48 +319,73 @@ export class GMControlPage {
    * Render the per-player skills block as a chip row + click-for-details
    * popup, mirroring the visual pattern of the effects block above.
    *
+   * Shows EVERY unlocked skill — active ones first (usable directly),
+   * inactive ones after (dimmed + "inactiva" tag). This mirrors the
+   * profile's "Todas as Habilidades" grid so the GM always sees the
+   * player's full arsenal, not just what's currently equipped.
+   *
    * Each chip:
    *   - branch-coloured background (sp/ag/cb/pr/br) — same visual
    *     language as the effects row uses for buff/debuff polarity.
    *   - inline `Chi: N` cost when present.
    *   - mastery dots (M0..M3).
-   *   - direct click → fires Character.useSkill on the player (the
-   *     existing _usePlayerSkill flow).
+   *   - direct click on an ACTIVE chip → fires _usePlayerSkill.
+   *   - click on an INACTIVE chip → opens the detail modal (so the
+   *     GM can activate before using).
    *   - chi-insufficient → red tint + disabled + tooltip explains.
    *
-   * Clicking the row's label opens a detail modal listing each skill
-   * with description, chi cost / restore, current chi vs cost, uses,
-   * mastery level + next threshold, plus a per-skill Usar button.
-   * Same pattern as the effects detail modal so the GM has one
-   * mental model for both.
+   * Clicking the row's label opens the detail modal listing every
+   * unlocked skill with description, chi cost / restore, current chi
+   * vs cost, uses, mastery level + next threshold, plus per-skill
+   * Activar/Desactivar + Usar buttons.
    */
   _renderPlayerSkillsBlock(player) {
     const charSkills = player.habilidades || {};
-    const activeIds = Object.keys(charSkills).filter((id) => charSkills[id]?.active);
-    if (activeIds.length === 0) return null;
+    const entryIds = Object.keys(charSkills);
+    if (entryIds.length === 0) return null;
 
     const defs = window.__SKILL_DEFINITIONS__;
-    const resolved = activeIds.map((id) => defs?.get?.(id)).filter(Boolean);
+    const resolved = entryIds
+      .map((id) => {
+        const def = defs?.get?.(id);
+        if (!def) return null;
+        return { def, active: !!charSkills[id]?.active };
+      })
+      .filter(Boolean);
     if (resolved.length === 0) return null;
 
+    // Active first (usable), then inactive (dimmed).
+    resolved.sort((a, b) => {
+      if (a.active !== b.active) return a.active ? -1 : 1;
+      const ba = a.def.branch || '';
+      const bb = b.def.branch || '';
+      if (ba !== bb) return ba.localeCompare(bb);
+      return (a.def.tier || 0) - (b.def.tier || 0);
+    });
+
     const currentCp = Number.isFinite(player.chi) ? player.chi : (player.chiMax || 0);
-    const maxCp = Number(player.chiMax) || 0;
+    const activeCount = resolved.filter((r) => r.active).length;
+    const inactiveCount = resolved.length - activeCount;
 
     const wrap = createElement('div', {
       class: 'gm-skills',
       title: 'Click numa skill para a usar · click no título para ver detalhes',
     });
 
-    resolved.forEach((skill) => {
+    resolved.forEach(({ def: skill, active }) => {
       const cost = Number(skill.chi_cost) || 0;
       const restore = Number(skill.chi_restore) || 0;
       const uses = Number(player.skill_uses?.[skill.id]) || 0;
       const mastery = this._masteryFromUses(uses);
-      const insufficient = cost > 0 && currentCp < cost;
+      const insufficient = active && cost > 0 && currentCp < cost;
+
+      const classes = [`gm-skill-chip branch-${skill.branch || 'cb'}`];
+      if (!active) classes.push('inactive');
+      if (insufficient) classes.push('insufficient');
 
       const chip = createElement('button', {
         type: 'button',
-        class: `gm-skill-chip branch-${skill.branch || 'cb'}${insufficient ? ' insufficient' : ''}`,
+        class: classes.join(' '),
       });
       chip.appendChild(createElement('span', {
         class: 'gm-skill-chip-name',
@@ -372,17 +407,28 @@ export class GMControlPage {
         class: 'gm-skill-chip-mastery',
         textContent: `M${mastery}`,
       }));
-      if (insufficient) chip.disabled = true;
+      if (!active) {
+        chip.appendChild(createElement('span', {
+          class: 'gm-skill-chip-inactive-tag',
+          textContent: 'inactiva',
+        }));
+      }
 
       const tooltipBits = [skill.tier_label, skill.description].filter(Boolean);
       if (cost > 0) tooltipBits.push(`Custo: ${cost} chi`);
       if (restore > 0) tooltipBits.push(`Restaura: ${restore} chi`);
       tooltipBits.push(`${uses} usos · M${mastery}`);
-      if (insufficient) tooltipBits.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
+      if (!active) tooltipBits.push('ℹ Skill inactiva — click para abrir detalhes e activar');
+      else if (insufficient) tooltipBits.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
       chip.title = tooltipBits.join('\n');
 
       on(chip, 'click', (event) => {
         event.stopPropagation();
+        if (!active) {
+          // Inactive → open detail modal so GM can toggle activation.
+          this._openSkillsDetail(player);
+          return;
+        }
         if (insufficient) return;
         this._usePlayerSkill(player, skill.id, skill);
       });
@@ -393,17 +439,20 @@ export class GMControlPage {
       // Only treat clicks on the bare wrapper as "open details" — chip
       // clicks bubble up too but they've called stopPropagation above.
       if (event.target === wrap) {
-        this._openSkillsDetail(player, resolved);
+        this._openSkillsDetail(player);
       }
     });
 
     const block = createElement('div', { class: 'gm-skills-block' });
+    const labelText = inactiveCount > 0
+      ? `🎓 Habilidades (${resolved.length} · ${activeCount} activas / ${inactiveCount} inactivas) — ver detalhes`
+      : `🎓 Habilidades activas (${activeCount}) — ver detalhes`;
     const label = createElement('button', {
       type: 'button',
       class: 'gm-skills-block-label-btn',
-      textContent: `🌳 Habilidades activas (${resolved.length}) — ver detalhes`,
+      textContent: labelText,
     });
-    on(label, 'click', () => this._openSkillsDetail(player, resolved));
+    on(label, 'click', () => this._openSkillsDetail(player));
     block.appendChild(label);
     block.appendChild(wrap);
     return block;
@@ -418,11 +467,27 @@ export class GMControlPage {
   }
 
   /**
-   * Centered modal listing every active skill on the player with full
-   * detail + a Usar button. Read/write: the Usar button runs the same
-   * _usePlayerSkill flow so chi + use counter persist.
+   * Centered modal listing every unlocked skill on the player with
+   * full detail, per-skill Activar/Desactivar toggle + Usar button.
+   *
+   * The GM can:
+   *   - See every skill the player owns (active + inactive) with
+   *     description, tier, chi cost/restore, current usage and next
+   *     mastery threshold.
+   *   - Toggle activation without opening the full skill tree — via
+   *     `_togglePlayerSkillActive`.
+   *   - Fire the skill with `_usePlayerSkill` — button disabled when
+   *     the skill is inactive or chi is insufficient.
+   *
+   * Called from the chip row label AND the "🎓 Habilidades" action
+   * button so it's always reachable, even when the player has no
+   * active skills.
    */
-  _openSkillsDetail(player, skills) {
+  _openSkillsDetail(player) {
+    // Close any previous overlay so re-opening on the same player
+    // doesn't stack modals.
+    this._skillsDetailOverlay?.remove?.();
+
     const overlay = createElement('div', { class: 'modal-overlay' });
     const box = createElement('div', { class: 'modal-box gm-skills-modal' });
     box.appendChild(createElement('h2', {
@@ -437,85 +502,188 @@ export class GMControlPage {
       textContent: `💠 Chi disponível: ${currentCp} / ${maxCp}`,
     }));
 
-    const list = createElement('ul', { class: 'gm-skills-list' });
-    skills.forEach((skill) => {
-      const cost = Number(skill.chi_cost) || 0;
-      const restore = Number(skill.chi_restore) || 0;
-      const uses = Number(player.skill_uses?.[skill.id]) || 0;
-      const mastery = this._masteryFromUses(uses);
-      const insufficient = cost > 0 && currentCp < cost;
+    const charSkills = player.habilidades || {};
+    const entryIds = Object.keys(charSkills);
+    const defs = window.__SKILL_DEFINITIONS__;
+    const resolved = entryIds
+      .map((id) => {
+        const def = defs?.get?.(id);
+        if (!def) return null;
+        return { def, active: !!charSkills[id]?.active };
+      })
+      .filter(Boolean);
 
-      const li = createElement('li', { class: `gm-skills-item branch-${skill.branch || 'cb'}` });
-
-      const head = createElement('div', { class: 'gm-skills-item-head' });
-      head.appendChild(createElement('strong', {
-        class: 'gm-skills-item-name',
-        textContent: skill.name,
-      }));
-      if (skill.tier_label) {
-        head.appendChild(createElement('span', {
-          class: 'gm-skills-item-tier',
-          textContent: skill.tier_label,
-        }));
-      }
-      head.appendChild(createElement('span', {
-        class: 'gm-skills-item-mastery',
-        textContent: `M${mastery}`,
-      }));
-      li.appendChild(head);
-
-      if (skill.description) {
-        li.appendChild(createElement('p', {
-          class: 'gm-skills-item-desc',
-          textContent: skill.description,
-        }));
-      }
-
-      const meta = [];
-      if (cost > 0) meta.push(`💠 Custo: ${cost} chi`);
-      if (restore > 0) meta.push(`✦ Restaura: ${restore} chi`);
-      meta.push(`⚡ Usos: ${uses}`);
-      if (mastery < 3) {
-        const thresholds = [15, 50, 150];
-        const nextLevel = mastery + 1;
-        meta.push(`📈 Próx. M${nextLevel}: ${thresholds[mastery]} usos`);
-      } else {
-        meta.push('⭐ Maestria máxima');
-      }
-      if (insufficient) meta.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
-      li.appendChild(createElement('p', {
-        class: 'gm-skills-item-meta',
-        textContent: meta.join(' · '),
-      }));
-
-      const useBtn = createElement('button', {
-        type: 'button',
-        class: 'gm-skills-item-use-btn',
-        textContent: insufficient ? '⚠ Chi insuficiente' : `⚡ Usar (${cost > 0 ? '−' + cost + ' chi' : 'sem custo'})`,
-      });
-      if (insufficient) useBtn.disabled = true;
-      on(useBtn, 'click', async () => {
-        if (insufficient) return;
-        overlay.remove();
-        await this._usePlayerSkill(player, skill.id, skill);
-      });
-      li.appendChild(useBtn);
-
-      list.appendChild(li);
+    // Active first (usable), then inactive (dimmed).
+    resolved.sort((a, b) => {
+      if (a.active !== b.active) return a.active ? -1 : 1;
+      const ba = a.def.branch || '';
+      const bb = b.def.branch || '';
+      if (ba !== bb) return ba.localeCompare(bb);
+      return (a.def.tier || 0) - (b.def.tier || 0);
     });
-    box.appendChild(list);
+
+    if (resolved.length === 0) {
+      const empty = createElement('p', {
+        class: 'gm-skills-empty',
+        textContent: entryIds.length === 0
+          ? 'Sem habilidades desbloqueadas. Usa a Skill Tree para desbloquear.'
+          : 'A carregar definições das habilidades…',
+      });
+      box.appendChild(empty);
+    } else {
+      const list = createElement('ul', { class: 'gm-skills-list' });
+      resolved.forEach(({ def: skill, active }) => {
+        const cost = Number(skill.chi_cost) || 0;
+        const restore = Number(skill.chi_restore) || 0;
+        const uses = Number(player.skill_uses?.[skill.id]) || 0;
+        const mastery = this._masteryFromUses(uses);
+        const insufficient = active && cost > 0 && currentCp < cost;
+
+        const li = createElement('li', {
+          class: `gm-skills-item branch-${skill.branch || 'cb'}${active ? '' : ' inactive'}`,
+        });
+
+        const head = createElement('div', { class: 'gm-skills-item-head' });
+        head.appendChild(createElement('strong', {
+          class: 'gm-skills-item-name',
+          textContent: skill.name,
+        }));
+        if (skill.tier_label) {
+          head.appendChild(createElement('span', {
+            class: 'gm-skills-item-tier',
+            textContent: skill.tier_label,
+          }));
+        }
+        head.appendChild(createElement('span', {
+          class: `gm-skills-item-state${active ? ' active' : ' inactive'}`,
+          textContent: active ? '● activa' : '○ inactiva',
+        }));
+        head.appendChild(createElement('span', {
+          class: 'gm-skills-item-mastery',
+          textContent: `M${mastery}`,
+        }));
+        li.appendChild(head);
+
+        if (skill.description) {
+          li.appendChild(createElement('p', {
+            class: 'gm-skills-item-desc',
+            textContent: skill.description,
+          }));
+        }
+
+        const meta = [];
+        if (cost > 0) meta.push(`💠 Custo: ${cost} chi`);
+        if (restore > 0) meta.push(`✦ Restaura: ${restore} chi`);
+        meta.push(`⚡ Usos: ${uses}`);
+        if (mastery < 3) {
+          const thresholds = [15, 50, 150];
+          const nextLevel = mastery + 1;
+          meta.push(`📈 Próx. M${nextLevel}: ${thresholds[mastery]} usos`);
+        } else {
+          meta.push('⭐ Maestria máxima');
+        }
+        if (skill.modifiers) meta.push(`🔧 ${skill.modifiers}`);
+        if (active && insufficient) meta.push(`⚠ Chi insuficiente (${currentCp}/${cost})`);
+        li.appendChild(createElement('p', {
+          class: 'gm-skills-item-meta',
+          textContent: meta.join(' · '),
+        }));
+
+        const btnRow = createElement('div', { class: 'gm-skills-item-actions' });
+
+        const toggleBtn = createElement('button', {
+          type: 'button',
+          class: `gm-skills-item-toggle-btn${active ? ' on' : ''}`,
+          textContent: active ? '⏻ Desactivar' : '⏻ Activar',
+        });
+        on(toggleBtn, 'click', async () => {
+          toggleBtn.disabled = true;
+          try {
+            await this._togglePlayerSkillActive(player, skill.id, !active);
+            // Refresh reloads player rows; the modal is stale so we
+            // close it and reopen on the newly-loaded player row.
+            overlay.remove();
+            this._skillsDetailOverlay = null;
+            await this.refresh();
+            const fresh = this.players.find((p) => p.username === player.username);
+            if (fresh) this._openSkillsDetail(fresh);
+          } catch (err) {
+            toggleBtn.disabled = false;
+            toast(`Falha a alterar activação: ${err.message}`, 'error');
+          }
+        });
+        btnRow.appendChild(toggleBtn);
+
+        const useBtn = createElement('button', {
+          type: 'button',
+          class: 'gm-skills-item-use-btn',
+          textContent: !active
+            ? '⏻ Activa primeiro'
+            : (insufficient ? '⚠ Chi insuficiente' : `⚡ Usar (${cost > 0 ? '−' + cost + ' chi' : 'sem custo'})`),
+        });
+        if (!active || insufficient) useBtn.disabled = true;
+        on(useBtn, 'click', async () => {
+          if (!active || insufficient) return;
+          overlay.remove();
+          this._skillsDetailOverlay = null;
+          await this._usePlayerSkill(player, skill.id, skill);
+        });
+        btnRow.appendChild(useBtn);
+
+        li.appendChild(btnRow);
+        list.appendChild(li);
+      });
+      box.appendChild(list);
+    }
 
     const actions = createElement('div', { class: 'modal-actions' });
     const close = createElement('button', {
       type: 'button', class: 'modal-btn modal-btn-confirm', textContent: 'Fechar',
     });
-    on(close, 'click', () => overlay.remove());
+    on(close, 'click', () => { overlay.remove(); this._skillsDetailOverlay = null; });
     actions.appendChild(close);
     box.appendChild(actions);
 
     overlay.appendChild(box);
-    on(overlay, 'click', (e) => { if (e.target === overlay) overlay.remove(); });
+    on(overlay, 'click', (e) => {
+      if (e.target === overlay) { overlay.remove(); this._skillsDetailOverlay = null; }
+    });
     document.body.appendChild(overlay);
+    this._skillsDetailOverlay = overlay;
+  }
+
+  /**
+   * Toggle a single skill's `active` flag on the target player's row
+   * without opening the full skill tree. Persists via
+   * `savePlayerCharacter` (Supabase + localStorage mirror).
+   *
+   * We deliberately DO NOT re-run any tree-side validation
+   * (slots / combat_path / non_bender_path) here — the assumption is
+   * that the skill was already unlocked via the tree so those
+   * invariants held at unlock time and the GM is just flipping the
+   * equip state. This keeps the flow snappy and avoids surprising
+   * "activation refused" toasts.
+   */
+  async _togglePlayerSkillActive(player, skillId, active) {
+    if (!player?.username || !skillId) return;
+    let raw = null;
+    try {
+      raw = await loadPlayerCharacter(player.username);
+    } catch (err) {
+      throw new Error(`carregar ficha: ${err.message}`);
+    }
+    if (!raw) throw new Error(`sem ficha para ${player.name || player.username}`);
+
+    const character = new Character();
+    character.load(raw);
+    character.toggleSkill(skillId, !!active);
+
+    try {
+      await savePlayerCharacter(player.username, character.serialize());
+    } catch (err) {
+      throw new Error(`gravar: ${err.message}`);
+    }
+    toast(`${active ? '✔ Activada' : '⏻ Desactivada'} skill em ${player.name || player.username}`, 'info');
   }
 
   /**
