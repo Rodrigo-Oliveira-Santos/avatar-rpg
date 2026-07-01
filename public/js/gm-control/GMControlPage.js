@@ -429,7 +429,17 @@ export class GMControlPage {
           this._openSkillsDetail(player);
           return;
         }
-        if (insufficient) return;
+        if (insufficient) {
+          // Mirror the same "chi insuficiente" toast the player sees
+          // on their profile / detail modal so the GM has an obvious
+          // top-right signal (the strikethrough on the chip is subtle
+          // and easy to miss).
+          toast(
+            `⚠ ${player.name || player.username}: chi insuficiente para ${skill.name} (${currentCp}/${cost})`,
+            'warning',
+          );
+          return;
+        }
         this._usePlayerSkill(player, skill.id, skill);
       });
       wrap.appendChild(chip);
