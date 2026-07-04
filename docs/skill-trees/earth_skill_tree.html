@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Árvore de Habilidades — Terra | Avatar RPG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0d0f;font-family:'Segoe UI',system-ui,sans-serif;color:#e8e6e0}
+header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.h-title{font-size:17px;font-weight:700;color:#A8845A}
+.h-sub{font-size:10px;color:#5a5856;margin-top:2px}
+#hud{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:8px 28px;background:#0f0f14;border-bottom:1px solid #2a2a35;position:sticky;top:53px;z-index:99}
+.hb{display:flex;flex-direction:column;gap:2px}
+.hl{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em}
+.hv{font-size:15px;font-weight:700;color:#EF9F27}
+.hv.g{color:#5DCAA5}.hv.p{color:#AFA9EC}
+#attr-row{display:flex;gap:8px;flex-wrap:wrap}
+.attr-block{display:flex;flex-direction:column;align-items:center;gap:2px}
+.attr-name{font-size:9px;font-weight:700;letter-spacing:.04em}
+.attr-btns{display:flex;align-items:center;gap:3px}
+.attr-val{font-size:13px;font-weight:700;min-width:22px;text-align:center}
+.ab{width:16px;height:16px;border-radius:3px;border:1px solid #3a3a48;background:#1a1a22;color:#9a9890;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center}
+.ab:hover{border-color:#7a7876;color:#e8e6e0}
+.btn{padding:6px 13px;border-radius:5px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;background:transparent;transition:all .15s}
+.btn-g{border-color:#5DCAA5;color:#5DCAA5}.btn-g:hover{background:#5DCAA5;color:#0a2e20}
+.btn-r{border-color:#3a3a48;color:#7a7876}.btn-r:hover{border-color:#D85A30;color:#D85A30}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:7px 28px;background:#111114;border-bottom:1px solid #2a2a35;font-size:10px;color:#7a7876}
+.leg{display:flex;align-items:center;gap:5px}
+.lsq{width:11px;height:11px;border-radius:2px}
+.cw{width:100%;overflow:auto;background:#0d0d0f}
+#panel{position:fixed;right:0;top:0;bottom:0;width:275px;background:#111118;border-left:1px solid #2a2a35;display:flex;flex-direction:column;z-index:200;transform:translateX(100%);transition:transform .2s ease;overflow-y:auto}
+#panel.open{transform:translateX(0)}
+#ph{padding:12px 14px;border-bottom:1px solid #2a2a35;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#111118;z-index:1}
+#pt{font-size:13px;font-weight:700;color:#A8845A}
+#pc{cursor:pointer;color:#5a5856;font-size:18px;line-height:1}
+#pc:hover{color:#e8e6e0}
+#pb{padding:13px 14px;flex:1}
+.pp{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.pn{font-size:14px;font-weight:700;color:#A8845A;margin-bottom:6px}
+.pd{font-size:10px;color:#EF9F27;margin-bottom:5px}
+.pds{font-size:10px;color:#9a9890;line-height:1.5;margin-bottom:8px}
+.psep{border:none;border-top:1px solid #2a2a35;margin:10px 0}
+.mt{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.mr{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.md{width:10px;height:10px;border-radius:2px;flex-shrink:0;border:1px solid #3a3a48;background:#1a1a22}
+.md.a{background:#EF9F27;border-color:#BA7517}
+.md.c{background:#5DCAA5;border-color:#1D9E75;box-shadow:0 0 5px #1D9E75}
+.mv{font-size:10px;color:#7a7876;flex:1;line-height:1.4}
+.mv.a{color:#e8e6e0}
+.mu{font-size:9px;color:#5a5856;white-space:nowrap}
+.pact{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.pb2{padding:7px 11px;border-radius:5px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;text-align:center;background:transparent}
+.pb2:disabled{border-color:#2a2a35!important;color:#3a3a48!important;cursor:not-allowed}
+.pu{border-color:#5DCAA5;color:#5DCAA5}.pu:hover:not(:disabled){background:#5DCAA5;color:#0a2e20}
+.puse{border-color:#E8844A;color:#E8844A}.puse:hover:not(:disabled){background:#E8844A;color:#1a0a04}
+.pup{border-color:#AFA9EC;color:#AFA9EC}.pup:hover:not(:disabled){background:#AFA9EC;color:#1a1840}
+.pst{font-size:10px;padding:5px 9px;border-radius:4px;margin-top:3px;text-align:center}
+.pst.ok{background:#0a2e20;color:#5DCAA5;border:1px solid #1D9E75}
+.pst.warn{background:#2e1c02;color:#EF9F27;border:1px solid #BA7517}
+.pst.err{background:#2e0a04;color:#A8845A;border:1px solid #D85A30}
+#log{padding:0 14px 14px}
+.lt{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.le{font-size:10px;color:#7a7876;line-height:1.6;border-bottom:1px solid #1a1a22;padding:2px 0}
+.le.g{color:#5DCAA5}.le.b{color:#A8845A}
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:24px">🪨</span>
+  <div><div class="h-title">Árvore de Habilidades — Terra</div><div class="h-sub">Clica num nó para interagir · scroll para navegar</div></div>
+</header>
+<div id="hud">
+  <div class="hb"><div class="hl">Nível</div><div class="hv g" id="hv-lvl">1</div></div>
+  <div class="hb"><div class="hl">Pontos livres</div><div class="hv" id="hv-pts">3</div></div>
+  <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
+  <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
+  <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
+    <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
+  </div>
+</div>
+<div class="legend">
+  <div class="leg"><div class="lsq" style="background:#1e1a40;border:2px solid #7F77DD"></div>Espiritualidade</div>
+  <div class="leg"><div class="lsq" style="background:#0a2e20;border:2px solid #1D9E75"></div>Agilidade</div>
+  <div class="leg"><div class="lsq" style="background:#3a2006;border:2px solid #D88840"></div>Combate N1–N2</div>
+  <div class="leg"><div class="lsq" style="background:#3a1606;border:2px solid #E8844A"></div>Preciso N3+</div>
+  <div class="leg"><div class="lsq" style="background:#2e0804;border:2px solid #C03020"></div>Bruto N3+</div>
+  <div class="leg"><div class="lsq" style="background:#2e1c02;border:2px solid #BA7517"></div>Lendário</div>
+  <div style="margin-left:auto;font-size:10px;color:#5a5856">— sólida = mesma classe &nbsp;·&nbsp; - - - tracejada = outra classe</div>
+</div>
+<div class="cw"><canvas id="c"></canvas></div>
+<div id="panel">
+  <div id="ph"><div id="pt">Habilidade</div><div id="pc" onclick="closePanel()">✕</div></div>
+  <div id="pb">
+    <div class="pp" id="p-tier"></div>
+    <div class="pn"  id="p-name"></div>
+    <div class="pd"  id="p-dmg"></div>
+    <div class="pds" id="p-desc"></div>
+    <div id="p-attrs"></div>
+    <hr class="psep">
+    <div class="mt">Sistema de Maestria</div>
+    <div id="p-mae"></div>
+    <div class="pact" id="p-act"></div>
+    <div id="p-st"></div>
+  </div>
+  <div id="log"><div class="lt">Registo</div><div id="log-e"></div></div>
+</div>
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────
+const NW=92,NH=38,HGAP=22,VGAP=110,BGAP=60,MT=72,ML=72,LEX=80;
+const TLABELS=['Nível 1','Nível 2','Nível 3','Nível 4','Lendário'];
+const ATTRS=['FOR','AGI','PER','ESP','CHI','RES'];
+const ACOL={FOR:'#E8844A',AGI:'#1D9E75',PER:'#7F77DD',ESP:'#AFA9EC',CHI:'#EF9F27',RES:'#C03020'};
+const SC={
+  sp:{fill:'#1e1a40',stroke:'#7F77DD',text:'#EEEDFE',light:'#7F77DD'},
+  ag:{fill:'#0a2e20',stroke:'#1D9E75',text:'#E1F5EE',light:'#1D9E75'},
+  cb:{fill:'#1a1a08',stroke:'#8B7340',text:'#F0E8D0',light:'#C8A84A'},
+  pr:{fill:'#1c1808',stroke:'#B89040',text:'#F0E8C0',light:'#D4AA55'},
+  br:{fill:'#100e04',stroke:'#6B5B30',text:'#E0D5B0',light:'#9B8540'},
+  gold:{fill:'#1a1a08',stroke:'#A89040',text:'#F5EDD0',light:'#D4C060'},
+};
+function sc(n){
+  if(!n)return SC.cb;
+  if(n.t>=4)return SC.gold;
+  return SC[n.b]||SC.cb;
+}
+const UTH=[0,15,50,150];
+
+// ── ATTR REQUIREMENTS ────────────────────────────────────
+const AREQ={
+  sp1a:{ESP:1,PER:2}, sp1b:{ESP:2,RES:1}, sp1c:{ESP:2,CHI:1},
+  sp2a:{ESP:6,PER:5}, sp2b:{ESP:5,RES:4,CHI:3}, sp2c:{ESP:6,PER:3},
+  sp3a:{ESP:12,PER:8}, sp3b:{ESP:10,RES:8,FOR:6}, sp3c:{ESP:13,PER:7},
+  sp4a:{ESP:20,PER:13}, sp4b:{ESP:18,RES:12,CHI:10}, sp4c:{ESP:17,PER:11}, sp4d:{ESP:19,CHI:13,RES:12},
+  sp5a:{ESP:26,PER:17,CHI:15}, sp5b:{ESP:28,RES:17,CHI:16},
+  ag1a:{AGI:2,CHI:1}, ag1b:{RES:2,CHI:1},
+  ag2a:{AGI:6,CHI:4}, ag2b:{RES:5,FOR:4,CHI:3}, ag2c:{RES:6,CHI:3},
+  ag3a:{AGI:13,CHI:7}, ag3b:{RES:12,FOR:7,CHI:6}, ag3c:{AGI:11,CHI:6},
+  ag4a:{AGI:19,CHI:10,PER:10}, ag4b:{RES:18,FOR:14,CHI:10}, ag4c:{AGI:18,FOR:10,CHI:9},
+  ag5a:{RES:26,FOR:20,CHI:16}, ag5b:{AGI:27,CHI:15,PER:13},
+  cb1a:{PER:2,CHI:1}, cb1b:{PER:1,CHI:2},
+  cb2a:{PER:6,CHI:5}, cb2b:{PER:5,CHI:4,FOR:3}, cb2c:{PER:7,CHI:3},
+  cb2d:{FOR:2,CHI:1}, cb2e:{FOR:1,CHI:2},
+  pr3a:{PER:13,CHI:8,ESP:6}, pr3b:{PER:11,CHI:7}, pr3c:{PER:12,CHI:8},
+  pr4a:{PER:19,CHI:13,ESP:10}, pr4b:{PER:18,CHI:12,RES:8}, pr4c:{PER:20,CHI:11,FOR:10},
+  pr5a:{PER:27,CHI:17,ESP:15}, pr5b:{PER:26,CHI:17,RES:14}, pr5c:{PER:25,CHI:16,FOR:18},
+  br3a:{FOR:12,CHI:8,RES:6}, br3b:{FOR:13,CHI:8}, br3c:{FOR:11,CHI:9},
+  br4a:{FOR:18,CHI:13,ESP:10}, br4b:{FOR:20,CHI:12,RES:10}, br4c:{FOR:19,CHI:13},
+  br5a:{FOR:26,CHI:17,ESP:15}, br5b:{FOR:28,CHI:17,RES:15}, br5c:{FOR:30,CHI:18,ESP:17},
+};
+
+// ── MAESTRIA ──────────────────────────────────────────────
+const MAE={
+  sp1a:{l:['Percepção CD 10','Percepção CD 8','Percepção CD 6','Percepção CD 4']},
+  sp2a:{l:['Percepção CD 12 / 18m','Percepção CD 10 / 24m','Percepção CD 8 / 30m','Percepção CD 6 / 36m']},
+  sp3b:{l:['Imune a empurrão/derrube','Imune + CA+1','Imune + CA+2','Imune + CA+3']},
+  sp4b:{l:['Sal. Des CD 15','Sal. Des CD 16','Sal. Des CD 17','Sal. Des CD 19']},
+  cb1a:{l:['1d6+FOR','2d6+FOR','3d6+FOR','5d6+FOR']},
+  cb1b:{l:['1d4+2 + Enraizado 1t','2d4+2 + Enraizado','3d4+2','5d4+2 + Enraizado']},
+  cb2a:{l:['2d4 em cone','3d4 em cone','5d4','8d4']},
+  cb2b:{l:['1d6 em linha','2d6','3d6','5d6']},
+  cb2c:{l:['1d8 muda direção','2d8','3d8','5d8']},
+  pr3a:{l:['1d6/turno + Ceg+Lent','2d6/turno','3d6/turno','5d6/turno + Ceg+Lent']},
+  pr3b:{l:['2d6 + Enraizado','3d6','5d6','8d6 + Enraizado+Sangramento']},
+  pr3c:{l:['3d6 em área','5d6','8d6','13d6']},
+  pr4a:{l:['2d8 + ignora armadura','3d8','5d8','8d8']},
+  pr4c:{l:['3d10 penetra','5d10','8d10','13d10']},
+  br3a:{l:['25PV para escapar','30PV','35PV','45PV + Atordoado']},
+  br3b:{l:['3d8 em área','5d8','8d8','13d8']},
+  br3c:{l:['2d8 + fissura','3d8','5d8','8d8 + cai no interior']},
+  br4a:{l:['3d8 + Queimadura','5d8 fogo','8d8','13d8 + Queimadura']},
+  br4b:{l:['4d8 + Soterrado','6d8','9d8','14d8']},
+  br4c:{l:['3d6 + Arremessado 6m','5d6','8d6','13d6 + Atordoado']},
+};
+
+// ── NODES ─────────────────────────────────────────────────
+const RAW=[
+  // ESPÍRITO DA TERRA
+  {id:'sp1a',chi:0,b:'sp',t:0,c:0,l:'Sentido\nda Terra',    tl:'Espírito N1', dmg:'Percepção CD 10 passivo', ds:'Deteta vibrações no solo, percebendo inimigos próximos.', req:'—',deps:[]},
+  {id:'sp1b',chi:0,b:'sp',t:0,c:1,l:'Paciência\nda Rocha',  tl:'Espírito N1', dmg:'Vantagem em saves empurrão', ds:'Resistência passiva a efeitos de atordoamento e empurrão.', req:'—',deps:[]},
+  {id:'sp1c',chi:1,restore:5,b:'sp',t:0,c:2,l:'Coração\nMontanha',  tl:'Espírito N1', dmg:'Restaura 1d6 chi', ds:'Ancora-se na imensidão da terra para recuperar energia espiritual.', req:'—',deps:[]},
+  {id:'sp2a',chi:2,b:'sp',t:1,c:0,l:'Visão\nSísmica',       tl:'Espírito N2', dmg:'Percepção CD 12 / 18m', ds:'Visão completa de tudo que toca o solo num raio alargado.', req:'Sentido da Terra',deps:['sp1a']},
+  {id:'sp2b',chi:1,b:'sp',t:1,c:1,l:'Ligação\nà Terra',     tl:'Espírito N2', dmg:'1d4 PV/turno em solo', ds:'Recupera energia lentamente ao estar em contacto com o solo.', req:'Paciência da Rocha',deps:['sp1b']},
+  {id:'sp2c',chi:1,b:'sp',t:1,c:2,l:'Memória\nMineral',     tl:'Espírito N2', dmg:'Natureza CD 11 ao toque', ds:'Identifica composição de rochas e minerais ao toque.', req:'Sentido da Terra',deps:['sp1a']},
+  {id:'sp3a',chi:3,b:'sp',t:2,c:0,l:'Escuta\nProfunda',     tl:'Espírito N3', dmg:'Investigação CD 14', ds:'Deteta estruturas subterrâneas, armadilhas e minerais ocultos.', req:'Visão Sísmica',deps:['sp2a']},
+  {id:'sp3b',chi:0,b:'sp',t:2,c:1,l:'Raízes\nda Terra',     tl:'Espírito N3', dmg:'Imune a ser movido/derrubado', ds:'Ancorado ao solo, torna-se imune a ser movido ou derrubado.', req:'Ligação Terra + Paciência Rocha',deps:['sp2b','sp1b']},
+  {id:'sp3c',chi:3,b:'sp',t:2,c:2,l:'Comunic.\nPedra',      tl:'Espírito N3', dmg:'História CD 15 via toque', ds:'Lê a memória do terreno, descobrindo eventos passados.', req:'Memória Mineral + Visão Sísmica',deps:['sp2c','sp2a']},
+  {id:'sp4a',chi:4,b:'sp',t:3,c:0,l:'Perceção\nTotal',      tl:'Espírito N4', dmg:'Percebe tudo 30m via solo', ds:'Percebe tudo no campo de batalha através do solo.', req:'Escuta + Comunic. Pedra',deps:['sp3a','sp3c']},
+  {id:'sp4d',chi:6,restore:16,b:'sp',t:3,c:1,l:'Pedra\nViva',  tl:'Espírito N4', dmg:'Restaura 3d8 chi', ds:'Funde-se com a rocha primordial, absorvendo a sua energia inesgotável.', req:'Coração Montanha + Ligação Terra',deps:['sp1c','sp2b']},
+  {id:'sp4b',chi:5,b:'sp',t:3,c:1,l:'Pulso\nde Terra',      tl:'Espírito N4', dmg:'Sal. Des CD 15 — Atordoado', ds:'Envia pulsos de energia pelo solo que perturbam o equilíbrio inimigo.', req:'Raízes + Ligação Terra',deps:['sp3b','sp2b']},
+  {id:'sp4c',chi:4,b:'sp',t:3,c:2,l:'Encontrar\nMinério',   tl:'Espírito N4', dmg:'Investigação CD 14 / 90m', ds:'Localiza depósitos de metal, cristais e recursos raros.', req:'Escuta + Memória Mineral',deps:['sp3a','sp2c']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'Mente da\nMontanha',   tl:'Lendário — Espírito', dmg:'Perceção 90m via solo', ds:'Estado meditativo que expande a visão sísmica massivamente.', req:'Perceção Total + Pulso de Terra',deps:['sp4a','sp4b']},
+  {id:'sp5b',chi:6,b:'sp',t:4,c:2,l:'Vínculo\nEterno',      tl:'Lendário — Espírito', dmg:'Controla solo em 18m', ds:'Funde-se com o terreno, controlando o solo de uma área inteira.', req:'Raízes + Encontrar Minério',deps:['sp3b','sp4c']},
+  // AGILIDADE DA TERRA
+  {id:'ag1a',chi:1,b:'ag',t:0,c:0,l:'Salto de\nPedra',      tl:'Agilidade N1', dmg:'Atletismo CD 11 — salta 2x', ds:'Impulsiona o utilizador ao ar com um bloco de terra.', req:'—',deps:[]},
+  {id:'ag1b',chi:0,b:'ag',t:0,c:1,l:'Armadura\nde Terra',   tl:'Agilidade N1', dmg:'CA +2 (passivo)', ds:'Envolve o corpo em pedra para aumentar resistência.', req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Surf\nde Terra',       tl:'Agilidade N2', dmg:'Velocidade +6m em solo', ds:'Desloca-se sobre uma onda de terra a alta velocidade.', req:'Salto de Pedra',deps:['ag1a']},
+  {id:'ag2b',chi:0,b:'ag',t:1,c:1,l:'Botas\nde Pedra',      tl:'Agilidade N2', dmg:'Imune a empurrão/derrube', ds:'Âncora os pés ao solo, tornando impossível ser derrubado.', req:'Armadura de Terra',deps:['ag1b']},
+  {id:'ag2c',chi:3,b:'ag',t:1,c:2,l:'Escudo\nde Rocha',     tl:'Agilidade N2', dmg:'Escudo 20PV, CA 14', ds:'Cria um escudo portátil de pedra sólida.', req:'Armadura de Terra',deps:['ag1b']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Tunelização\nRápida',  tl:'Agilidade N3', dmg:'Acrobacia CD 13 — 9m sub.', ds:'Mergulha no solo e emerge noutro ponto do campo de batalha.', req:'Surf de Terra',deps:['ag2a']},
+  {id:'ag3b',chi:0,b:'ag',t:2,c:1,l:'Armadura\nCompleta',   tl:'Agilidade N3', dmg:'CA +4, sem penalidade', ds:'Envolve o corpo inteiro em pedra sem perder velocidade.', req:'Botas + Escudo de Rocha',deps:['ag2b','ag2c']},
+  {id:'ag3c',chi:2,b:'ag',t:2,c:2,l:'Passo de\nMontanha',   tl:'Agilidade N3', dmg:'Corre em paredes de pedra', ds:'Corre em paredes e encostas verticais de pedra.', req:'Surf + Salto de Pedra',deps:['ag2a','ag1a']},
+  {id:'ag4a',chi:4,b:'ag',t:3,c:0,l:'Túnel\nFantasma',      tl:'Agilidade N4', dmg:'Subterrâneo sem perturbação', ds:'Move-se pelo subsolo sem causar perturbações na superfície.', req:'Tunelização + Escuta Profunda',deps:['ag3a','sp3a']},
+  {id:'ag4b',chi:0,b:'ag',t:3,c:1,l:'Colossus\nde Pedra',   tl:'Agilidade N4', dmg:'Alcance +3m, tamanho aumenta', ds:'Aumenta o tamanho físico com pedra.', req:'Armadura Completa + Raízes Terra',deps:['ag3b','sp3b']},
+  {id:'ag4c',chi:4,b:'ag',t:3,c:2,l:'Corrida\nSísmica',     tl:'Agilidade N4', dmg:'Sal. Des CD 15 — Atordoado', ds:'Cada passo causa mini-sismos, desestabilizando inimigos.', req:'Passo + Surf de Terra',deps:['ag3c','ag2a']},
+  {id:'ag5a',chi:15,b:'ag',t:4,c:1,l:'Avatar\nda Rocha',     tl:'Lendário — Agilidade', dmg:'Todos ataques +2d10 por 1d6t', ds:'Transforma-se numa entidade de pedra colossal.', req:'Colossus de Pedra + Raízes da Terra',deps:['ag4b','sp3b']},
+  {id:'ag5b',chi:6,b:'ag',t:4,c:2,l:'Sombra\nSubterrânea',  tl:'Lendário — Agilidade', dmg:'Sprint sub. + ataque surpresa', ds:'Move-se pelo subsolo a velocidade de sprint, emergindo em surpresa.', req:'Túnel Fantasma + Corrida Sísmica',deps:['ag4a','ag4c']},
+  // COMBATE PARTILHADO N1-N2
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Projétil\nde Pedra',   tl:'Combate N1', dmg:'M0:1d6+FOR · M1:2d6+FOR · M2:3d6 · M3:5d6', ds:'Lança pedras com precisão cirúrgica.', req:'—',deps:[]},
+  {id:'cb1b',chi:3,b:'cb',t:0,c:1,l:'Espinho\nde Terra',    tl:'Combate N1', dmg:'M0:1d4+2+Enr · M1:2d4+2 · M2:3d4 · M3:5d4', ds:'Faz emergir um espinho do solo num ponto específico.', req:'—',deps:[]},
+  {id:'cb2a',chi:2,b:'cb',t:1,c:0,l:'Rajada de\nCascalho',  tl:'Combate N2', dmg:'M0:2d4 cone · M1:3d4 · M2:5d4 · M3:8d4', ds:'Dispara múltiplos fragmentos em leque.', req:'Projétil de Pedra',deps:['cb1a']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Espinhos\nem Série',   tl:'Combate N2', dmg:'M0:1d6 em linha · M1:2d6 · M2:3d6 · M3:5d6', ds:'Faz emergir uma linha de espinhos em sequência rápida.', req:'Espinho de Terra',deps:['cb1b']},
+  {id:'cb2c',chi:2,b:'cb',t:1,c:2,l:'Pedra\nTeleguiada',    tl:'Combate N2', dmg:'M0:1d8 · M1:2d8 · M2:3d8 · M3:5d8', ds:'Projétil que muda de direção após lançamento.', req:'Projétil de Pedra',deps:['cb1a']},
+  {id:'cb2d',chi:3,b:'cb',t:1,c:3,l:'Muro de\nPedra',       tl:'Combate N2', dmg:'20 PV, CA 14', ds:'Ergue barreiras sólidas instantaneamente.', req:'—',deps:[]},
+  {id:'cb2e',chi:2,b:'cb',t:1,c:4,l:'Punho\nde Terra',      tl:'Combate N2', dmg:'1d8+FOR + empurra 3m', ds:'Soco amplificado por uma luva de pedra.', req:'—',deps:[]},
+  // PRECISO
+  {id:'pr3a',chi:5,b:'pr',t:2,c:0,l:'Dobra\nde Pó',         tl:'Preciso N3', dmg:'1d6/turno + Cegueira+Lentidão', ds:'Manipula partículas de rocha para cegar, sufocar ou cortar.', req:'Rajada + Visão Sísmica',deps:['cb2a','sp2a']},
+  {id:'pr3b',chi:7,b:'pr',t:2,c:1,l:'Armadilha\nEspinhos',  tl:'Preciso N3', dmg:'2d6 ao pisar + Enraizado', ds:'Zonas do solo que disparam espinhos ao serem pisadas.', req:'Espinhos em Série',deps:['cb2b']},
+  {id:'pr3c',chi:11,b:'pr',t:2,c:2,l:'Chuva de\nPedras',     tl:'Preciso N3', dmg:'3d6 em área distribuído', ds:'Nuvem de projéteis teleguiados simultaneamente.', req:'Pedra Teleguiada + Rajada',deps:['cb2c','cb2a']},
+  {id:'pr4a',chi:8,b:'pr',t:3,c:0,l:'Dobra\nde Metal',      tl:'Preciso N4', dmg:'2d8 + ignora armadura', ds:'Manipula metal como extensão da terra.', req:'Visão Sísmica + Espinhos em Série',deps:['sp2a','cb2b']},
+  {id:'pr4b',chi:15,b:'pr',t:3,c:1,l:'Tempestade\nde Pó',    tl:'Preciso N4', dmg:'3d6/turno + Ceg+Sangramento', ds:'Nuvem de pó abrasivo que corrói armaduras em área 9m.', req:'Dobra Pó + Armadilha Espinhos',deps:['pr3a','pr3b']},
+  {id:'pr4c',chi:27,b:'pr',t:3,c:2,l:'Míssil\nde Rocha',     tl:'Preciso N4', dmg:'3d10, penetra barreiras', ds:'Projétil massivo de alta penetração.', req:'Chuva Pedras + Pedra Teleguiada',deps:['pr3c','cb2c']},
+  {id:'pr5a',chi:9,b:'pr',t:5,c:0,l:'Fios\nde Metal',       tl:'Lendário — Preciso', dmg:'2d6 + Enraizado+Sangramento', ds:'Projeta fios de metal finos e cortantes com controlo absoluto.', req:'Dobra Metal + Chuva Pedras',deps:['pr4a','pr3c']},
+  {id:'pr5b',chi:50,b:'pr',t:5,c:1,l:'Vórtice\nde Pó',       tl:'Lendário — Preciso', dmg:'6d6 + Ceg+Sangramento+Lent', ds:'Tornado de pó e fragmentos que tritura qualquer coisa.', req:'Tempestade Pó + Dobra Pó',deps:['pr4b','pr3a']},
+  {id:'pr5c',chi:108,b:'pr',t:5,c:2,l:'Impacto\nMeteoro',     tl:'Lendário — Preciso', dmg:'5d12 + Atordoado Sal. Des 19', ds:'Arranca fragmento massivo e lança-o com velocidade de projétil.', req:'Míssil Rocha + Colossus',deps:['pr4c','ag4b']},
+  // BRUTO
+  {id:'br3a',chi:5,b:'br',t:2,c:0,l:'Prisão\nde Terra',     tl:'Bruto N3', dmg:'25PV para escapar + Enraizado', ds:'Encapsula um inimigo numa gaiola de pedra sólida.', req:'Sismo + Muro Pedra',deps:['cb2d','cb2e']},
+  {id:'br3b',chi:18,b:'br',t:2,c:1,l:'Bombar-\ndeamento',    tl:'Bruto N3', dmg:'3d8 em área 6m', ds:'Lança múltiplos blocos em arco sobre uma área.', req:'Catapulta de Terra',deps:['cb2d']},
+  {id:'br3c',chi:8,b:'br',t:2,c:2,l:'Fissura',               tl:'Bruto N3', dmg:'2d8 + cai para interior', ds:'Abre uma fenda no solo que engole inimigos.', req:'Sismo + Torrente Rochas',deps:['cb2e','cb2d']},
+  {id:'br4a',chi:20,b:'br',t:3,c:0,l:'Dobra\nde Lava',       tl:'Bruto N4', dmg:'3d8 fogo + terreno em chamas', ds:'Funde a rocha em lava e molda-a como arma.', req:'Ligação Terra + Sismo',deps:['sp2b','cb2e']},
+  {id:'br4b',chi:34,b:'br',t:3,c:1,l:'Avalanche',              tl:'Bruto N4', dmg:'4d8 + Soterrado', ds:'Desencadeia uma avalanche de pedras numa área.', req:'Bombardeamento + Prisão Terra',deps:['br3b','br3a']},
+  {id:'br4c',chi:11,b:'br',t:3,c:2,l:'Coluna\nSísmica',      tl:'Bruto N4', dmg:'3d6 + arremessado 6m ao ar', ds:'Ergue uma coluna de terra que arremessa inimigos ao ar.', req:'Fissura + Torrente Rochas',deps:['br3c','cb2e']},
+  {id:'br5a',chi:50,b:'br',t:5,c:0,l:'Rio\nde Lava',         tl:'Lendário — Bruto', dmg:'4d10 fogo/turno + Enraizado', ds:'Cria corrente de lava que percorre o campo de batalha.', req:'Dobra Lava + Fissura',deps:['br4a','br3c']},
+  {id:'br5b',chi:111,b:'br',t:5,c:1,l:'Colapso\nSísmico',     tl:'Lendário — Bruto', dmg:'6d10 em 18m + terreno destruído', ds:'Destrói completamente uma estrutura ou área.', req:'Avalanche + Coluna Sísmica',deps:['br4b','br4c']},
+  {id:'br5c',chi:196,b:'br',t:5,c:2,l:'Vulcão\nPessoal',      tl:'Lendário — Bruto', dmg:'8d10 fogo em 24m + Cegueira', ds:'Invoca uma erupção localizada de magma e cinzas.', req:'Rio Lava + Colapso Sísmico',deps:['br4a','br4c']},
+];
+
+// ── LAYOUT ────────────────────────────────────────────────
+const CW=NW+HGAP;
+const BX={sp:ML, ag:ML+3*CW+BGAP, cb:ML+6*CW+2*BGAP, pr:ML+6*CW+2*BGAP, br:ML+6*CW+2*BGAP+3*CW+16};
+function tyb(t){return t<=4?MT+t*(NH+VGAP)+NH/2:MT+4*(NH+VGAP)+NH/2+LEX;}
+const NM={};
+RAW.forEach(n=>{n.x=BX[n.b]+n.c*CW+NW/2;n.y=tyb(n.t)+(n.yo||0);NM[n.id]=n;});
+const CW2=BX.br+3*CW+40;
+const CH=tyb(5)+NH/2+50;
+
+// Edges from deps
+const EDGES=[];
+RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
+
+// ── GAME STATE ────────────────────────────────────────────
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
+function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
+function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
+function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
+function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
+function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
+function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
+
+function gainLevel(){
+  if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
+  S.lvl++;S.pts+=3;
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+(mc-maxChiAtPrevLevel()),mc);
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
+  document.getElementById('hv-lvl').textContent=S.lvl;
+  document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+  render(selId);
+}
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
+function resetAll(){
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
+  logs=[];document.getElementById('log-e').innerHTML='';
+  document.getElementById('attr-row').innerHTML='';
+  updHUD();render(null);closePanel();
+}
+function chAttr(a,d){
+  const cur=S.attr[a],nv=cur+d;
+  if(nv<0)return;
+  if(nv>30){addLog(`${a} já está no máximo (30)!`,'b');return;}
+  if(d>0&&S.pts<=0){addLog('Sem pontos! Ganha um nível primeiro.','b');return;}
+  if(d<0){
+    const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
+    if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
+  }
+  const oldMax=maxChi();
+  S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
+  const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
+  if(valEl)valEl.textContent=S.attr[a];
+  document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+  render(selId);
+}
+function updHUD(){
+  document.getElementById('hv-lvl').textContent=S.lvl;
+  document.getElementById('hv-pts').textContent=S.pts;
+  document.getElementById('hv-unl').textContent=S.unl.size;
+  document.getElementById('hv-uses').textContent=totUses();
+  updChiBar();
+  const row=document.getElementById('attr-row');
+  if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
+    row.innerHTML=ATTRS.map(a=>`
+      <div class="attr-block" data-attr="${a}">
+        <span class="attr-name" style="color:${ACOL[a]}">${a}</span>
+        <div class="attr-btns">
+          <button class="ab" onclick="chAttr('${a}',-1)">−</button>
+          <span class="attr-val" style="color:${ACOL[a]}">${S.attr[a]}</span>
+          <button class="ab" onclick="chAttr('${a}',1)">+</button>
+        </div>
+      </div>`).join('');
+  } else {
+    ATTRS.forEach(a=>{
+      const el=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
+      if(el)el.textContent=S.attr[a];
+    });
+  }
+}
+// Refresh only the panel status/actions without re-rendering canvas
+function refreshPanelStatus(n){
+  if(!n)return;
+  const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
+  const r=AREQ[n.id];
+  const cost=chiCost(n);
+  let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
+  if(r){
+    ah+='<div style="font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Atributos necessários</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">';
+    Object.entries(r).forEach(([a,v])=>{
+      const cv=S.attr[a],ok=cv>=v;
+      ah+=`<div style="padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${ok?ACOL[a]:'#3a3a48'};color:${ok?ACOL[a]:'#5a5856'};background:${ok?ACOL[a]+'15':'#1a1a22'}">${a} ${cv}/${v} ${ok?'✓':'✗'}</div>`;
+    });
+    ah+='</div>';
+  }
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
+  document.getElementById('p-attrs').innerHTML=ah;
+  let act='',st='';
+  if(!unl){
+    let rs=[];
+    if(!dpOk(n))rs.push('Faltam pré-requisitos desbloqueados');
+    if(!ptOk(n))rs.push(`Já escolheste o caminho ${S.path==='pr'?'Preciso':'Bruto'}`);
+    if(r)Object.entries(r).forEach(([a,v])=>{if(S.attr[a]<v)rs.push(`${a}: tens ${S.attr[a]}, precisas ${v}`);});
+    act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
+    st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
+  } else {
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
+    const nx=m<3?UTH[m+1]:null;
+    if(nx!==null){
+      act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
+      st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
+    } else {
+      st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
+    }
+  }
+  document.getElementById('p-act').innerHTML=act;
+  document.getElementById('p-st').innerHTML=st;
+}
+
+// ── CANVAS ────────────────────────────────────────────────
+const canvas=document.getElementById('c');
+// Set dimensions once — reassigning width/height resets ctx state
+canvas.setAttribute('width', CW2);
+canvas.setAttribute('height', CH);
+const ctx=canvas.getContext('2d');
+// Safety: re-get ctx if lost
+function getCtx(){return canvas.getContext('2d');}
+
+function buildOff(){
+  const g={};
+  EDGES.forEach(([a,b])=>{const na=NM[a],nb=NM[b];if(!na||!nb)return;const k=`${Math.round(na.x)}_${Math.round(nb.x)}`;if(!g[k])g[k]=[];g[k].push(a+'|'+b);});
+  const o={};
+  Object.values(g).forEach(gr=>gr.forEach((k,i)=>{o[k]=(gr.length===1)?0:(i-(gr.length-1)/2)*9;}));
+  return o;
+}
+const OFF=buildOff();
+
+function drawEdge(ctx,a,b,dash,hov,lit){
+  if(!a||!b)return;
+  const k=a.id+'|'+b.id,off=OFF[k]||0;
+  const ax=a.x+off,ay=a.y+NH/2+2,bx=b.x+off,by=b.y-NH/2-2,my=ay+(by-ay)*0.5;
+  const s=SC[a.b]||SC.cb;
+  ctx.save();
+  ctx.strokeStyle=hov?s.light:s.stroke;
+  ctx.lineWidth=hov?2:1.3;
+  ctx.globalAlpha=hov?0.9:lit?0.65:dash?0.22:0.38;
+  if(dash)ctx.setLineDash([8,6]);
+  ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax,my);ctx.lineTo(bx,my);ctx.lineTo(bx,by);
+  ctx.stroke();ctx.restore();
+}
+
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function drawNode(ctx,n,hov){
+  const s=sc(n);
+  if(!s)return;
+  const unl=S.unl.has(n.id),av=canUnl(n),x=n.x-NW/2,y=n.y-NH/2,m=gm(n.id);
+  ctx.save();
+  if(unl){ctx.shadowColor=s.light;ctx.shadowBlur=hov?20:8;}
+  else if(hov&&av){ctx.shadowColor=s.stroke;ctx.shadowBlur=14;}
+  rr(ctx,x,y,NW,NH,5);
+  ctx.fillStyle=unl?s.fill:av?s.fill+'99':'#0d0d0f';ctx.fill();
+  if(unl){ctx.strokeStyle=s.light;ctx.lineWidth=2;}
+  else if(hov&&av){ctx.strokeStyle=s.stroke;ctx.lineWidth=2;}
+  else if(av){ctx.strokeStyle=s.stroke;ctx.lineWidth=1.2;ctx.globalAlpha=0.6;}
+  else{ctx.strokeStyle='#252530';ctx.lineWidth=1;ctx.globalAlpha=0.3;}
+  ctx.stroke();ctx.globalAlpha=1;
+  if(n.t>=4&&unl){rr(ctx,x+4,y+4,NW-8,NH-8,3);ctx.strokeStyle='#EF9F27';ctx.lineWidth=0.8;ctx.globalAlpha=0.45;ctx.stroke();ctx.globalAlpha=1;}
+  if(unl&&MAE[n.id]){for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(n.x+NW/2-8-i*8,n.y+NH/2-5,2.5,0,Math.PI*2);ctx.fillStyle=i<m?'#EF9F27':'#252530';ctx.fill();}}
+  if(!unl&&!av){ctx.globalAlpha=0.3;ctx.font="10px 'Segoe UI'";ctx.textAlign='center';ctx.fillStyle='#3a3a48';ctx.fillText('🔒',n.x,n.y+4);ctx.globalAlpha=1;}
+  const lines=n.l.split('\n');
+  ctx.fillStyle=unl?s.text:av?s.text:'#2e2e3a';
+  if(!unl&&!av)ctx.globalAlpha=0.35;
+  ctx.textAlign='center';ctx.font="500 9px 'Segoe UI',system-ui,sans-serif";
+  if(lines.length===1)ctx.fillText(lines[0],n.x,n.y+3);
+  else{ctx.fillText(lines[0],n.x,n.y-4);ctx.fillText(lines[1],n.x,n.y+7);}
+  ctx.globalAlpha=1;ctx.restore();
+}
+
+function drawBg(ctx){
+  ctx.fillStyle='#0d0d0f';ctx.fillRect(0,0,CW2,CH);
+  const bands=[];
+  for(let t=0;t<=4;t++){
+    const y0=t===0?0:MT+t*(NH+VGAP)-VGAP/2;
+    const y1=t===4?MT+4*(NH+VGAP)+NH/2+LEX/2:MT+(t+1)*(NH+VGAP)-VGAP/2;
+    bands.push({t,y0,y1});
+  }
+  bands.push({t:5,y0:MT+4*(NH+VGAP)+NH/2+LEX/2,y1:CH});
+  bands.forEach(({t,y0,y1})=>{
+    ctx.fillStyle=t%2===0?'#0d0d0f':'#111118';ctx.fillRect(0,y0,CW2,y1-y0);
+    ctx.fillStyle=t>=4?'#BA7517':'#2a2a38';ctx.font='700 9px Segoe UI,system-ui,sans-serif';ctx.textAlign='left';
+    ctx.fillText(t>=4?'LENDÁRIO':TLABELS[t].toUpperCase(),8,(y0+y1)/2+4);
+    ctx.strokeStyle='#181820';ctx.lineWidth=1;ctx.setLineDash([4,8]);
+    ctx.beginPath();ctx.moveTo(60,y1);ctx.lineTo(CW2-10,y1);ctx.stroke();ctx.setLineDash([]);
+  });
+  const BD=[
+    {b:'sp',x:BX.sp-12,w:3*CW+4,f:0,to:CH},
+    {b:'ag',x:BX.ag-12,w:3*CW+4,f:0,to:CH},
+    {b:'cb',x:BX.cb-12,w:6*CW+4,f:0,to:MT+2*(NH+VGAP)-VGAP/2},
+    {b:'pr',x:BX.pr-12,w:3*CW+2,f:MT+2*(NH+VGAP)-VGAP/2,to:CH},
+    {b:'br',x:BX.br-4, w:3*CW+16,f:MT+2*(NH+VGAP)-VGAP/2,to:CH},
+  ];
+  const BL={sp:'ESPIRITUALIDADE',ag:'AGILIDADE',cb:'COMBATE PARTILHADO (N1–N2)',pr:'◀ PRECISO (N3+)',br:'BRUTO (N3+) ▶'};
+  BD.forEach(({b,x,w,f,to})=>{
+    const s=SC[b];
+    ctx.fillStyle=s.fill;ctx.globalAlpha=0.07;ctx.fillRect(x,f,w,to-f);ctx.globalAlpha=1;
+    ctx.strokeStyle=s.stroke;ctx.lineWidth=1.5;ctx.globalAlpha=0.2;ctx.strokeRect(x,f,w,to-f);ctx.globalAlpha=1;
+    ctx.fillStyle=s.light;ctx.font='700 10px Segoe UI,system-ui,sans-serif';ctx.textAlign='center';ctx.globalAlpha=0.75;
+    ctx.fillText(BL[b],x+w/2,f+14);ctx.globalAlpha=1;
+  });
+  ctx.strokeStyle='#3a1a08';ctx.lineWidth=1;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(BX.br-6,MT+2*(NH+VGAP)-VGAP/2);ctx.lineTo(BX.br-6,CH-10);ctx.stroke();ctx.setLineDash([]);
+}
+
+let selId=null;
+let _rafPending=false;
+let _pendingHov=null;
+function render(hov){
+  _pendingHov=hov;
+  if(_rafPending)return;
+  _rafPending=true;
+  requestAnimationFrame(()=>{
+    _rafPending=false;
+    const hovId=_pendingHov;
+    const c=canvas.getContext('2d');
+    c.clearRect(0,0,CW2,CH);
+    drawBg(c);
+    const hs=new Set();
+    if(hovId)EDGES.forEach(([a,b])=>{if(a===hovId||b===hovId)hs.add(a+'|'+b);});
+    EDGES.forEach(([a,b,dash])=>{
+      const na=NM[a],nb=NM[b];if(!na||!nb)return;
+      drawEdge(c,na,nb,dash,hs.has(a+'|'+b),S.unl.has(a)&&S.unl.has(b));
+    });
+    RAW.forEach(n=>drawNode(c,n,n.id===hovId||n.id===selId));
+  });
+}
+
+// ── PANEL ─────────────────────────────────────────────────
+let logs=[];
+function addLog(msg,t=''){
+  logs.unshift({msg,t});if(logs.length>25)logs.pop();
+  document.getElementById('log-e').innerHTML=logs.map(e=>`<div class="le ${e.t}">${e.msg}</div>`).join('');
+}
+
+function openPanel(n){
+  selId=n.id;
+  document.getElementById('p-tier').textContent=n.tl;
+  document.getElementById('p-name').textContent=n.l.replace('\n',' ');
+  document.getElementById('p-dmg').textContent=n.dmg;
+  document.getElementById('p-desc').textContent=n.ds;
+  // maestria (static once unlocked)
+  const unl=S.unl.has(n.id),m=gm(n.id),u=S.uses[n.id]||0,mae=MAE[n.id];
+  let mh='';
+  if(mae&&unl){
+    mh=mae.l.map((lv,i)=>{
+      const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${cur?'c':act?'a':''}"></div><div class="mv ${act?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    if(u>0)mh+=`<div style="font-size:10px;color:#EF9F27;margin-top:3px">Usos: ${u} · próx. M${Math.min(m+1,3)}: ${UTH[Math.min(m+1,3)]}</div>`;
+  } else if(mae){
+    mh='<div style="font-size:10px;color:#5a5856">Desbloqueia para ver maestria</div>';
+  } else {
+    mh='<div style="font-size:10px;color:#5a5856">Sem sistema de maestria</div>';
+  }
+  document.getElementById('p-mae').innerHTML=mh;
+  refreshPanelStatus(n);
+  document.getElementById('panel').classList.add('open');
+  render(n.id);
+}
+
+function closePanel(){document.getElementById('panel').classList.remove('open');selId=null;render(null);}
+
+function doUnl(id){
+  const n=NM[id];if(!canUnl(n)){addLog(`Não podes desbloquear ${n.l.replace('\n',' ')}.`,'b');return;}
+  S.unl.add(id);if(n.b==='pr')S.path='pr';if(n.b==='br')S.path='br';
+  addLog(`✦ Desbloqueaste: ${n.l.replace('\n',' ')}`,'g');
+  document.getElementById('hv-unl').textContent=S.unl.size;
+  // Refresh maestria section since it changes on unlock
+  const mae=MAE[id];
+  if(mae){
+    let mh=mae.l.map((lv,i)=>{
+      const th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${i===0?'c':''}"></div><div class="mv ${i===0?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    document.getElementById('p-mae').innerHTML=mh;
+  }
+  refreshPanelStatus(n);
+  render(id);
+}
+function doUse(id){
+  if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
+  S.uses[id]=(S.uses[id]||0)+1;
+  document.getElementById('hv-uses').textContent=totUses();
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
+  if(mae){
+    let mh=mae.l.map((lv,i)=>{
+      const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${cur?'c':act?'a':''}"></div><div class="mv ${act?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    mh+=`<div style="font-size:10px;color:#EF9F27;margin-top:3px">Usos: ${u} · próx. M${Math.min(m+1,3)}: ${UTH[Math.min(m+1,3)]}</div>`;
+    document.getElementById('p-mae').innerHTML=mh;
+  }
+  refreshPanelStatus(n);
+  render(id);
+}
+function doUpg(id){
+  const m=gm(id);if(m>=3||(S.uses[id]||0)<UTH[m+1])return;
+  addLog(`⭐ Maestria M${m+1}: ${NM[id].l.replace('\n',' ')}`,'g');
+  doUse(id); // calling doUse re-renders everything needed
+}
+
+// ── INTERACTION ───────────────────────────────────────────
+canvas.addEventListener('mousemove',function(e){
+  const r=canvas.getBoundingClientRect(),mx=(e.clientX-r.left)*(CW2/r.width),my=(e.clientY-r.top)*(CH/r.height);
+  let f=null;for(const n of RAW){if(mx>=n.x-NW/2&&mx<=n.x+NW/2&&my>=n.y-NH/2&&my<=n.y+NH/2){f=n;break;}}
+  canvas.style.cursor=f?'pointer':'default';
+  if(f&&f.id!==selId)render(f.id);else if(!f&&selId)render(selId);else if(!f)render(null);
+});
+canvas.addEventListener('click',function(e){
+  const r=canvas.getBoundingClientRect(),mx=(e.clientX-r.left)*(CW2/r.width),my=(e.clientY-r.top)*(CH/r.height);
+  for(const n of RAW){if(mx>=n.x-NW/2&&mx<=n.x+NW/2&&my>=n.y-NH/2&&my<=n.y+NH/2){if(selId===n.id)closePanel();else openPanel(n);return;}}
+  closePanel();
+});
+canvas.addEventListener('mouseleave',()=>render(selId));
+
+S.chi=maxChi();
+render(null);updHUD();
+</script>
+</body>
+</html>

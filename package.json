@@ -1,0 +1,36 @@
+{
+  "name": "avatar-rpg",
+  "version": "1.0.0",
+  "description": "Avatar: The Last Airbender RPG — Web-based character management system",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve public -l 3000",
+    "dev:avatar": "node scripts/dev-game.js avatar",
+    "dev:dnd": "node scripts/dev-game.js dnd",
+    "dev:minecraft": "node scripts/dev-game.js minecraft",
+    "build": "echo 'Static build - no bundler needed'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:start": "npx supabase start",
+    "db:stop": "npx supabase stop",
+    "db:reset": "npx supabase db reset",
+    "db:status": "npx supabase status",
+    "dev:all": "npm run db:start && npm run db:reset && npm run dev"
+  },
+  "keywords": [
+    "rpg",
+    "avatar",
+    "character-sheet",
+    "tabletop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.0",
+    "supabase": "^2.108.0",
+    "vitest": "^4.1.7"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

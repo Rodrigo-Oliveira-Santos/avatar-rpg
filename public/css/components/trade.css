@@ -1,0 +1,377 @@
+.trade-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 12, 18, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+.trade-modal {
+  width: min(1100px, 100%);
+  max-height: min(85vh, 900px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(22, 27, 38, 0.98), rgba(14, 18, 28, 0.98));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.trade-modal-header,
+.trade-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trade-modal-header {
+  margin-bottom: 16px;
+}
+
+.trade-modal-header h3 {
+  margin: 0;
+}
+
+.trade-modal-subtitle {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.trade-modal-close {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.trade-banner {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.trade-modal-body,
+.trade-summary-grid,
+.hub-trade-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.trade-column,
+.trade-summary-column,
+.hub-trade-column {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.trade-column h4,
+.trade-summary-column h4,
+.hub-trade-column h3 {
+  margin: 0 0 12px;
+}
+
+.trade-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+
+.trade-gold-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(8, 10, 16, 0.75);
+  color: var(--text);
+}
+
+/* Per-item quantity input — narrow so it doesn't squeeze the name/meta. */
+.trade-quantity-input {
+  width: 64px;
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.75);
+  color: var(--text);
+  text-align: center;
+}
+
+.trade-selection-list,
+.trade-summary-list,
+.hub-trade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trade-item-option,
+.hub-trade-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.trade-item-option input[type='checkbox'] {
+  margin: 0;
+}
+
+.trade-item-info {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.trade-item-name,
+.hub-trade-card strong {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trade-item-meta {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trade-empty-state {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.hub-trade-card p,
+.hub-trade-card small {
+  color: var(--text-muted);
+}
+
+.trade-item-meta,
+.trade-empty-state,
+.hub-trade-card p,
+.hub-trade-card small {
+  color: var(--text-muted);
+}
+
+.trade-gold-line {
+  color: var(--accent-gold, #f5c451);
+  font-weight: 700;
+}
+
+.trade-modal-footer {
+  margin-top: 18px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.trade-modal .btn,
+.hub-player-actions button,
+.hub-trade-card-actions button {
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.trade-modal .btn:hover,
+.hub-player-actions button:hover,
+.hub-trade-card-actions button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.trade-modal .btn-primary {
+  border-color: rgba(255, 183, 77, 0.55);
+  background: linear-gradient(135deg, rgba(255, 183, 77, 0.22), rgba(255, 122, 89, 0.2));
+}
+
+.trade-modal .btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.trade-modal .btn:disabled,
+.hub-player-actions button:disabled,
+.hub-trade-card-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ff7a59;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* The `.nav-badge` class re-asserts display, so we need a higher-specificity
+   rule for the native `hidden` attribute to actually hide the badge. */
+.nav-badge[hidden] {
+  display: none !important;
+}
+
+.nav-badge.player-count {
+  background: #4a90e2;
+}
+
+.hub-trade-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: rgba(15, 19, 28, 0.78);
+}
+
+.hub-trade-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.hub-trade-section-header h2 {
+  margin: 0;
+}
+
+.hub-trade-card {
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hub-trade-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hub-trade-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hub-player-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+  .trade-modal-overlay {
+    padding: 12px;
+  }
+
+  .trade-modal {
+    padding: 18px;
+  }
+
+  .trade-modal-body,
+  .trade-summary-grid,
+  .hub-trade-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .trade-item-option,
+  .hub-trade-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trade-modal-header {
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   Trade History Panel (player profile)
+   ============================================================ */
+.trade-history {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.th-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.th-row {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.th-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.th-direction { font-weight: 700; color: var(--text); }
+.th-when { margin-left: auto; color: var(--text3); font-size: 10px; }
+
+.th-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.th-badge.th-ok      { background: rgba(48,192,96,0.15); color: #6fd99c; }
+.th-badge.th-warn    { background: rgba(196,48,48,0.16); color: #f08070; }
+.th-badge.th-muted   { background: var(--bg3); color: var(--text3); }
+.th-badge.th-gm      { background: rgba(212,168,73,0.18); color: var(--gold, #d4a849); }
+.th-badge.th-pending { background: rgba(74,144,226,0.18); color: #6fb0ff; }
+
+.th-side { font-size: 11px; color: var(--text2); margin: 1px 0; line-height: 1.4; }
+.th-note { font-size: 11px; color: var(--text3); font-style: italic; margin-top: 4px; }

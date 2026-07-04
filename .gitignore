@@ -95,3 +95,19 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /.idea/
+
+# Project specific
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+.netlify/
+
+# Runtime config (Supabase URLs, anon keys, feature flags) — never commit.
+public/config.js
+
+# Supabase CLI local data (Postgres volume, generated config)
+.supabase/
+supabase/.branches/
+supabase/.temp/

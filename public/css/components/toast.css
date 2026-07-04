@@ -1,0 +1,249 @@
+/* ===================================
+   Toast & Modal System
+   =================================== */
+
+/* Toast Container */
+#toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+/* Toast */
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  max-width: 420px;
+  min-width: 240px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast.hide {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.toast-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  /* Align with the first line of the (possibly multi-line) message. */
+  margin-top: 1px;
+}
+
+.toast-msg {
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  /* Long single-line messages wrap naturally instead of getting cut off. */
+  word-break: break-word;
+}
+
+/* Multi-line variant: tighter line-height and the first line gets a
+   little extra weight so it reads as the headline. */
+.toast-msg-multi {
+  line-height: 1.5;
+}
+
+.toast-msg-multi br + * {
+  /* (no-op — kept here for future per-line styling) */
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  margin-left: 4px;
+  border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+
+.toast-close:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.toast-clear-all {
+  align-self: flex-end;
+  pointer-events: auto;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: color .15s, border-color .15s;
+}
+
+.toast-clear-all:hover {
+  color: var(--text);
+  border-color: var(--text2);
+}
+
+/* Toast types */
+.toast-success {
+  border-color: var(--green);
+  background: linear-gradient(135deg, var(--bg2), rgba(48, 192, 96, 0.1));
+}
+.toast-success .toast-icon { color: var(--green); }
+
+.toast-error {
+  border-color: var(--red);
+  background: linear-gradient(135deg, var(--bg2), rgba(224, 48, 48, 0.1));
+}
+.toast-error .toast-icon { color: var(--red); }
+
+.toast-warning {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, var(--bg2), rgba(192, 160, 48, 0.1));
+}
+.toast-warning .toast-icon { color: var(--gold); }
+
+.toast-info {
+  border-color: var(--spirit);
+  background: linear-gradient(135deg, var(--bg2), rgba(122, 112, 224, 0.1));
+}
+.toast-info .toast-icon { color: var(--spirit); }
+
+/* Modal Overlay
+   ─ Default state is visible (opacity 1) so any ad-hoc `.modal-overlay`
+     created by feature modals (StatusEffectManager, BattleLauncher,
+     RollDialog…) shows up without having to add the animation class.
+   ─ `confirmDialog` / `promptDialog` in toast.js drive the open/closing
+     animation by starting with `modal-closing` and toggling to
+     `modal-open` on rAF. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.modal-open {
+  opacity: 1;
+}
+
+.modal-overlay.modal-closing {
+  opacity: 0;
+}
+
+/* Modal Box
+   Default is full-scale; the toast.js dialogs use `modal-closing` to fade
+   the scale-down on close. */
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 300px;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transform: scale(1);
+  transition: transform 0.2s ease;
+}
+
+.modal-open .modal-box {
+  transform: scale(1);
+}
+
+.modal-closing .modal-box {
+  transform: scale(0.95);
+}
+
+.modal-msg {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  white-space: pre-line;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 16px;
+  transition: border-color 0.15s;
+}
+
+.modal-input:focus {
+  border-color: var(--spirit);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+
+.modal-btn-cancel {
+  background: transparent;
+  color: var(--text2);
+}
+
+.modal-btn-cancel:hover {
+  background: var(--bg3);
+  color: var(--text);
+}
+
+.modal-btn-confirm {
+  background: var(--spirit);
+  color: #fff;
+  border-color: var(--spirit);
+}
+
+.modal-btn-confirm:hover {
+  background: #6a60d0;
+  border-color: #6a60d0;
+}

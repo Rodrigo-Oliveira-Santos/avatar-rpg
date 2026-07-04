@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Árvore de Habilidades — Fogo | Avatar RPG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0d0f;font-family:'Segoe UI',system-ui,sans-serif;color:#e8e6e0}
+header{padding:12px 28px;border-bottom:1px solid #2a2a35;background:#111114;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100}
+.h-title{font-size:17px;font-weight:700;color:#F0997B}
+.h-sub{font-size:10px;color:#5a5856;margin-top:2px}
+#hud{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:8px 28px;background:#0f0f14;border-bottom:1px solid #2a2a35;position:sticky;top:53px;z-index:99}
+.hb{display:flex;flex-direction:column;gap:2px}
+.hl{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em}
+.hv{font-size:15px;font-weight:700;color:#EF9F27}
+.hv.g{color:#5DCAA5}.hv.p{color:#AFA9EC}
+#attr-row{display:flex;gap:8px;flex-wrap:wrap}
+.attr-block{display:flex;flex-direction:column;align-items:center;gap:2px}
+.attr-name{font-size:9px;font-weight:700;letter-spacing:.04em}
+.attr-btns{display:flex;align-items:center;gap:3px}
+.attr-val{font-size:13px;font-weight:700;min-width:22px;text-align:center}
+.ab{width:16px;height:16px;border-radius:3px;border:1px solid #3a3a48;background:#1a1a22;color:#9a9890;cursor:pointer;font-size:11px;line-height:1;padding:0;display:flex;align-items:center;justify-content:center}
+.ab:hover{border-color:#7a7876;color:#e8e6e0}
+.btn{padding:6px 13px;border-radius:5px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;background:transparent;transition:all .15s}
+.btn-g{border-color:#5DCAA5;color:#5DCAA5}.btn-g:hover{background:#5DCAA5;color:#0a2e20}
+.btn-r{border-color:#3a3a48;color:#7a7876}.btn-r:hover{border-color:#D85A30;color:#D85A30}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:7px 28px;background:#111114;border-bottom:1px solid #2a2a35;font-size:10px;color:#7a7876}
+.leg{display:flex;align-items:center;gap:5px}
+.lsq{width:11px;height:11px;border-radius:2px}
+.cw{width:100%;overflow:auto;background:#0d0d0f}
+#panel{position:fixed;right:0;top:0;bottom:0;width:275px;background:#111118;border-left:1px solid #2a2a35;display:flex;flex-direction:column;z-index:200;transform:translateX(100%);transition:transform .2s ease;overflow-y:auto}
+#panel.open{transform:translateX(0)}
+#ph{padding:12px 14px;border-bottom:1px solid #2a2a35;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#111118;z-index:1}
+#pt{font-size:13px;font-weight:700;color:#F0997B}
+#pc{cursor:pointer;color:#5a5856;font-size:18px;line-height:1}
+#pc:hover{color:#e8e6e0}
+#pb{padding:13px 14px;flex:1}
+.pp{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.pn{font-size:14px;font-weight:700;color:#F0997B;margin-bottom:6px}
+.pd{font-size:10px;color:#EF9F27;margin-bottom:5px}
+.pds{font-size:10px;color:#9a9890;line-height:1.5;margin-bottom:8px}
+.psep{border:none;border-top:1px solid #2a2a35;margin:10px 0}
+.mt{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.mr{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.md{width:10px;height:10px;border-radius:2px;flex-shrink:0;border:1px solid #3a3a48;background:#1a1a22}
+.md.a{background:#EF9F27;border-color:#BA7517}
+.md.c{background:#5DCAA5;border-color:#1D9E75;box-shadow:0 0 5px #1D9E75}
+.mv{font-size:10px;color:#7a7876;flex:1;line-height:1.4}
+.mv.a{color:#e8e6e0}
+.mu{font-size:9px;color:#5a5856;white-space:nowrap}
+.pact{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.pb2{padding:7px 11px;border-radius:5px;border:1px solid;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;text-align:center;background:transparent}
+.pb2:disabled{border-color:#2a2a35!important;color:#3a3a48!important;cursor:not-allowed}
+.pu{border-color:#5DCAA5;color:#5DCAA5}.pu:hover:not(:disabled){background:#5DCAA5;color:#0a2e20}
+.puse{border-color:#E8844A;color:#E8844A}.puse:hover:not(:disabled){background:#E8844A;color:#1a0a04}
+.pup{border-color:#AFA9EC;color:#AFA9EC}.pup:hover:not(:disabled){background:#AFA9EC;color:#1a1840}
+.pst{font-size:10px;padding:5px 9px;border-radius:4px;margin-top:3px;text-align:center}
+.pst.ok{background:#0a2e20;color:#5DCAA5;border:1px solid #1D9E75}
+.pst.warn{background:#2e1c02;color:#EF9F27;border:1px solid #BA7517}
+.pst.err{background:#2e0a04;color:#F0997B;border:1px solid #D85A30}
+#log{padding:0 14px 14px}
+.lt{font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.le{font-size:10px;color:#7a7876;line-height:1.6;border-bottom:1px solid #1a1a22;padding:2px 0}
+.le.g{color:#5DCAA5}.le.b{color:#F0997B}
+</style>
+</head>
+<body>
+<header>
+  <span style="font-size:24px">🔥</span>
+  <div><div class="h-title">Árvore de Habilidades — Fogo</div><div class="h-sub">Clica num nó para interagir · scroll para navegar</div></div>
+</header>
+<div id="hud">
+  <div class="hb"><div class="hl">Nível</div><div class="hv g" id="hv-lvl">1</div></div>
+  <div class="hb"><div class="hl">Pontos livres</div><div class="hv" id="hv-pts">3</div></div>
+  <div class="hb"><div class="hl">Atributos</div><div id="attr-row"></div></div>
+  <div class="hb"><div class="hl">Desbloqueadas</div><div class="hv p" id="hv-unl">0</div></div>
+  <div class="hb"><div class="hl">Usos totais</div><div class="hv p" id="hv-uses">0</div></div>
+  <div class="hb" style="min-width:160px">
+    <div class="hl">Chi <span id="hv-chi-txt" style="color:#7a7876;font-weight:400"></span></div>
+    <div id="chi-bar-wrap" style="width:160px;height:14px;background:#1a1a22;border:1px solid #3a3a48;border-radius:7px;overflow:hidden;position:relative">
+      <div id="chi-bar-fill" style="height:100%;width:100%;background:linear-gradient(90deg,#3a8a9a,#5DCAA5);transition:width .2s"></div>
+    </div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button class="btn btn-g" onclick="gainLevel()">+ Ganhar Nível</button>
+    <button class="btn btn-r" onclick="restoreChi()">Restaurar Chi</button>
+    <button class="btn btn-r" onclick="resetAll()">Reiniciar</button>
+  </div>
+</div>
+<div class="legend">
+  <div class="leg"><div class="lsq" style="background:#1e1a40;border:2px solid #7F77DD"></div>Espiritualidade</div>
+  <div class="leg"><div class="lsq" style="background:#0a2e20;border:2px solid #1D9E75"></div>Agilidade</div>
+  <div class="leg"><div class="lsq" style="background:#3a2006;border:2px solid #D88840"></div>Combate N1–N2</div>
+  <div class="leg"><div class="lsq" style="background:#3a1606;border:2px solid #E8844A"></div>Preciso N3+</div>
+  <div class="leg"><div class="lsq" style="background:#2e0804;border:2px solid #C03020"></div>Bruto N3+</div>
+  <div class="leg"><div class="lsq" style="background:#2e1c02;border:2px solid #BA7517"></div>Lendário</div>
+  <div style="margin-left:auto;font-size:10px;color:#5a5856">— sólida = mesma classe &nbsp;·&nbsp; - - - tracejada = outra classe</div>
+</div>
+<div class="cw"><canvas id="c"></canvas></div>
+<div id="panel">
+  <div id="ph"><div id="pt">Habilidade</div><div id="pc" onclick="closePanel()">✕</div></div>
+  <div id="pb">
+    <div class="pp" id="p-tier"></div>
+    <div class="pn"  id="p-name"></div>
+    <div class="pd"  id="p-dmg"></div>
+    <div class="pds" id="p-desc"></div>
+    <div id="p-attrs"></div>
+    <hr class="psep">
+    <div class="mt">Sistema de Maestria</div>
+    <div id="p-mae"></div>
+    <div class="pact" id="p-act"></div>
+    <div id="p-st"></div>
+  </div>
+  <div id="log"><div class="lt">Registo</div><div id="log-e"></div></div>
+</div>
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────
+const NW=92,NH=38,HGAP=22,VGAP=110,BGAP=60,MT=72,ML=72,LEX=80;
+const TLABELS=['Nível 1','Nível 2','Nível 3','Nível 4','Lendário'];
+const ATTRS=['FOR','AGI','PER','ESP','CHI','RES'];
+const ACOL={FOR:'#E8844A',AGI:'#1D9E75',PER:'#7F77DD',ESP:'#AFA9EC',CHI:'#EF9F27',RES:'#C03020'};
+const SC={
+  sp:{fill:'#1e1a40',stroke:'#7F77DD',text:'#EEEDFE',light:'#7F77DD'},
+  ag:{fill:'#0a2e20',stroke:'#1D9E75',text:'#E1F5EE',light:'#1D9E75'},
+  cb:{fill:'#3a2006',stroke:'#D88840',text:'#FAEEDA',light:'#D88840'},
+  pr:{fill:'#3a1606',stroke:'#E8844A',text:'#FAECE7',light:'#E8844A'},
+  br:{fill:'#2e0804',stroke:'#C03020',text:'#FCEBEB',light:'#C03020'},
+  gold:{fill:'#2e1c02',stroke:'#BA7517',text:'#FAEEDA',light:'#EF9F27'},
+};
+function sc(n){
+  if(!n)return SC.cb;
+  if(n.t>=4)return SC.gold;
+  return SC[n.b]||SC.cb;
+}
+const UTH=[0,15,50,150];
+
+// ── ATTR REQUIREMENTS ────────────────────────────────────
+const AREQ={
+  sp1a:{ESP:2,CHI:1},sp1b:{ESP:1},
+  sp2a:{ESP:6,CHI:5},sp2b:{ESP:5,PER:3},sp2c:{ESP:6,RES:4},
+  sp3a:{ESP:13,CHI:7},sp3b:{ESP:11,PER:8,RES:6},sp3c:{ESP:12,CHI:8},
+  sp4a:{ESP:18,PER:13},sp4b:{ESP:19,CHI:13,RES:10},
+  sp5a:{ESP:27,CHI:16,RES:15},sp5b:{ESP:26,PER:17},
+  ag1a:{AGI:2,CHI:1},ag1b:{AGI:1,PER:2},
+  ag2a:{AGI:5,CHI:4},ag2b:{AGI:6,PER:4},ag2c:{AGI:6,CHI:3},
+  ag3a:{AGI:13,CHI:8},ag3b:{AGI:11,PER:8},ag3c:{AGI:12,CHI:7},
+  ag4a:{AGI:20,CHI:13},ag4b:{AGI:18,PER:13},ag4c:{AGI:19,CHI:12,FOR:8},
+  ag5a:{AGI:27,CHI:16,FOR:13},ag5b:{AGI:28,PER:17},
+  cb1a:{PER:2,CHI:1},cb1b:{PER:1,CHI:2},cb1c:{FOR:2,CHI:1},cb1d:{FOR:1,CHI:2},
+  cb2a:{PER:6,CHI:5},cb2b:{PER:5,CHI:3,AGI:3},cb2c:{PER:6,CHI:5},
+  cb2d:{FOR:6,CHI:5,RES:3},cb2e:{FOR:5,CHI:5},cb2f:{FOR:6,CHI:4},
+  pr3a:{PER:13,CHI:8},pr3b:{PER:12,CHI:9},pr3c:{PER:13,CHI:8,AGI:6},
+  pr4a:{PER:20,CHI:16,ESP:12},pr4b:{PER:19,CHI:13},pr4c:{PER:20,CHI:14},
+  pr5a:{PER:26,CHI:17,RES:15},pr5b:{PER:27,CHI:18,AGI:16},pr5c:{PER:28,CHI:18},
+  br3a:{FOR:12,CHI:8},br3b:{FOR:13,CHI:8,ESP:6},br3c:{FOR:11,CHI:9,PER:8},
+  br4a:{FOR:19,CHI:13,ESP:12},br4b:{FOR:20,CHI:13,RES:10},br4c:{FOR:20,CHI:14,PER:12},
+  br5a:{FOR:27,CHI:17,ESP:17},br5b:{FOR:26,CHI:17,ESP:15},br5c:{FOR:28,CHI:18,PER:17},
+};
+
+// ── MAESTRIA ──────────────────────────────────────────────
+const MAE={
+  sp1a:{l:['1d6 chi/turno','2d6 + Regeneração','3d6','5d6']},
+  ag1b:{l:['1d4 contraataque','2d4 + Queimadura','3d4','5d4']},
+  ag3b:{l:['1d6','2d6 + Queimadura','3d6','5d6']},
+  ag3c:{l:['2d4','3d4 + Queimadura','5d4','8d4']},
+  ag4c:{l:['3d6','5d6 + Queimadura','8d6','13d6']},
+  ag5a:{l:['4d10','6d10 + Queimadura','9d10','14d10']},
+  cb1a:{l:['1d6','2d6 + Queimadura','3d6','5d6']},
+  cb1b:{l:['1d4','2d4 + Choque','3d4','5d4']},
+  cb1c:{l:['1d10','2d10 + Queimadura','3d10','5d10']},
+  cb1d:{l:['1d8','2d8 + Queimadura','3d8','5d8']},
+  cb2a:{l:['1d8','2d8 + Queimadura','3d8','5d8']},
+  cb2b:{l:['1d6','2d6 + Queimadura','3d6','5d6']},
+  cb2c:{l:['1d10','2d10 + Choque','3d10','5d10']},
+  cb2e:{l:['2d8','3d8 + Queimadura','5d8','8d8']},
+  cb2f:{l:['2d8','3d8 + Queimadura','5d8','8d8 + Atordoado']},
+  pr3a:{l:['2d8','3d8 + Queimadura','5d8','8d8']},
+  pr3b:{l:['2d6','3d6 + Choque','5d6','8d6']},
+  pr3c:{l:['4d4','6d4 + Queimadura','9d4','14d4']},
+  pr4a:{l:['4d10','6d10 + Choque+Atord.','9d10','14d10']},
+  pr4c:{l:['3d8','5d8 + Choque','8d8','13d8']},
+  pr5b:{l:['6d8','9d8 + Queimadura','14d8','22d8']},
+  br3a:{l:['2d8','3d8 + Queimadura','5d8','8d8 + Medo']},
+  br3b:{l:['3d8','5d8 + Queimadura','8d8','13d8 + Medo']},
+  br3c:{l:['2d10','3d10 + Queimadura','5d10','8d10 + Atordoado']},
+  br4a:{l:['4d8','6d8 + Queimadura','9d8','14d8 + Cegueira']},
+  br4c:{l:['2d10×3','3d10×3 + Queimadura','5d10×3','8d10×3 + Atordoado']},
+};
+
+// ── NODES ─────────────────────────────────────────────────
+const RAW=[
+  // ESPÍRITO
+  {id:'sp1a',chi:1,restore:5,b:'sp',t:0,c:0,l:'Resp.\nDragão',    tl:'Espírito N1',   dmg:'Restaura 1d6 chi/turno',     ds:'Técnica de respiração que regenera chi e estabiliza o espírito.',              req:'—',deps:[]},
+  {id:'sp1b',chi:0,b:'sp',t:0,c:1,l:'Chama\nMedit.',    tl:'Espírito N1',   dmg:'Passivo',                    ds:'Mantém uma chama estável. Símbolo de equilíbrio interno.',                    req:'—',deps:[]},
+  {id:'sp2a',chi:0,b:'sp',t:1,c:0,l:'Chama\nInterior',  tl:'Espírito N2',   dmg:'+1d4 a todo dano fogo',      ds:'Aumenta passivamente o dano de todas as habilidades de fogo.',                req:'Resp. Dragão',deps:['sp1a']},
+  {id:'sp2b',chi:2,b:'sp',t:1,c:1,l:'Medit.\nFogo',     tl:'Espírito N2',   dmg:'Percepção calor 18m',        ds:'Percebe fontes de calor e vida ao redor em meditação.',                       req:'Chama Medit.',deps:['sp1b']},
+  {id:'sp2c',chi:0,b:'sp',t:1,c:2,l:'Resist.\nCalor',   tl:'Espírito N2',   dmg:'Imunidade calor/vapor',      ds:'Resistência passiva a dano de fogo, calor extremo e vapor.',                  req:'Resp. Dragão',deps:['sp1a']},
+  {id:'sp3a',chi:3,b:'sp',t:2,c:0,l:'Luz da\nAlma',     tl:'Espírito N3',   dmg:'Afasta espíritos, raio 9m',  ds:'Chama dourada que afasta espíritos malignos.',                                req:'Chama Interior+Chama Medit.',deps:['sp2a','sp1b']},
+  {id:'sp3b',chi:3,b:'sp',t:2,c:1,l:'Sentido\nTérm.',   tl:'Espírito N3',   dmg:'Vê calor 18m incl. paredes', ds:'Deteta qualquer fonte de calor, inclusive paredes.',                          req:'Medit. Fogo+Resist. Calor',deps:['sp2b','sp2c']},
+  {id:'sp3c',chi:0,b:'sp',t:2,c:2,l:'Harm.\nDragão',    tl:'Espírito N3',   dmg:'+1d6 após 3 turnos',         ds:'Alinha o chi com a origem do fogo. Bónus após 3 turnos de combate.',           req:'Chama Interior+Resp. Dragão',deps:['sp2a']},
+  {id:'sp4a',chi:4,b:'sp',t:3,c:0,l:'Visão\nInfrav.',   tl:'Espírito N4',   dmg:'Vê inimigos invisíveis',     ds:'Vê o calor corporal de qualquer ser, incluindo invisíveis.',                   req:'Sentido Térm.+Medit. Fogo',deps:['sp3b']},
+  {id:'sp4b',chi:1,b:'sp',t:3,c:2,l:'Aura de\nChamas',  tl:'Espírito N4',   dmg:'1d6 Queimadura em 1,5m',     ds:'Envolve o corpo numa aura de calor. Queima inimigos corpo a corpo.',           req:'Harm. Dragão+Resist. Calor',deps:['sp3c','sp2c']},
+  {id:'sp5a',chi:6,b:'sp',t:4,c:0,l:'Chama\nEterna',    tl:'Lendário — Espírito', dmg:'Fogo não pode ser extinto', ds:'O fogo não pode ser extinto por meios naturais.',                       req:'Aura Chamas+Luz da Alma',deps:['sp4b','sp3a']},
+  {id:'sp5b',chi:6,b:'sp',t:4,c:2,l:'Olho do\nDragão',  tl:'Lendário — Espírito', dmg:'Perceção total calor, 30m', ds:'Perceção total pelo calor, raio 30m, sem ponto cego.',                  req:'Visão Infrav.+Sentido Térm.',deps:['sp4a']},
+  // AGILIDADE
+  {id:'ag1a',chi:0,b:'ag',t:0,c:0,l:'Prop.\nChama',     tl:'Agilidade N1',  dmg:'Velocidade +6m',             ds:'Jatos de fogo aumentam a velocidade de movimento em +6m.',                    req:'—',deps:[]},
+  {id:'ag1b',chi:1,b:'ag',t:0,c:2,l:'Reflexo\nArdente', tl:'Agilidade N1',  dmg:'Reação: 1d4 contraataque',   ds:'Ao ser atacado: esquiva e contraataca com 1d4 de fogo.',                       req:'—',deps:[]},
+  {id:'ag2a',chi:1,b:'ag',t:1,c:0,l:'Rastro\nChamas',   tl:'Agilidade N2',  dmg:'1d4 Queimadura a quem pisar',ds:'Deixa rastro de fogo ao mover-se.',                                           req:'Prop. Chama',deps:['ag1a']},
+  {id:'ag2b',chi:2,b:'ag',t:1,c:1,l:'Dança\nFogo',      tl:'Agilidade N2',  dmg:'Ataques têm desvantagem',    ds:'Movimentos imprevisíveis — ataques contra ti têm desvantagem.',                req:'Reflexo Ardente',deps:['ag1b']},
+  {id:'ag2c',chi:1,b:'ag',t:1,c:2,l:'Salto\nChama',     tl:'Agilidade N2',  dmg:'Salta até 9m verticais',     ds:'Impulsiona saltos com explosões de fogo nos pés.',                            req:'Prop. Chama',deps:['ag1a']},
+  {id:'ag3a',chi:3,b:'ag',t:2,c:0,l:'Voo\nSustentado',  tl:'Agilidade N3',  dmg:'Velocidade voo 12m',         ds:'Mantém-se no ar com jatos contínuos nos pés e mãos.',                         req:'Salto Chama+Prop. Chama',deps:['ag2c']},
+  {id:'ag3b',chi:1,b:'ag',t:2,c:1,l:'Esq.\nArdente',    tl:'Agilidade N3',  dmg:'1d6 ao inimigo que avança',  ds:'Cada esquiva deixa uma chama enganosa no local.',                             req:'Dança Fogo+Reflexo Ardente',deps:['ag2b']},
+  {id:'ag3c',chi:4,b:'ag',t:2,c:2,l:'Corredor\nChamas', tl:'Agilidade N3',  dmg:'2d4 a inimigos no caminho',  ds:'Velocidade triplicada em linha reta. 2d4 Queimadura.',                        req:'Rastro Chamas+Salto Chama',deps:['ag2a','ag2c']},
+  {id:'ag4a',chi:4,b:'ag',t:3,c:0,l:'Asa de\nFogo',     tl:'Agilidade N4',  dmg:'Velocidade voo 18m',         ds:'Asas de chama. Velocidade de voo 18m.',                                       req:'Voo Sustentado+Rastro Chamas',deps:['ag3a']},
+  {id:'ag4b',chi:4,b:'ag',t:3,c:1,l:'Miragem\nChamas',  tl:'Agilidade N4',  dmg:'1d3 cópias de chama',        ds:'Cria cópias de chama que imitam os teus movimentos.',                         req:'Esq. Ardente+Dança Fogo',deps:['ag3b']},
+  {id:'ag4c',chi:11,b:'ag',t:3,c:2,l:'Turbina\nFogo',    tl:'Agilidade N4',  dmg:'3d6 a todos em 6m',          ds:'Gira a velocidade extrema criando um furacão de fogo.',                       req:'Corredor Chamas+Voo Sustentado',deps:['ag3c','ag3a']},
+  {id:'ag5a',chi:50,b:'ag',t:4,c:0,l:'Cometa\nPessoal',  tl:'Lendário — Agilidade', dmg:'4d10 + área',         ds:'Move-se a velocidade de projétil com cauda de fogo devastadora.',              req:'Asa Fogo+Turbina Fogo',deps:['ag4a','ag4c']},
+  {id:'ag5b',chi:6,b:'ag',t:4,c:2,l:'Fantasma\nChamas', tl:'Lendário — Agilidade', dmg:'1d6 cópias — impossível rastrear', ds:'Cria 1d6 cópias enquanto se move invisível.',                  req:'Miragem Chamas+Esq. Ardente',deps:['ag4b','ag3b']},
+  // COMBATE PARTILHADO
+  {id:'cb1a',chi:1,b:'cb',t:0,c:0,l:'Jato de\nChama',   tl:'Combate N1',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Feixe de fogo concentrado e preciso a distância.',       req:'—',deps:[]},
+  {id:'cb1b',chi:1,b:'cb',t:0,c:1,l:'Faísca',           tl:'Combate N1',    dmg:'M0:1d4 · M1:2d4+Ch · M2:3d4 · M3:5d4',  ds:'Descarga elétrica curta. Atordoa 1 ação em falha.',      req:'—',deps:[]},
+  {id:'cb1c',chi:3,b:'cb',t:0,c:2,l:'Bola de\nFogo',    tl:'Combate N1',    dmg:'M0:1d10 · M1:2d10+Q · M2:3d10 · M3:5d10',ds:'Massa de fogo explosiva. Área de 1,5m.',               req:'—',deps:[]},
+  {id:'cb1d',chi:2,b:'cb',t:0,c:3,l:'Sopro de\nFogo',   tl:'Combate N1',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Expele fogo em cone de 6m.',                             req:'—',deps:[]},
+  {id:'cb2a',chi:2,b:'cb',t:1,c:0,l:'Dedo de\nFogo',    tl:'Combate N2',    dmg:'M0:1d8 · M1:2d8+Q · M2:3d8 · M3:5d8',   ds:'Projéteis precisíssimos. Alcance 18m, ignora cobertura.',req:'Jato de Chama',deps:['cb1a']},
+  {id:'cb2b',chi:1,b:'cb',t:1,c:1,l:'Chicote\nChama',   tl:'Combate N2',    dmg:'M0:1d6 · M1:2d6+Q · M2:3d6 · M3:5d6',   ds:'Chicote de fogo que derruba o alvo. Alcance 3m.',        req:'Jato de Chama',deps:['cb1a']},
+  {id:'cb2c',chi:3,b:'cb',t:1,c:2,l:'Desc.\nEstática',  tl:'Combate N2',    dmg:'M0:1d10 · M1:2d10+Ch · M2:3d10 · M3:5d10',ds:'Descarga elétrica que paralisa um membro.',            req:'Faísca',deps:['cb1b']},
+  {id:'cb2d',chi:5,b:'cb',t:1,c:3,l:'Muro de\nChamas',  tl:'Combate N2',    dmg:'2d6 Queimadura a quem atravessar',       ds:'Barreira de fogo em área que dura 1 min.',              req:'Bola de Fogo',deps:['cb1c']},
+  {id:'cb2e',chi:8,b:'cb',t:1,c:4,l:'Cone de\nFogo',    tl:'Combate N2',    dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8',   ds:'Cone de fogo alargado de 9m.',                          req:'Sopro de Fogo',deps:['cb1d']},
+  {id:'cb2f',chi:10,b:'cb',t:1,c:5,l:'Bomba\nFogo ★',    tl:'Combate N2 ★',  dmg:'M0:2d8 · M1:3d8+Q · M2:5d8 · M3:8d8+At',ds:'Projétil explosivo em área 3m. Queimadura+Atordoado M3.',req:'Bola de Fogo',deps:['cb1c']},
+  // PRECISO
+  {id:'pr3a',chi:8,b:'pr',t:2,c:0,l:'Lança de\nFogo',   tl:'Preciso N3',    dmg:'2d8, penetra resistência',   ds:'Projétil de fogo estreito. Ignora resistência a fogo.',                       req:'Dedo Fogo+Jato Chama',deps:['cb2a']},
+  {id:'pr3b',chi:5,b:'pr',t:2,c:1,l:'Corrente\nElét.',  tl:'Preciso N3',    dmg:'2d6 elétrico, salta 2º alvo',ds:'Raio elétrico contínuo que salta para um segundo alvo.',                      req:'Desc. Estática+Faísca',deps:['cb2c']},
+  {id:'pr3c',chi:10,b:'pr',t:2,c:2,l:'Agulhas\nFogo',    tl:'Preciso N3',    dmg:'4d4 a até 4 alvos',          ds:'Dezenas de micro-projéteis em leque atingem até 4 alvos.',                    req:'Dedo de Fogo',deps:['cb2a']},
+  {id:'pr4a',chi:50,b:'pr',t:3,c:0,l:'Dobra\nRelâmp.',   tl:'Preciso N4',    dmg:'4d10 elétrico — Choque+Atord.',ds:'Raio elétrico devastador. Requer Harm. Dragão (ESP).',                     req:'Harm. Dragão(ESP)+Corrente Elét.',deps:['pr3b','sp3c']},
+  {id:'pr4b',chi:5,b:'pr',t:3,c:1,l:'Feixe\nContínuo',  tl:'Preciso N4',    dmg:'2d6 Queimadura/turno',       ds:'Feixe de fogo focado num alvo por múltiplos turnos.',                         req:'Lança Fogo',deps:['pr3a']},
+  {id:'pr4c',chi:18,b:'pr',t:3,c:2,l:'Tempest.\nElét.',  tl:'Preciso N4',    dmg:'3d8 em área 6m, salta alvos',ds:'Descarga elétrica em área que salta entre múltiplos inimigos.',               req:'Corrente Elét.+Agulhas Fogo',deps:['pr3b','pr3c']},
+  {id:'pr5a',chi:12,b:'pr',t:5,c:0,l:'Redir.\nRelâmp.',  tl:'Lendário — Preciso', dmg:'Absorve + redireciona +2d10', ds:'Absorve e redireciona energia elétrica de qualquer fonte.',            req:'Dobra Relâmp.',deps:['pr4a']},
+  {id:'pr5b',chi:73,b:'pr',t:5,c:1,l:'Chama\nAzul',      tl:'Lendário — Preciso', dmg:'6d8 — ignora imunidade fogo', ds:'Fogo de temperatura extrema. Ignora imunidade a fogo normal.',         req:'Dobra Relâmp.+Voo Sustentado(AGI)',deps:['pr4a','ag3a']},
+  {id:'pr5c',chi:48,b:'pr',t:5,c:2,l:'Relâmp.\nDuplo',   tl:'Lendário — Preciso', dmg:'4d10×2 alvos no mesmo turno', ds:'Dois raios simultâneos com precisão absoluta.',                       req:'Dobra Relâmp.+Tempest. Elét.',deps:['pr4a','pr4c']},
+  // BRUTO
+  {id:'br3a',chi:10,b:'br',t:2,c:0,l:'Anel de\nFogo ★',  tl:'Bruto N3 ★',    dmg:'2d8 6m — Queim+Medo',        ds:'Círculo de chamas em expansão. Queimadura+Medo no M3.',                       req:'Muro Chamas+Bola Fogo',deps:['cb2d']},
+  {id:'br3b',chi:20,b:'br',t:2,c:1,l:'Dragão\nChamas ★', tl:'Bruto N3 ★',    dmg:'3d8, persegue — Queim+Medo', ds:'Serpente de fogo viva que persegue inimigos. Queim+Medo no M3.',              req:'Cone Fogo+Sopro Fogo',deps:['cb2e']},
+  {id:'br3c',chi:14,b:'br',t:2,c:2,l:'Dobra\nCombust.★', tl:'Bruto N3 ★',    dmg:'2d10 área 3m — Queim+Atord.', ds:'Explosões pela testa à distância. Queim+Atord. no M3.',                    req:'Chama Interior(ESP)+Bomba Fogo',deps:['cb2f','sp2a']},
+  {id:'br4a',chi:34,b:'br',t:3,c:0,l:'Explosão\nSolar ★',tl:'Bruto N4 ★',    dmg:'4d8 360° 9m — Queim+Cegueira',ds:'Explosão total em todas as direções. Queim+Cegueira no M3.',                req:'Anel Fogo+Harm. Dragão(ESP)',deps:['br3a','sp3c'],yo:55},
+  {id:'br4b',chi:4,b:'br',t:3,c:1,l:'Inferno\nSustentado',tl:'Bruto N4',    dmg:'Zona cresce 1d6 raio/turno',  ds:'Zona de fogo contínuo que cresce a cada turno.',                             req:'Dragão Chamas+Muro Chamas',deps:['br3b']},
+  {id:'br4c',chi:14,b:'br',t:3,c:2,l:'Expl.\nCombust.★', tl:'Bruto N4 ★',    dmg:'2d10×3 — Queim+Atord.',      ds:'Até 3 explosões por turno. Queim+Atord. no M3.',                             req:'Dobra Combustão+Anel Fogo',deps:['br3c','br3a']},
+  {id:'br5a',chi:134,b:'br',t:5,c:0,l:'Nova\nSolar',       tl:'Lendário — Bruto', dmg:'8d8 raio 18m — Queim+Ceg+Atord.', ds:'Explosão de fogo cataclísmica. Três efeitos simultâneos.',          req:'Explosão Solar+Chama Eterna(ESP)',deps:['br4a','sp5a']},
+  {id:'br5b',chi:6,b:'br',t:5,c:1,l:'Dragão\nEterno',    tl:'Lendário — Bruto', dmg:'3d10/turno — dragão 60PV', ds:'Dragão de fogo colossal permanente no campo de batalha.',                  req:'Inferno Sustentado+Cometa Pessoal(AGI)',deps:['br4b','ag5a']},
+  {id:'br5c',chi:78,b:'br',t:5,c:2,l:'Olho da\nCombust.', tl:'Lendário — Bruto', dmg:'5d10 área — Queim+Cegueira', ds:'Explosões guiadas por visão térmica. Sem ponto cego.',                   req:'Expl. Combustão+Visão Infrav.(ESP)',deps:['br4c','sp4a']},
+];
+
+// ── LAYOUT ────────────────────────────────────────────────
+const CW=NW+HGAP;
+const BX={sp:ML, ag:ML+3*CW+BGAP, cb:ML+6*CW+2*BGAP, pr:ML+6*CW+2*BGAP, br:ML+6*CW+2*BGAP+3*CW+16};
+function tyb(t){return t<=4?MT+t*(NH+VGAP)+NH/2:MT+4*(NH+VGAP)+NH/2+LEX;}
+const NM={};
+RAW.forEach(n=>{n.x=BX[n.b]+n.c*CW+NW/2;n.y=tyb(n.t)+(n.yo||0);NM[n.id]=n;});
+const CW2=BX.br+3*CW+40;
+const CH=tyb(5)+NH/2+50;
+
+// Edges from deps
+const EDGES=[];
+RAW.forEach(n=>n.deps.forEach(d=>{const a=NM[d];if(a)EDGES.push([d,n.id,a.b!==n.b]);}));
+
+// ── GAME STATE ────────────────────────────────────────────
+let S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+function maxChi(){return 6+(S.lvl*5)+(S.attr.CHI*4);}
+function gm(id){const u=S.uses[id]||0;return u>=150?3:u>=50?2:u>=15?1:0;}
+function atOk(id){const r=AREQ[id];if(!r)return true;return Object.entries(r).every(([a,v])=>S.attr[a]>=v);}
+function dpOk(n){return n.deps.every(d=>S.unl.has(d));}
+function ptOk(n){return!(n.b==='pr'&&S.path==='br')&&!(n.b==='br'&&S.path==='pr');}
+function canUnl(n){return!S.unl.has(n.id)&&atOk(n.id)&&dpOk(n)&&ptOk(n);}
+function totUses(){return Object.values(S.uses).reduce((a,b)=>a+b,0);}
+function chiCost(n){return n.chi||0;}
+function canAffordChi(n){return S.chi>=chiCost(n);}
+
+function gainLevel(){
+  if(S.lvl>=40){addLog('Nível máximo (40) já atingido!','b');return;}
+  S.lvl++;S.pts+=3;
+  const mc=maxChi();
+  S.chi=Math.min(S.chi+ (mc-maxChiAtPrevLevel()) ,mc); // grant the level-up chi delta, capped
+  addLog(`✦ Nível ${S.lvl}! +3 pontos de atributo. Chi máximo: ${mc}`,'g');
+  document.getElementById('hv-lvl').textContent=S.lvl;
+  document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+  render(selId);
+}
+function maxChiAtPrevLevel(){return 6+((S.lvl-1)*5)+(S.attr.CHI*4);}
+function restoreChi(){
+  S.chi=maxChi();
+  addLog('💠 Chi totalmente restaurado.','g');
+  updChiBar();
+  if(selId)refreshPanelStatus(NM[selId]);
+}
+function updChiBar(){
+  const mc=maxChi();
+  if(S.chi>mc)S.chi=mc;
+  const pct=mc>0?Math.max(0,Math.min(100,(S.chi/mc)*100)):0;
+  document.getElementById('chi-bar-fill').style.width=pct+'%';
+  document.getElementById('hv-chi-txt').textContent=`${S.chi} / ${mc}`;
+  // color shift when low
+  const fill=document.getElementById('chi-bar-fill');
+  if(pct<20)fill.style.background='linear-gradient(90deg,#8a2a2a,#C84848)';
+  else if(pct<50)fill.style.background='linear-gradient(90deg,#8a6a1a,#EF9F27)';
+  else fill.style.background='linear-gradient(90deg,#3a8a9a,#5DCAA5)';
+}
+function resetAll(){
+  S={lvl:1,pts:3,attr:{FOR:0,AGI:0,PER:0,ESP:0,CHI:0,RES:0},unl:new Set(),uses:{},path:null,chi:0};
+  S.chi=maxChi();
+  logs=[];document.getElementById('log-e').innerHTML='';
+  document.getElementById('attr-row').innerHTML='';
+  updHUD();render(null);closePanel();
+}
+function chAttr(a,d){
+  const cur=S.attr[a],nv=cur+d;
+  if(nv<0)return;
+  if(nv>30){addLog(`${a} já está no máximo (30)!`,'b');return;}
+  if(d>0&&S.pts<=0){addLog('Sem pontos! Ganha um nível primeiro.','b');return;}
+  if(d<0){
+    const bad=[...S.unl].find(id=>{const r=AREQ[id];return r&&r[a]&&nv<r[a];});
+    if(bad){addLog(`Não podes reduzir ${a}: ${NM[bad].l.replace('\n',' ')} precisa ${a} ${AREQ[bad][a]}`,'b');return;}
+  }
+  const oldMax=maxChi();
+  S.attr[a]=nv; if(d>0)S.pts--;else S.pts++;
+  const newMax=maxChi();
+  if(a==='CHI'){ S.chi=Math.max(0,Math.min(newMax,S.chi+(newMax-oldMax))); }
+  // Only update the specific attribute value span — don't rebuild the whole HUD
+  const valEl=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
+  if(valEl)valEl.textContent=S.attr[a];
+  document.getElementById('hv-pts').textContent=S.pts;
+  updChiBar();
+  // Update panel status if open
+  if(selId)refreshPanelStatus(NM[selId]);
+  render(selId);
+}
+function updHUD(){
+  document.getElementById('hv-lvl').textContent=S.lvl;
+  document.getElementById('hv-pts').textContent=S.pts;
+  document.getElementById('hv-unl').textContent=S.unl.size;
+  document.getElementById('hv-uses').textContent=totUses();
+  updChiBar();
+  // Only rebuild attr row if it's empty (first render)
+  const row=document.getElementById('attr-row');
+  if(!row.hasChildNodes()||row.children.length!==ATTRS.length){
+    row.innerHTML=ATTRS.map(a=>`
+      <div class="attr-block" data-attr="${a}">
+        <span class="attr-name" style="color:${ACOL[a]}">${a}</span>
+        <div class="attr-btns">
+          <button class="ab" onclick="chAttr('${a}',-1)">−</button>
+          <span class="attr-val" style="color:${ACOL[a]}">${S.attr[a]}</span>
+          <button class="ab" onclick="chAttr('${a}',1)">+</button>
+        </div>
+      </div>`).join('');
+  } else {
+    // Just update values in place
+    ATTRS.forEach(a=>{
+      const el=document.querySelector(`#attr-row [data-attr="${a}"] .attr-val`);
+      if(el)el.textContent=S.attr[a];
+    });
+  }
+}
+// Refresh only the panel status/actions without re-rendering canvas
+function refreshPanelStatus(n){
+  if(!n)return;
+  const unl=S.unl.has(n.id),av=canUnl(n),m=gm(n.id),u=S.uses[n.id]||0;
+  const r=AREQ[n.id];
+  const cost=chiCost(n);
+  // Update attr badges
+  let ah=n.req&&n.req!=='—'?`<div style="font-size:10px;color:#5a5856;font-style:italic;margin-bottom:6px">Pré-req: ${n.req}</div>`:'';
+  if(r){
+    ah+='<div style="font-size:9px;color:#5a5856;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Atributos necessários</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">';
+    Object.entries(r).forEach(([a,v])=>{
+      const cv=S.attr[a],ok=cv>=v;
+      ah+=`<div style="padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid ${ok?ACOL[a]:'#3a3a48'};color:${ok?ACOL[a]:'#5a5856'};background:${ok?ACOL[a]+'15':'#1a1a22'}">${a} ${cv}/${v} ${ok?'✓':'✗'}</div>`;
+    });
+    ah+='</div>';
+  }
+  // Chi cost badge always shown
+  const restoreVal=n.restore||0;
+  ah+=`<div style="margin-top:4px;display:flex;gap:5px;flex-wrap:wrap"><span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #3a8a9a;color:#5DCAA5;background:#0a2e2a">💠 Custo: ${cost} Chi</span>${restoreVal>0?`<span style="padding:3px 9px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid #2a8a5a;color:#7DEAB5;background:#0a3a2a">✦ Restaura: ${restoreVal} Chi</span>`:''}</div>`;
+  document.getElementById('p-attrs').innerHTML=ah;
+  // Update actions/status
+  let act='',st='';
+  if(!unl){
+    let rs=[];
+    if(!dpOk(n))rs.push('Faltam pré-requisitos desbloqueados');
+    if(!ptOk(n))rs.push(`Já escolheste o caminho ${S.path==='pr'?'Preciso':'Bruto'}`);
+    if(r)Object.entries(r).forEach(([a,v])=>{if(S.attr[a]<v)rs.push(`${a}: tens ${S.attr[a]}, precisas ${v}`);});
+    act=`<button class="pb2 pu" ${av?'':'disabled'} onclick="doUnl('${n.id}')">Desbloquear Habilidade</button>`;
+    st=rs.length?`<div class="pst warn">${rs.join('<br>')}</div>`:`<div class="pst ok">✓ Pronto para desbloquear</div>`;
+  } else {
+    const afford=canAffordChi(n);
+    act=`<button class="pb2 puse" ${afford?'':'disabled'} onclick="doUse('${n.id}')">${restoreVal>0?'✦':'⚡'} Usar — ${cost} Chi${restoreVal>0?' (+'+restoreVal+' restaura)':''} (${u} usos)</button>`;
+    const nx=m<3?UTH[m+1]:null;
+    if(nx!==null){
+      act+=`<button class="pb2 pup" ${u>=nx?'':'disabled'} onclick="doUpg('${n.id}')">⭐ Subir para M${m+1} (${nx} usos)</button>`;
+    }
+    if(!afford){
+      st=`<div class="pst err">Chi insuficiente (${S.chi}/${cost})</div>`;
+    } else if(nx!==null){
+      st=`<div class="pst ${u>=nx?'ok':'warn'}">${u>=nx?'Pronto para subir maestria!':'Faltam '+(nx-u)+' usos para M'+(m+1)}</div>`;
+    } else {
+      st=`<div class="pst ok">★ Maestria máxima M3!</div>`;
+    }
+  }
+  document.getElementById('p-act').innerHTML=act;
+  document.getElementById('p-st').innerHTML=st;
+}
+
+// ── CANVAS ────────────────────────────────────────────────
+const canvas=document.getElementById('c');
+// Set dimensions once — reassigning width/height resets ctx state
+canvas.setAttribute('width', CW2);
+canvas.setAttribute('height', CH);
+const ctx=canvas.getContext('2d');
+// Safety: re-get ctx if lost
+function getCtx(){return canvas.getContext('2d');}
+
+function buildOff(){
+  const g={};
+  EDGES.forEach(([a,b])=>{const na=NM[a],nb=NM[b];if(!na||!nb)return;const k=`${Math.round(na.x)}_${Math.round(nb.x)}`;if(!g[k])g[k]=[];g[k].push(a+'|'+b);});
+  const o={};
+  Object.values(g).forEach(gr=>gr.forEach((k,i)=>{o[k]=(gr.length===1)?0:(i-(gr.length-1)/2)*9;}));
+  return o;
+}
+const OFF=buildOff();
+
+function drawEdge(ctx,a,b,dash,hov,lit){
+  if(!a||!b)return;
+  const k=a.id+'|'+b.id,off=OFF[k]||0;
+  const ax=a.x+off,ay=a.y+NH/2+2,bx=b.x+off,by=b.y-NH/2-2,my=ay+(by-ay)*0.5;
+  const s=SC[a.b]||SC.cb;
+  ctx.save();
+  ctx.strokeStyle=hov?s.light:s.stroke;
+  ctx.lineWidth=hov?2:1.3;
+  ctx.globalAlpha=hov?0.9:lit?0.65:dash?0.22:0.38;
+  if(dash)ctx.setLineDash([8,6]);
+  ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax,my);ctx.lineTo(bx,my);ctx.lineTo(bx,by);
+  ctx.stroke();ctx.restore();
+}
+
+function rr(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+
+function drawNode(ctx,n,hov){
+  const s=sc(n);
+  if(!s)return;
+  const unl=S.unl.has(n.id),av=canUnl(n),x=n.x-NW/2,y=n.y-NH/2,m=gm(n.id);
+  ctx.save();
+  if(unl){ctx.shadowColor=s.light;ctx.shadowBlur=hov?20:8;}
+  else if(hov&&av){ctx.shadowColor=s.stroke;ctx.shadowBlur=14;}
+  rr(ctx,x,y,NW,NH,5);
+  ctx.fillStyle=unl?s.fill:av?s.fill+'99':'#0d0d0f';ctx.fill();
+  if(unl){ctx.strokeStyle=s.light;ctx.lineWidth=2;}
+  else if(hov&&av){ctx.strokeStyle=s.stroke;ctx.lineWidth=2;}
+  else if(av){ctx.strokeStyle=s.stroke;ctx.lineWidth=1.2;ctx.globalAlpha=0.6;}
+  else{ctx.strokeStyle='#252530';ctx.lineWidth=1;ctx.globalAlpha=0.3;}
+  ctx.stroke();ctx.globalAlpha=1;
+  if(n.t>=4&&unl){rr(ctx,x+4,y+4,NW-8,NH-8,3);ctx.strokeStyle='#EF9F27';ctx.lineWidth=0.8;ctx.globalAlpha=0.45;ctx.stroke();ctx.globalAlpha=1;}
+  if(unl&&MAE[n.id]){for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(n.x+NW/2-8-i*8,n.y+NH/2-5,2.5,0,Math.PI*2);ctx.fillStyle=i<m?'#EF9F27':'#252530';ctx.fill();}}
+  if(!unl&&!av){ctx.globalAlpha=0.3;ctx.font="10px 'Segoe UI'";ctx.textAlign='center';ctx.fillStyle='#3a3a48';ctx.fillText('🔒',n.x,n.y+4);ctx.globalAlpha=1;}
+  const lines=n.l.split('\n');
+  ctx.fillStyle=unl?s.text:av?s.text:'#2e2e3a';
+  if(!unl&&!av)ctx.globalAlpha=0.35;
+  ctx.textAlign='center';ctx.font="500 9px 'Segoe UI',system-ui,sans-serif";
+  if(lines.length===1)ctx.fillText(lines[0],n.x,n.y+3);
+  else{ctx.fillText(lines[0],n.x,n.y-4);ctx.fillText(lines[1],n.x,n.y+7);}
+  ctx.globalAlpha=1;ctx.restore();
+}
+
+function drawBg(ctx){
+  ctx.fillStyle='#0d0d0f';ctx.fillRect(0,0,CW2,CH);
+  const bands=[];
+  for(let t=0;t<=4;t++){
+    const y0=t===0?0:MT+t*(NH+VGAP)-VGAP/2;
+    const y1=t===4?MT+4*(NH+VGAP)+NH/2+LEX/2:MT+(t+1)*(NH+VGAP)-VGAP/2;
+    bands.push({t,y0,y1});
+  }
+  bands.push({t:5,y0:MT+4*(NH+VGAP)+NH/2+LEX/2,y1:CH});
+  bands.forEach(({t,y0,y1})=>{
+    ctx.fillStyle=t%2===0?'#0d0d0f':'#111118';ctx.fillRect(0,y0,CW2,y1-y0);
+    ctx.fillStyle=t>=4?'#BA7517':'#2a2a38';ctx.font='700 9px Segoe UI,system-ui,sans-serif';ctx.textAlign='left';
+    ctx.fillText(t>=4?'LENDÁRIO':TLABELS[t].toUpperCase(),8,(y0+y1)/2+4);
+    ctx.strokeStyle='#181820';ctx.lineWidth=1;ctx.setLineDash([4,8]);
+    ctx.beginPath();ctx.moveTo(60,y1);ctx.lineTo(CW2-10,y1);ctx.stroke();ctx.setLineDash([]);
+  });
+  const BD=[
+    {b:'sp',x:BX.sp-12,w:3*CW+4,f:0,to:CH},
+    {b:'ag',x:BX.ag-12,w:3*CW+4,f:0,to:CH},
+    {b:'cb',x:BX.cb-12,w:6*CW+4,f:0,to:MT+2*(NH+VGAP)-VGAP/2},
+    {b:'pr',x:BX.pr-12,w:3*CW+2,f:MT+2*(NH+VGAP)-VGAP/2,to:CH},
+    {b:'br',x:BX.br-4, w:3*CW+16,f:MT+2*(NH+VGAP)-VGAP/2,to:CH},
+  ];
+  const BL={sp:'ESPIRITUALIDADE',ag:'AGILIDADE',cb:'COMBATE PARTILHADO (N1–N2)',pr:'◀ PRECISO (N3+)',br:'BRUTO (N3+) ▶'};
+  BD.forEach(({b,x,w,f,to})=>{
+    const s=SC[b];
+    ctx.fillStyle=s.fill;ctx.globalAlpha=0.07;ctx.fillRect(x,f,w,to-f);ctx.globalAlpha=1;
+    ctx.strokeStyle=s.stroke;ctx.lineWidth=1.5;ctx.globalAlpha=0.2;ctx.strokeRect(x,f,w,to-f);ctx.globalAlpha=1;
+    ctx.fillStyle=s.light;ctx.font='700 10px Segoe UI,system-ui,sans-serif';ctx.textAlign='center';ctx.globalAlpha=0.75;
+    ctx.fillText(BL[b],x+w/2,f+14);ctx.globalAlpha=1;
+  });
+  ctx.strokeStyle='#3a1a08';ctx.lineWidth=1;ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(BX.br-6,MT+2*(NH+VGAP)-VGAP/2);ctx.lineTo(BX.br-6,CH-10);ctx.stroke();ctx.setLineDash([]);
+}
+
+let selId=null;
+let _rafPending=false;
+let _pendingHov=null;
+function render(hov){
+  _pendingHov=hov;
+  if(_rafPending)return;
+  _rafPending=true;
+  requestAnimationFrame(()=>{
+    _rafPending=false;
+    const hovId=_pendingHov;
+    const c=canvas.getContext('2d');
+    c.clearRect(0,0,CW2,CH);
+    drawBg(c);
+    const hs=new Set();
+    if(hovId)EDGES.forEach(([a,b])=>{if(a===hovId||b===hovId)hs.add(a+'|'+b);});
+    EDGES.forEach(([a,b,dash])=>{
+      const na=NM[a],nb=NM[b];if(!na||!nb)return;
+      drawEdge(c,na,nb,dash,hs.has(a+'|'+b),S.unl.has(a)&&S.unl.has(b));
+    });
+    RAW.forEach(n=>drawNode(c,n,n.id===hovId||n.id===selId));
+  });
+}
+
+// ── PANEL ─────────────────────────────────────────────────
+let logs=[];
+function addLog(msg,t=''){
+  logs.unshift({msg,t});if(logs.length>25)logs.pop();
+  document.getElementById('log-e').innerHTML=logs.map(e=>`<div class="le ${e.t}">${e.msg}</div>`).join('');
+}
+
+function openPanel(n){
+  selId=n.id;
+  document.getElementById('p-tier').textContent=n.tl;
+  document.getElementById('p-name').textContent=n.l.replace('\n',' ');
+  document.getElementById('p-dmg').textContent=n.dmg;
+  document.getElementById('p-desc').textContent=n.ds;
+  // maestria (static once unlocked)
+  const unl=S.unl.has(n.id),m=gm(n.id),u=S.uses[n.id]||0,mae=MAE[n.id];
+  let mh='';
+  if(mae&&unl){
+    mh=mae.l.map((lv,i)=>{
+      const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${cur?'c':act?'a':''}"></div><div class="mv ${act?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    if(u>0)mh+=`<div style="font-size:10px;color:#EF9F27;margin-top:3px">Usos: ${u} · próx. M${Math.min(m+1,3)}: ${UTH[Math.min(m+1,3)]}</div>`;
+  } else if(mae){
+    mh='<div style="font-size:10px;color:#5a5856">Desbloqueia para ver maestria</div>';
+  } else {
+    mh='<div style="font-size:10px;color:#5a5856">Sem sistema de maestria</div>';
+  }
+  document.getElementById('p-mae').innerHTML=mh;
+  refreshPanelStatus(n);
+  document.getElementById('panel').classList.add('open');
+  render(n.id);
+}
+
+function closePanel(){document.getElementById('panel').classList.remove('open');selId=null;render(null);}
+
+function doUnl(id){
+  const n=NM[id];if(!canUnl(n)){addLog(`Não podes desbloquear ${n.l.replace('\n',' ')}.`,'b');return;}
+  S.unl.add(id);if(n.b==='pr')S.path='pr';if(n.b==='br')S.path='br';
+  addLog(`✦ Desbloqueaste: ${n.l.replace('\n',' ')}`,'g');
+  document.getElementById('hv-unl').textContent=S.unl.size;
+  // Refresh maestria section since it changes on unlock
+  const mae=MAE[id];
+  if(mae){
+    let mh=mae.l.map((lv,i)=>{
+      const th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${i===0?'c':''}"></div><div class="mv ${i===0?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    document.getElementById('p-mae').innerHTML=mh;
+  }
+  refreshPanelStatus(n);
+  render(id);
+}
+function doUse(id){
+  if(!S.unl.has(id))return;
+  const n=NM[id];
+  const cost=chiCost(n);
+  const restore=n.restore||0;
+  if(!canAffordChi(n)){addLog(`Chi insuficiente para usar ${n.l.replace('\n',' ')} (${S.chi}/${cost}).`,'b');return;}
+  S.chi-=cost;
+  if(restore>0){
+    const mc=maxChi();
+    S.chi=Math.min(mc,S.chi+restore);
+  }
+  S.uses[id]=(S.uses[id]||0)+1;
+  document.getElementById('hv-uses').textContent=totUses();
+  updChiBar();
+  if(restore>0){
+    addLog(`💠 Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi, +${restore} Chi restaurado (${S.uses[id]} usos, M${gm(id)})`,'g');
+  } else {
+    addLog(`⚡ Usaste: ${n.l.replace('\n',' ')} — -${cost} Chi (${S.uses[id]} usos, M${gm(id)})`);
+  }
+  // Refresh maestria dots
+  const mae=MAE[id],m=gm(id),u=S.uses[id];
+  if(mae){
+    let mh=mae.l.map((lv,i)=>{
+      const act=i<=m,cur=i===m,th=i===0?'Base':`${UTH[i]} usos`;
+      return `<div class="mr"><div class="md ${cur?'c':act?'a':''}"></div><div class="mv ${act?'a':''}">${lv}</div><div class="mu">${th}</div></div>`;
+    }).join('');
+    mh+=`<div style="font-size:10px;color:#EF9F27;margin-top:3px">Usos: ${u} · próx. M${Math.min(m+1,3)}: ${UTH[Math.min(m+1,3)]}</div>`;
+    document.getElementById('p-mae').innerHTML=mh;
+  }
+  refreshPanelStatus(n);
+  render(id);
+}
+function doUpg(id){
+  const m=gm(id);if(m>=3||(S.uses[id]||0)<UTH[m+1])return;
+  addLog(`⭐ Maestria M${m+1}: ${NM[id].l.replace('\n',' ')}`,'g');
+  doUse(id); // calling doUse re-renders everything needed
+}
+
+// ── INTERACTION ───────────────────────────────────────────
+canvas.addEventListener('mousemove',function(e){
+  const r=canvas.getBoundingClientRect(),mx=(e.clientX-r.left)*(CW2/r.width),my=(e.clientY-r.top)*(CH/r.height);
+  let f=null;for(const n of RAW){if(mx>=n.x-NW/2&&mx<=n.x+NW/2&&my>=n.y-NH/2&&my<=n.y+NH/2){f=n;break;}}
+  canvas.style.cursor=f?'pointer':'default';
+  if(f&&f.id!==selId)render(f.id);else if(!f&&selId)render(selId);else if(!f)render(null);
+});
+canvas.addEventListener('click',function(e){
+  const r=canvas.getBoundingClientRect(),mx=(e.clientX-r.left)*(CW2/r.width),my=(e.clientY-r.top)*(CH/r.height);
+  for(const n of RAW){if(mx>=n.x-NW/2&&mx<=n.x+NW/2&&my>=n.y-NH/2&&my<=n.y+NH/2){if(selId===n.id)closePanel();else openPanel(n);return;}}
+  closePanel();
+});
+canvas.addEventListener('mouseleave',()=>render(selId));
+
+S.chi=maxChi();
+render(null);updHUD();
+</script>
+</body>
+</html>

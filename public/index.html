@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Avatar RPG — Sistema Completo</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components/nav-tabs.css">
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/attr-panel.css">
+  <link rel="stylesheet" href="css/components/stat-bars.css">
+  <link rel="stylesheet" href="css/components/skill-card.css">
+  <link rel="stylesheet" href="css/components/skill-use-grid.css">
+  <link rel="stylesheet" href="css/components/item-card.css">
+  <link rel="stylesheet" href="css/components/inventory.css">
+  <link rel="stylesheet" href="css/components/character-section.css">
+  <link rel="stylesheet" href="css/components/xp-table.css">
+  <link rel="stylesheet" href="css/components/overlay.css">
+  <link rel="stylesheet" href="css/components/shop.css">
+  <link rel="stylesheet" href="css/components/hub.css">
+  <link rel="stylesheet" href="css/components/trade.css">
+  <link rel="stylesheet" href="css/components/character-modal.css">
+  <link rel="stylesheet" href="css/components/subclass.css">
+  <link rel="stylesheet" href="css/components/toast.css">
+  <link rel="stylesheet" href="css/components/import.css">
+  <link rel="stylesheet" href="css/components/admin.css">
+  <link rel="stylesheet" href="css/components/currency.css">
+  <!-- Multi-game -->
+  <link rel="stylesheet" href="css/components/multi-game.css">
+  <link rel="stylesheet" href="css/components/dnd-sheet.css">
+  <link rel="stylesheet" href="css/components/mc-gallery.css">
+  <!-- Avatar — features avançadas -->
+  <link rel="stylesheet" href="css/components/path-picker.css">
+  <link rel="stylesheet" href="css/components/skill-panel.css">
+  <link rel="stylesheet" href="css/components/attr-strip.css">
+  <link rel="stylesheet" href="css/components/status-effects.css">
+  <link rel="stylesheet" href="css/components/monsters.css">
+  <link rel="stylesheet" href="css/components/combat.css">
+  <link rel="stylesheet" href="css/components/notes.css">
+  <link rel="stylesheet" href="css/components/shop-manager.css">
+  <link rel="stylesheet" href="css/components/gm-control.css">
+</head>
+<body>
+  <!-- App loader -->
+  <div id="app-loader" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:200; align-items:center; justify-content:center; flex-direction:column; gap:12px;">
+    <div class="loader-spinner"></div>
+    <span style="color:var(--text2); font-size:13px;">Carregando...</span>
+  </div>
+
+  <!-- Login Overlay -->
+  <div id="login-overlay" class="overlay">
+    <div class="login-box">
+      <button type="button" id="login-home-btn" class="login-home-btn" hidden>← Início</button>
+      <div class="login-logo" id="login-logo">⚡ Avatar RPG</div>
+      <h2 class="login-title">Entrar</h2>
+      <form id="login-form" autocomplete="on">
+        <div class="login-field">
+          <label for="login-username">Utilizador</label>
+          <input type="text" id="login-username" name="username" placeholder="Nome de utilizador" autocomplete="username" required>
+        </div>
+        <p id="login-error" class="login-error"></p>
+        <button type="submit" id="login-btn" class="login-btn">Entrar</button>
+      </form>
+      <div class="login-test-hints" style="margin-top: 14px; font-size: 10px; color: var(--text3); text-align: center; line-height: 1.6;">
+        <strong>Perfis de teste:</strong><br>
+        zuko (🔥), katara (🌊), toph (🪨), aang (🌀), sokka (⚔️)<br>
+        gm (Game Master), admin (Admin)
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- ===== Landing (game selector) ===== -->
+    <div class="game-root" data-game-root="landing"></div>
+
+    <!-- ===== Avatar RPG game root (existing app) ===== -->
+    <div class="game-root" data-game-root="avatar">
+    <!-- Navigation Tabs -->
+    <nav class="nav" role="tablist">
+      <!-- Player gameplay tabs (hidden for GM/Admin) -->
+      <button class="nav-btn char on" data-page="character">Personagem</button>
+      <button class="nav-btn fire" data-page="fire">Fogo</button>
+      <button class="nav-btn water" data-page="water">Água</button>
+      <button class="nav-btn earth" data-page="earth">Terra</button>
+      <button class="nav-btn air" data-page="air">Ar</button>
+      <button class="nav-btn none" data-page="none">Sem Dobra</button>
+      <button class="nav-btn items-tab" data-page="items">Itens</button>
+
+      <!-- Shared / GM tabs -->
+      <button class="nav-btn shop-tab" data-page="shop">Loja</button>
+      <button class="nav-btn hub-tab" data-page="hub">Jogadores <span class="nav-badge player-count" data-player-count hidden>0</span> <span class="nav-badge" data-trade-badge hidden>0</span></button>
+      <button class="nav-btn gm-control-tab" data-page="gm-control" id="gm-control-tab" style="display:none">🎛 Controlo</button>
+      <button class="nav-btn monsters-tab" data-page="monsters" id="monsters-tab" style="display:none">Monstros</button>
+      <button class="nav-btn import-tab" data-page="import" id="import-tab" style="display:none">Importar</button>
+      <button class="nav-btn admin-tab" data-page="admin" id="admin-tab" style="display:none">Admin</button>
+
+      <button class="nav-btn logout-btn" id="logout-btn" title="Sair">⏻</button>
+    </nav>
+
+    <!-- Attribute strip — visible only on skill tree pages (toggled via body.on-skill-page) -->
+    <div id="attr-strip-host"></div>
+
+    <!-- Character Page -->
+    <main id="character-page" class="page on" role="tabpanel">
+      <div class="two-col">
+        <!-- Left Column: Attribute Panel -->
+        <aside class="attr-panel">
+          <div class="char-identity-header" id="char-identity-header" style="text-align: center; margin-bottom: 8px;">
+            <div id="char-display-name" style="font-size: 14px; font-weight: 600; color: var(--text);"></div>
+            <div id="char-display-element" style="font-size: 11px; color: var(--text2);"></div>
+            <div id="char-display-role" style="font-size: 9px; margin-top: 2px;"></div>
+          </div>
+          <div class="panel-title">Atributos</div>
+
+          <!-- Level -->
+          <div class="level-row">
+            <div class="lv-num" id="char-level">1</div>
+            <div class="lv-lbl">NIVEL</div>
+            <div class="lv-milestone" id="char-milestone" style="font-size: 9px; color: var(--gold); margin-top: 2px;"></div>
+          </div>
+
+          <!-- Available Points -->
+          <div class="pts-box">
+            Pontos: <span class="pts-val" id="avail-points">0</span>
+          </div>
+
+          <!-- Gold -->
+          <div class="pts-box" style="margin-top: 4px;">
+            💰 Ouro: <span class="pts-val" id="char-gold" style="color: var(--gold);">0</span>
+          </div>
+
+          <div class="currency-bar" id="currency-bar">
+            <!-- Will be populated by JS -->
+          </div>
+
+          <!-- Attributes -->
+          <div id="attr-controls">
+            <!-- Generated by JS -->
+          </div>
+
+          <!-- Stats Box -->
+          <div class="stats-box">
+            <div class="stat-row">
+              <span class="stat-lbl">Vida</span>
+              <span class="stat-val" id="stat-hp">10</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-lbl">Espírito</span>
+              <span class="stat-val" id="stat-sp">8</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-lbl">Chi</span>
+              <span class="stat-val" id="stat-cp">6</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-lbl">Defesa</span>
+              <span class="stat-val" id="stat-def">2</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-lbl">Esquiva</span>
+              <span class="stat-val" id="stat-dodge">2</span>
+            </div>
+          </div>
+
+          <!-- XP Section -->
+          <div class="xp-wrap">
+            <div class="xp-hd">
+              <span>XP Progresso</span>
+              <span id="xp-text">0 / 0</span>
+            </div>
+            <div class="xp-bg">
+              <div class="xp-fill" id="xp-fill" style="width: 0%"></div>
+            </div>
+            <button class="xp-btn" data-action="add-xp">+ Adicionar XP</button>
+          </div>
+
+          <!-- Sub-Skill Slots -->
+          <div class="slots-box">
+            <div class="slots-row">
+              <span>Slots de Sub-Habilidade</span>
+              <span class="slots-val" id="slots-info">2 / 2</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Right Column: Character Details -->
+        <section class="char-page">
+          <!-- Identity Section -->
+          <div class="char-section">
+            <h3>Identidade</h3>
+
+            <div class="field-row">
+              <label class="field-lbl">Nome do Personagem</label>
+              <input type="text" class="field-input" id="char-name" placeholder="Ex: Aang">
+            </div>
+
+            <div class="field-row">
+              <label class="field-lbl">Elemento</label>
+              <div class="elem-sel">
+                <button class="esbtn fire on" data-element="fire">Fogo</button>
+                <button class="esbtn water" data-element="water">Água</button>
+                <button class="esbtn earth" data-element="earth">Terra</button>
+                <button class="esbtn air" data-element="air">Ar</button>
+                <button class="esbtn none" data-element="none">Sem Dobra</button>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <label class="field-lbl">Subclasse</label>
+              <div id="char-subclass-section" class="subclass-section">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <div class="field-row">
+              <label class="field-lbl">Idade</label>
+              <input type="text" class="field-input" id="char-age" placeholder="Ex: 25">
+            </div>
+
+            <div class="field-row">
+              <label class="field-lbl">Gênero</label>
+              <input type="text" class="field-input" id="char-gender" placeholder="Ex: Masculino">
+            </div>
+
+            <div class="field-row">
+              <label class="field-lbl">Alinhamento</label>
+              <input type="text" class="field-input" id="char-alignment" placeholder="Ex: Neutro e Bom">
+            </div>
+          </div>
+
+          <!-- Combat Stats Section -->
+          <div class="char-section">
+            <h3>Stats de Combate</h3>
+
+            <div class="stat-display">
+              <div class="stat-card">
+                <div class="stat-card-lbl">VIDA</div>
+                <div class="stat-card-val" id="combat-hp">10</div>
+                <div class="stat-card-max" id="combat-hp-max">/ 10</div>
+                <div class="bar-wrap">
+                  <div class="bar-inner" id="combat-hp-bar" style="width: 100%; background: linear-gradient(90deg, #c03020, #e05030)"></div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-lbl">ESPIRITO</div>
+                <div class="stat-card-val" id="combat-sp">8</div>
+                <div class="stat-card-max" id="combat-sp-max">/ 8</div>
+                <div class="bar-wrap">
+                  <div class="bar-inner" id="combat-sp-bar" style="width: 100%; background: linear-gradient(90deg, #a03080, #c05090)"></div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-lbl">CHI</div>
+                <div class="stat-card-val" id="combat-cp">6</div>
+                <div class="stat-card-max" id="combat-cp-max">/ 6</div>
+                <div class="bar-wrap">
+                  <div class="bar-inner" id="combat-cp-bar" style="width: 100%; background: linear-gradient(90deg, #6050a0, #8060c0)"></div>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-lbl">DEFESA</div>
+                <div class="stat-card-val" id="combat-def">2</div>
+                <div class="stat-card-max" style="font-size: 10px; color: var(--text3)">(RES×2)+Nv</div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-card-lbl">ESQUIVA</div>
+                <div class="stat-card-val" id="combat-dodge">2</div>
+                <div class="stat-card-max" style="font-size: 10px; color: var(--text3)">(AGI×2)+PER</div>
+              </div>
+            </div>
+
+            <!-- HP Controls -->
+            <div style="margin-top: 12px">
+              <label class="field-lbl">Controle de Vida</label>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap">
+                <button class="xp-btn" style="flex: 1" id="hp-dec-5">« -5</button>
+                <button class="xp-btn" style="flex: 1" id="hp-dec-1">‹ -1</button>
+                <button class="xp-btn" style="flex: 1" id="hp-inc-1">+1 ›</button>
+                <button class="xp-btn" style="flex: 1" id="hp-inc-5">+5 »</button>
+                <button class="xp-btn" style="flex: 1; color: var(--red)" id="hp-max">MAX</button>
+              </div>
+            </div>
+
+            <!-- SP Controls -->
+            <div style="margin-top: 8px">
+              <label class="field-lbl">Controle de Espírito</label>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap">
+                <button class="xp-btn" style="flex: 1" id="sp-dec-5">« -5</button>
+                <button class="xp-btn" style="flex: 1" id="sp-dec-1">‹ -1</button>
+                <button class="xp-btn" style="flex: 1" id="sp-inc-1">+1 ›</button>
+                <button class="xp-btn" style="flex: 1" id="sp-inc-5">+5 »</button>
+                <button class="xp-btn" style="flex: 1; color: var(--red)" id="sp-max">MAX</button>
+              </div>
+            </div>
+
+            <!-- CP Controls -->
+            <div style="margin-top: 8px">
+              <label class="field-lbl">Controle de Chi</label>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap">
+                <button class="xp-btn" style="flex: 1" id="cp-dec-5">« -5</button>
+                <button class="xp-btn" style="flex: 1" id="cp-dec-1">‹ -1</button>
+                <button class="xp-btn" style="flex: 1" id="cp-inc-1">+1 ›</button>
+                <button class="xp-btn" style="flex: 1" id="cp-inc-5">+5 »</button>
+                <button class="xp-btn" style="flex: 1; color: var(--red)" id="cp-max">MAX</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipment Section -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <h3>Equipamento</h3>
+            <div class="equip-grid" id="equip-section">
+              <div class="equip-slot" id="equip-arma">
+                <div class="equip-slot-lbl">⚔ Arma</div>
+                <div class="equip-slot-val">— Vazio —</div>
+              </div>
+              <div class="equip-slot" id="equip-armadura">
+                <div class="equip-slot-lbl">🛡 Armadura</div>
+                <div class="equip-slot-val">— Vazio —</div>
+              </div>
+              <div class="equip-slot" id="equip-acessorio">
+                <div class="equip-slot-lbl">💍 Acessório</div>
+                <div class="equip-slot-val">— Vazio —</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- All Skills Section -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <h3>Todas as Habilidades</h3>
+            <p class="char-section-hint">Lista completa das habilidades que já desbloqueaste. Activas mostram botão "Usar"; inactivas precisam de ser activadas na skill tree.</p>
+            <div class="all-skills-list" id="all-skills">
+              <p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade desbloqueada.</p>
+            </div>
+          </div>
+
+          <!-- Active Skills Section — comentada a pedido do user (2026-06-30):
+               a secção "Todas as Habilidades" acima já cobre o caso (active
+               vs inactive distinguidos por estado visual + Use button).
+               Mantida em comentário para reverter rapidamente se preciso.
+          <div class="char-section" style="grid-column: 1 / -1">
+            <h3>Habilidades Ativas</h3>
+            <p class="char-section-hint">Habilidades equipadas para uso rápido durante combate.</p>
+            <div class="active-skills-list" id="active-skills">
+              <p style="color: var(--text2); font-size: 11px;">Nenhuma habilidade ativa selecionada.</p>
+            </div>
+          </div>
+          -->
+
+          <!-- Notes Section -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <h3>História & Anotações</h3>
+            <textarea class="field-input" id="char-notes" rows="6" placeholder="Escreva a história do seu personagem, anotações de sessão, etc."></textarea>
+          </div>
+
+          <!-- Player Notes (list) -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <div id="player-notes-host"></div>
+          </div>
+
+          <!-- Trade History (player only) -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <div id="trade-history-host"></div>
+          </div>
+
+          <!-- Import/Export Section -->
+          <div class="char-section" style="grid-column: 1 / -1">
+            <h3>Gerenciamento de Dados</h3>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap">
+              <button class="xp-btn" data-action="export" style="flex: 1; min-width: 120px">Exportar JSON</button>
+              <button class="xp-btn" data-action="import" style="flex: 1; min-width: 120px">Importar JSON</button>
+              <button class="xp-btn" data-action="reset" style="flex: 1; min-width: 120px; color: var(--red)">Resetar</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Fire Skills Page -->
+    <main id="fire-page" class="page skill-page" role="tabpanel">
+      <div id="fire-skills-container"></div>
+    </main>
+
+    <!-- Water Skills Page -->
+    <main id="water-page" class="page skill-page" role="tabpanel">
+      <div id="water-skills-container"></div>
+    </main>
+
+    <!-- Earth Skills Page -->
+    <main id="earth-page" class="page skill-page" role="tabpanel">
+      <div id="earth-skills-container"></div>
+    </main>
+
+    <!-- Air Skills Page -->
+    <main id="air-page" class="page skill-page" role="tabpanel">
+      <div id="air-skills-container"></div>
+    </main>
+
+    <!-- No Bending Skills Page -->
+    <main id="none-page" class="page skill-page" role="tabpanel">
+      <div id="none-skills-container"></div>
+    </main>
+
+    <!-- Items Page -->
+    <main id="items-page" class="page" role="tabpanel">
+      <div id="items-container"></div>
+    </main>
+
+    <!-- Shop Page -->
+    <main id="shop-page" class="page" role="tabpanel">
+      <div id="shop-container"></div>
+    </main>
+
+    <!-- Hub / Players Page -->
+    <main id="hub-page" class="page" role="tabpanel">
+      <div id="hub-container"></div>
+    </main>
+
+    <!-- Import Page (GM only) -->
+    <main id="import-page" class="page" role="tabpanel">
+      <div id="import-container"></div>
+    </main>
+
+    <!-- Monsters Page (GM/Admin only) -->
+    <main id="monsters-page" class="page" role="tabpanel">
+      <div id="monsters-container"></div>
+    </main>
+
+    <!-- GM Control Page (GM/Admin only) -->
+    <main id="gm-control-page" class="page" role="tabpanel">
+      <div id="gm-control-container"></div>
+    </main>
+
+    <main id="admin-page" class="page" role="tabpanel">
+      <div id="admin-container"></div>
+    </main>
+    </div><!-- /game-root avatar -->
+
+    <!-- ===== D&D 5e game root (placeholder) ===== -->
+    <div class="game-root" data-game-root="dnd"></div>
+
+    <!-- ===== Minecraft Builds game root (placeholder) ===== -->
+    <div class="game-root" data-game-root="minecraft"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <!-- Optional runtime config (e.g. Supabase opt-in). Safe to 404 in pure
+       localStorage mode — main.js still boots normally. -->
+  <script src="config.js" onerror="void 0"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

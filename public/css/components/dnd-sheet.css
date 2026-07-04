@@ -1,0 +1,463 @@
+/* ============================================================
+   D&D 5e — sheet styles (mirror the Avatar layout)
+   ============================================================ */
+
+.dnd-app {
+  --dnd-accent: #dc2626;
+  --dnd-accent-soft: #b91c1c;
+  padding: 12px 16px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header / identity strip */
+.dnd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-left: 3px solid var(--dnd-accent);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.dnd-header-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dnd-header-id .name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text, #eee);
+}
+
+.dnd-header-id .meta {
+  font-size: 11px;
+  color: var(--text2, #aaa);
+}
+
+.dnd-header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Top nav (mirrors `.nav`) */
+.dnd-nav {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.dnd-nav-btn {
+  background: transparent;
+  color: var(--text2, #aaa);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dnd-nav-btn:hover {
+  color: var(--text, #eee);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dnd-nav-btn.on {
+  color: #fff;
+  background: var(--dnd-accent);
+  border-color: var(--dnd-accent);
+}
+
+/* Badges contextuais no nav (trade pending count, hub player count) */
+.dnd-nav-badge {
+  margin-left: 6px;
+}
+.dnd-nav-badge-hub {
+  background: #4a90e2;
+}
+
+/* Pages */
+.dnd-page { display: none; }
+.dnd-page.on { display: block; }
+
+/* Two-column layout used on the main sheet page */
+.dnd-two-col {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .dnd-two-col { grid-template-columns: 1fr; }
+}
+
+/* Left sidebar (mirror attr-panel) */
+.dnd-aside {
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dnd-aside .panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2, #aaa);
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border, #333);
+  padding-bottom: 4px;
+}
+
+.dnd-level-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+}
+
+.dnd-level-row .lv-num {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--dnd-accent);
+}
+
+.dnd-level-row .lv-lbl {
+  font-size: 10px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dnd-pill {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 12px;
+  color: var(--text, #eee);
+}
+
+.dnd-pill .v { font-weight: 700; color: var(--dnd-accent); }
+
+/* Ability score blocks (mirror attr controls) */
+.dnd-ability {
+  display: grid;
+  grid-template-columns: 56px 1fr 36px;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.dnd-ability-lbl {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text2, #aaa);
+}
+
+.dnd-ability-score {
+  width: 100%;
+  background: var(--bg, #0d0d0d);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 13px;
+  color: var(--text, #eee);
+  text-align: center;
+}
+
+.dnd-ability-mod {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dnd-accent);
+}
+
+/* Section card (mirror char-section) */
+.dnd-section {
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.dnd-section h3 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dnd-accent);
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border, #333);
+}
+
+/* Generic form row helpers */
+.dnd-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.dnd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dnd-field label {
+  font-size: 10px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dnd-field input,
+.dnd-field select,
+.dnd-field textarea {
+  background: var(--bg, #0d0d0d);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  padding: 5px 7px;
+  font-size: 12px;
+  color: var(--text, #eee);
+  font-family: inherit;
+}
+
+.dnd-field input:focus,
+.dnd-field select:focus,
+.dnd-field textarea:focus {
+  outline: none;
+  border-color: var(--dnd-accent);
+}
+
+/* Combat stat cards (mirror stat-display) */
+.dnd-combat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.dnd-combat-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.dnd-combat-card .lbl {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2, #aaa);
+}
+
+.dnd-combat-card .val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--dnd-accent);
+  margin: 2px 0;
+}
+
+.dnd-combat-card .max {
+  font-size: 10px;
+  color: var(--text3, #777);
+}
+
+.dnd-hp-controls {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.dnd-btn {
+  background: var(--bg, #0d0d0d);
+  color: var(--text, #eee);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dnd-btn:hover {
+  border-color: var(--dnd-accent);
+  color: var(--dnd-accent);
+}
+
+.dnd-btn.primary {
+  background: var(--dnd-accent);
+  color: #fff;
+  border-color: var(--dnd-accent);
+}
+
+.dnd-btn.primary:hover { filter: brightness(1.1); color: #fff; }
+
+.dnd-btn.danger:hover { border-color: #ef4444; color: #ef4444; }
+
+/* Saves & Skills */
+.dnd-row-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
+}
+
+.dnd-row-item {
+  display: grid;
+  grid-template-columns: 22px 1fr 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+  color: var(--text, #eee);
+}
+
+.dnd-row-item input[type="checkbox"] { accent-color: var(--dnd-accent); }
+.dnd-row-item .bonus { text-align: right; font-weight: 700; color: var(--dnd-accent); }
+.dnd-row-item .label-stack { display: flex; flex-direction: column; line-height: 1.15; }
+.dnd-row-item .label-stack .ab { font-size: 9px; color: var(--text2, #aaa); text-transform: uppercase; }
+
+/* Spell slots grid */
+.dnd-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 700px) {
+  .dnd-slots-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.dnd-slot {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border, #333);
+  border-radius: 4px;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.dnd-slot .lvl { font-size: 9px; color: var(--text2, #aaa); text-transform: uppercase; }
+.dnd-slot .counts { font-size: 12px; color: var(--text, #eee); font-weight: 700; margin: 2px 0; }
+.dnd-slot .controls { display: flex; gap: 2px; justify-content: center; }
+.dnd-slot .controls button {
+  flex: 1; padding: 2px 0; font-size: 10px;
+  background: var(--bg, #0d0d0d); border: 1px solid var(--border, #333); border-radius: 3px;
+  color: var(--text, #eee); cursor: pointer;
+}
+
+/* Inventory list */
+.dnd-inv-list { display: flex; flex-direction: column; gap: 4px; }
+.dnd-inv-row {
+  display: grid;
+  grid-template-columns: 2fr 60px 60px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+.dnd-inv-row input,
+.dnd-inv-row textarea {
+  background: var(--bg, #0d0d0d);
+  border: 1px solid var(--border, #333);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 11px;
+  color: var(--text, #eee);
+  font-family: inherit;
+}
+
+/* Hub list */
+.dnd-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.dnd-hub-card {
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-left: 3px solid var(--dnd-accent);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dnd-hub-card .name { font-size: 13px; font-weight: 700; color: var(--text, #eee); }
+.dnd-hub-card .meta { font-size: 11px; color: var(--text2, #aaa); }
+.dnd-hub-card .actions { display: flex; gap: 4px; margin-top: 4px; }
+
+/* GM panel */
+.dnd-gm-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px;
+  gap: 6px;
+  align-items: center;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.dnd-gm-row .name { font-size: 12px; color: var(--text, #eee); }
+
+/* XP bar */
+.dnd-xp-wrap {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 6px 8px;
+}
+.dnd-xp-bg { height: 6px; background: var(--bg, #0d0d0d); border-radius: 3px; overflow: hidden; margin: 4px 0; }
+.dnd-xp-fill { height: 100%; background: var(--dnd-accent); transition: width 0.3s; }
+.dnd-xp-hd { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2, #aaa); }
+
+/* Impersonation banner (admin "editar como ...") */
+.dnd-impersonate-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(122, 112, 224, 0.45);
+  border-left: 3px solid #7a70e0;
+  background: linear-gradient(90deg, rgba(122, 112, 224, 0.12), rgba(122, 112, 224, 0.04));
+  border-radius: 6px;
+  color: #cbb8ff;
+  font-size: 12px;
+  font-weight: 600;
+}

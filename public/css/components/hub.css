@@ -1,0 +1,340 @@
+/* ===================================
+   Hub / Player Profiles Page
+   =================================== */
+
+/* Hub Header */
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.hub-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hub-count {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Player Cards Grid */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+/* Player Card */
+.player-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  transition: border-color .15s, box-shadow .15s;
+  position: relative;
+}
+
+.player-card:hover {
+  border-color: var(--border2);
+}
+
+/* Current user card — coloured border + glow + name accent, no extra button */
+.player-card.is-self {
+  border-color: var(--gold, #d4a849);
+  box-shadow: 0 0 0 1px var(--gold, #d4a849), 0 0 14px rgba(212, 168, 73, 0.18);
+}
+
+.player-card.is-self .player-name {
+  color: var(--gold, #d4a849);
+}
+
+.player-card.is-self::before {
+  content: 'A tua ficha';
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold, #d4a849);
+  color: #1a1408;
+}
+
+/* Player Card Header */
+.player-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.player-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.player-level {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  background: var(--bg3);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* Element Badge */
+.player-element {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.player-element.fire {
+  background: var(--fire-bg);
+  color: var(--fire-light);
+  border: 1px solid var(--fire);
+}
+
+.player-element.water {
+  background: var(--water-bg);
+  color: var(--water-light);
+  border: 1px solid var(--water);
+}
+
+.player-element.earth {
+  background: var(--earth-bg);
+  color: var(--earth-light);
+  border: 1px solid var(--earth);
+}
+
+.player-element.air {
+  background: var(--air-bg);
+  color: var(--air-light);
+  border: 1px solid var(--air);
+}
+
+.player-element.none {
+  background: var(--none-bg);
+  color: var(--none-light);
+  border: 1px solid var(--none);
+}
+
+/* Player Stats Row */
+.player-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.player-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.player-stat-lbl {
+  font-size: 9px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.player-stat-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* HP Bar in Player Card */
+.player-hp-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.player-hp-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #c03020, #e05030);
+  transition: width .3s;
+}
+
+/* Buffs/Debuffs */
+.player-buffs {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.player-buff {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.player-buff-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.player-buff-name {
+  line-height: 1;
+}
+
+.player-buff.positive {
+  background: rgba(34, 134, 75, 0.16);
+  color: #6fd99c;
+  border-color: rgba(111, 217, 156, 0.35);
+}
+
+.player-buff.negative {
+  background: rgba(180, 50, 50, 0.18);
+  color: #f08070;
+  border-color: rgba(240, 128, 112, 0.35);
+}
+
+.hub-player-actions-secondary {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+
+.hub-player-actions-secondary:hover {
+  border-color: var(--gold, #d4a849);
+  color: var(--gold, #d4a849);
+}
+
+/* Hub Empty State */
+.hub-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text3);
+  font-size: 13px;
+}
+
+/* ─────────────────────────────────────────────
+   Interactive ATLA map embed (above player grid)
+   ───────────────────────────────────────────── */
+
+.hub-map-section {
+  margin: 12px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg2);
+  overflow: hidden;
+}
+
+.hub-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3, #1e2535);
+  border-bottom: 1px solid var(--border);
+}
+
+.hub-map-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hub-map-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hub-map-credit {
+  font-size: 10px;
+  color: var(--text3);
+  text-decoration: none;
+}
+
+.hub-map-credit:hover {
+  color: var(--gold, #d4a849);
+  text-decoration: underline;
+}
+
+.hub-map-toggle {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+
+.hub-map-toggle:hover {
+  color: var(--text);
+  border-color: var(--text2);
+}
+
+.hub-map-frame-wrap {
+  position: relative;
+  width: 100%;
+  /* The Godot map renders natively at 1280×720 (16:9). Keep that ratio
+     so neither the world borders nor the UI get clipped, capped at the
+     viewport so it stays comfortable on tall monitors. */
+  aspect-ratio: 16 / 9;
+  max-height: 85vh;
+  background: #000;
+}
+
+.hub-map-iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ── Player's "Minhas Habilidades" section (Hub) ──────────── */
+.hub-my-skills {
+  margin: 12px 0 18px;
+  padding: 14px;
+  border: 1px solid var(--border, #2b2b34);
+  border-radius: 10px;
+  background: var(--bg2, #16161b);
+}
+
+.hub-my-skills h2 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: var(--gold, #d4a849);
+}
+
+.hub-my-skills-hint {
+  margin: 0 0 10px 0;
+  font-size: 11px;
+  color: var(--text2, #9a9890);
+  font-style: italic;
+}

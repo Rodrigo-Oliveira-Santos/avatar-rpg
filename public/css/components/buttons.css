@@ -1,0 +1,96 @@
+/* ============================================================
+   Button system — `.btn` base + variants
+   Used by Monsters page, GM Control, Shop manager and any other
+   surface that needs a consistent action button.
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text2, #9a9890);
+  background: var(--bg2, #15151a);
+  border: 1px solid var(--border, #2a2a35);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s, transform .05s;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  color: var(--text, #e8e6e0);
+  border-color: var(--text2, #9a9890);
+  background: var(--bg3, #1e2535);
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn:disabled,
+.btn[disabled] {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  color: #1a1408;
+  background: var(--gold, #c0a030);
+  border-color: var(--gold, #c0a030);
+}
+
+.btn-primary:hover {
+  color: #1a1408;
+  background: #e0c050;
+  border-color: #e0c050;
+}
+
+.btn-green {
+  color: #0a2810;
+  background: var(--green, #30c060);
+  border-color: var(--green, #30c060);
+}
+
+.btn-green:hover {
+  background: #50d080;
+  border-color: #50d080;
+}
+
+.btn-danger {
+  color: #f08070;
+  border-color: rgba(196, 48, 48, 0.45);
+  background: rgba(196, 48, 48, 0.08);
+}
+
+.btn-danger:hover {
+  color: #fff;
+  background: var(--red, #e03030);
+  border-color: var(--red, #e03030);
+}
+
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 13px;
+  background: transparent;
+  border: 1px solid var(--border, #2a2a35);
+  color: var(--text2, #9a9890);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+
+.btn-icon:hover {
+  color: var(--text, #e8e6e0);
+  border-color: var(--text2, #9a9890);
+  background: var(--bg3, #1e2535);
+}

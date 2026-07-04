@@ -1,0 +1,301 @@
+/* ============================================================
+   Multi-game scaffolding (placeholder styles)
+   See docs/MULTI-GAME-DESIGN.md
+   ============================================================ */
+
+.game-root {
+  display: none;
+}
+
+.game-root.on {
+  display: block;
+}
+
+.page-placeholder {
+  padding: 32px 24px;
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text2, #aaa);
+}
+
+.page-placeholder h2 {
+  color: var(--text, #eee);
+  margin-bottom: 12px;
+}
+
+/* ---------- Landing (game selector) ---------- */
+.landing {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.landing-header h1 {
+  color: var(--text, #eee);
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.landing-subtitle {
+  color: var(--text2, #aaa);
+  font-size: 14px;
+}
+
+.landing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.landing-card {
+  --card-accent: var(--accent, #f97316);
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-top: 3px solid var(--card-accent);
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.landing-card h2 {
+  color: var(--text, #eee);
+  font-size: 18px;
+  margin: 0;
+}
+
+.landing-card p {
+  color: var(--text2, #aaa);
+  font-size: 13px;
+  line-height: 1.5;
+  flex: 1;
+  margin: 0;
+}
+
+.landing-card-meta {
+  font-size: 11px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.landing-card-btn {
+  background: var(--card-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: filter 0.15s;
+}
+
+.landing-card-btn:hover { filter: brightness(1.1); }
+
+/* ---------- Landing — top bar (sessões + auth) ---------- */
+.landing-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-bottom: 24px;
+  background: var(--bg2, #1a1a1a);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+}
+
+.landing-sessions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.landing-sessions-empty {
+  color: var(--text2, #aaa);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.landing-session-chip {
+  --chip-accent: #888;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--chip-accent);
+  background: color-mix(in srgb, var(--chip-accent) 12%, transparent);
+  color: var(--text, #eee);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.landing-session-chip .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--chip-accent);
+  box-shadow: 0 0 6px var(--chip-accent);
+}
+
+.landing-auth-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.landing-auth-btn {
+  background: var(--bg3, #222);
+  color: var(--text, #eee);
+  border: 1px solid var(--border, #333);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s, border-color 0.15s;
+}
+
+.landing-auth-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.landing-auth-btn.primary {
+  background: linear-gradient(90deg, #7a70e0, #5b8def);
+  border-color: rgba(122, 112, 224, 0.6);
+  color: #fff;
+}
+
+/* ---------- Landing — Admin Global CTA (banner destacado) ---------- */
+.landing-admin-cta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: linear-gradient(90deg, rgba(224, 48, 48, 0.16), rgba(122, 112, 224, 0.16));
+  border: 1px solid rgba(224, 48, 48, 0.45);
+  border-left: 4px solid #e03030;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(224, 48, 48, 0.12);
+}
+
+.landing-admin-cta-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.landing-admin-cta-title {
+  color: #f099d9;
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.landing-admin-cta-sub {
+  color: var(--text2, #aaa);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.landing-admin-cta-btn {
+  background: linear-gradient(90deg, #e03030, #7a70e0);
+  border: none;
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.landing-admin-cta-btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(224, 48, 48, 0.35);
+}
+
+.admin-landing {
+  padding-top: 32px;
+}
+
+/* ---------- Back-to-landing widget (inside each game) ---------- */
+.game-back-widget {
+  --game-accent: var(--accent, #f97316);
+  position: fixed;
+  top: 10px;
+  left: 12px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* When the back widget is mounted, every nav row inside the same game
+   root gets pushed right so the fixed widget doesn't cover the first
+   tab (e.g. "Personagem" on the Avatar skill tree pages). Keeps both
+   on the same visual line. The selector targets ANY .nav anywhere
+   under the game root — Avatar's top nav, D&D's nav, etc. — so we
+   don't need per-game CSS. */
+.game-back-widget ~ .nav,
+.game-back-widget ~ * .nav {
+  padding-left: 120px;
+}
+
+@media (max-width: 720px) {
+  .game-back-widget ~ .nav,
+  .game-back-widget ~ * .nav {
+    /* On narrow screens the nav already wraps; just reserve a smaller
+       slot so the first tab clears the icon-only widget. */
+    padding-left: 64px;
+  }
+}
+
+.game-back-btn {
+  pointer-events: auto;
+  background: var(--game-accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.game-back-btn:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.game-back-label {
+  font-size: 10px;
+  color: var(--text2, #aaa);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding-left: 4px;
+  pointer-events: none;
+}
